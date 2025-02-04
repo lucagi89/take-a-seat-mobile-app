@@ -1,22 +1,22 @@
 import React, { useState } from "react";
 import { View, TextInput, Button, StyleSheet, Text } from "react-native";
-// import { auth } from "../scripts/firebase.config";
-import { handleSignUp } from "../services/auth";
+import { handleUser } from "../services/auth";
 
-const Login = ({ navigation }) => {
+import { NavigationProp } from "@react-navigation/native";
+
+const Login = ({ navigation }: { navigation: NavigationProp<any> }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState(null);
 
   const handleLogin = async () => {
     try {
-      await handleSignUp(email, password);
+      await handleUser(email, password);
       console.log("User signed in!");
-      // Navigate to the appropriate screen after successful login
       navigation.navigate("home");
     } catch (error) {
       console.error(error);
-      setErrorMessage(error.message);
+      setErrorMessage((error as any).message);
     }
   };
 
