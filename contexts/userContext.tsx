@@ -1,38 +1,55 @@
-// src/contexts/UserContext.ts
-import { auth } from "../scripts/firebase.config";
-import { User, UserCredential } from "firebase/auth";
-import { createContext, useState } from "react";
+// contexts/userContext.tsx
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "../scripts/firebase.config"; // Ensure this points to your Firebase setup
 
-interface UserContextType {
-  user: User | null;
-  handleSignUp: (email: string, password: string) => Promise<User>;
-}
+// Define types for better TypeScript support
+type UserContextType = {
+  user: any;
+  loading: boolean;
+  setUser: (user: any) => void;
+};
 
-export const UserContext = createContext<UserContextType | null>(null);
+const UserContext = createContext<UserContextType | null>(null);
 
-export function UserContextProvider({
+export const UserContextProvider = ({
   children,
 }: {
   children: React.ReactNode;
-}) {
-  const [user, setUser] = useState<User | null>(null);
+}) => {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  async function handleSignUp(email: string, password: string): Promise<User> {
-    try {
-      const userCredential: UserCredential =
-        await auth.createUserWithEmailAndPassword(email, password);
-      setUser(userCredential.user);
-      console.log("User signed up:", userCredential.user);
-      return userCredential.user;
-    } catch (error) {
-      console.error("Error signing up:", error);
-      throw error;
-    }
-  }
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (currentUser) {
+        // You can fetch more user details here if needed
+        setUser({
+          uid: currentUser.uid,
+          email: currentUser.email,
+          displayName: currentUser.displayName,
+        });
+      } else {
+        setUser(null);
+      }
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   return (
-    <UserContext.Provider value={{ user, handleSignUp }}>
+    <UserContext.Provider value={{ user, loading, setUser }}>
       {children}
     </UserContext.Provider>
   );
-}
+};
+
+// Custom hook to access user context
+export const useUser = () => {
+  const context = useContext(UserContext);
+  if (!context) {
+    throw new Error("useUser must be used within a UserContextProvider");
+  }
+  return context;
+};

@@ -29,14 +29,22 @@ export async function handleUser(email: string, password: string): Promise<Acces
   }
 }
 
-export async function handleSignUp(email: string, password: string): Promise<AccessResponse> {
+export async function signUp(email: string, password: string): Promise<AccessResponse> {
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    console.log('User signed up:', userCredential.user);
     return { user: userCredential.user };
   }
   catch (error) {
     console.error('Error signing up:', error);
+    throw error;
+  }
+}
+
+export async function logout(): Promise<void> {
+  try {
+    await auth.signOut();
+  } catch (error) {
+    console.error('Error signing out:', error);
     throw error;
   }
 }

@@ -1,21 +1,20 @@
-import { UserContextProvider } from "../contexts/userContext";
-
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import login from "./(access)/login";
-import Index from "./index";
-
-const Stack = createNativeStackNavigator();
+import { Stack } from "expo-router";
+import { useUser, UserContextProvider } from "../contexts/userContext";
+import { Redirect, Slot } from "expo-router";
+import { View, ActivityIndicator } from "react-native";
 
 export default function RootLayout() {
   return (
     <UserContextProvider>
-      <Stack.Navigator
-        initialRouteName="home"
-        screenOptions={{ headerShown: false }}
-      >
-        <Stack.Screen name="home" component={Index} />
-        <Stack.Screen name="login" component={login} />
-      </Stack.Navigator>
+      <AuthStack />
     </UserContextProvider>
+  );
+}
+
+function AuthStack() {
+  return (
+    <Stack screenOptions={{ headerShown: false }}>
+      <Slot />
+    </Stack>
   );
 }

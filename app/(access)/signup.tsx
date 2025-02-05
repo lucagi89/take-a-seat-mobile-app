@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useRouter } from "expo-router";
 import {
   View,
   TextInput,
@@ -10,10 +11,10 @@ import {
 } from "react-native";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../../scripts/firebase.config";
-import { handleSignUp } from "../../services/auth";
-import { useNavigation } from "@react-navigation/native";
+import { signUp } from "../../services/auth";
 
-export default function SignUpScreen({ navigation }) {
+export default function SignUpScreen() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -26,8 +27,8 @@ export default function SignUpScreen({ navigation }) {
     }
 
     try {
-      await handleSignUp(email, password);
-      navigation.navigate("home"); // Adjust 'Home' to the correct screen name in your navigator
+      await signUp(email, password);
+      router.push("/");
     } catch (err) {
       setError(err.message);
     }

@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import { View, TextInput, Button, StyleSheet, Text } from "react-native";
 import { handleUser } from "../../services/auth";
+import { useRouter } from "expo-router";
 
-import { NavigationProp } from "@react-navigation/native";
+// import { NavigationProp } from "@react-navigation/native";
 
-const Login = ({ navigation }: { navigation: NavigationProp<any> }) => {
+const Login = () => {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState(null);
@@ -13,7 +15,7 @@ const Login = ({ navigation }: { navigation: NavigationProp<any> }) => {
     try {
       await handleUser(email, password);
       console.log("User signed in!");
-      navigation.navigate("home");
+      router.push("/");
     } catch (error) {
       console.error(error);
       setErrorMessage((error as any).message);
@@ -29,6 +31,8 @@ const Login = ({ navigation }: { navigation: NavigationProp<any> }) => {
         placeholder="Email"
         keyboardType="email-address"
         autoCapitalize="none"
+        autoComplete="off"
+        importantForAutofill="no"
       />
       <TextInput
         style={styles.input}
@@ -37,12 +41,15 @@ const Login = ({ navigation }: { navigation: NavigationProp<any> }) => {
         placeholder="Password"
         secureTextEntry
         autoCapitalize="none"
+        textContentType="none" // Prevents auto-fill suggestions
+        autoComplete="off" // Disables auto-complete
+        importantForAutofill="no"
       />
       {errorMessage && <Text style={styles.errorText}>{errorMessage}</Text>}
       <Button title="Login" onPress={handleLogin} />
       <Button
         title="Don't have an account? Sign Up"
-        onPress={() => navigation.navigate("signup")}
+        onPress={() => router.push("/signup")}
       />
     </View>
   );
