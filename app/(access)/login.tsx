@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { View, TextInput, Button, StyleSheet, Text } from "react-native";
-import { handleUser } from "../services/auth";
+import { handleUser } from "../../services/auth";
 
 import { NavigationProp } from "@react-navigation/native";
 
@@ -42,7 +42,7 @@ const Login = ({ navigation }: { navigation: NavigationProp<any> }) => {
       <Button title="Login" onPress={handleLogin} />
       <Button
         title="Don't have an account? Sign Up"
-        onPress={() => navigation.navigate("SignUp")}
+        onPress={() => navigation.navigate("signup")}
       />
     </View>
   );

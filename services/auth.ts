@@ -14,16 +14,28 @@ import {
 
 } from 'firebase/auth';
 
-interface SignUpResponse {
+interface AccessResponse {
   user: User;
 }
 
-export async function handleUser(email: string, password: string): Promise<SignUpResponse> {
+export async function handleUser(email: string, password: string): Promise<AccessResponse> {
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     console.log('User signed up:', userCredential.user);
     return { user: userCredential.user };
   } catch (error) {
+    console.error('Error signing up:', error);
+    throw error;
+  }
+}
+
+export async function handleSignUp(email: string, password: string): Promise<AccessResponse> {
+  try {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    console.log('User signed up:', userCredential.user);
+    return { user: userCredential.user };
+  }
+  catch (error) {
     console.error('Error signing up:', error);
     throw error;
   }
