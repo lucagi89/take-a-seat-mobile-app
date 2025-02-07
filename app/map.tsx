@@ -1,58 +1,70 @@
-import React from "react";
-import { useState, useEffect } from "react";
-import { StyleSheet, View, Text, SafeAreaView } from "react-native";
+import React, { useState, useEffect } from "react";
+import { StyleSheet, View, Text, SafeAreaView, Alert } from "react-native";
 import { Link } from "expo-router";
-import MapView, { Marker, AnimatedRegion } from "react-native-maps";
+import MapView, { Marker } from "react-native-maps";
 import * as Location from "expo-location";
+import { generateFakeRestaurants } from "@/data/data";
 
 export default function Map() {
   const [location, setLocation] = useState<Location.LocationObject | null>(
     null
   );
+  const [fakeRestaurants, setFakeRestaurants] = useState<any[]>([]);
 
   useEffect(() => {
-    (async () => {
-      // Request permission
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") {
-        console.log("Permission to access location was denied");
-        return;
-      }
+    let locationSubscription: Location.LocationSubscription | null = null;
 
-      // Get current location
-      let currentLocation = await Location.getCurrentPositionAsync({});
-      setLocation(currentLocation);
-
-      // Watch for continuous updates
-      const locationSubscription = await Location.watchPositionAsync(
-        {
-          accuracy: Location.Accuracy.High,
-          timeInterval: 1000, // Update every second
-          distanceInterval: 1, // Update every 1 meter
-        },
-        (newLocation) => {
-          setLocation(newLocation);
+    const initialize = async () => {
+      try {
+        // Request location permission
+        let { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== "granted") {
+          Alert.alert("Permission Denied", "Location access is required.");
+          return;
         }
-      );
 
-      // Clean up the subscription on unmount
-      return () => {
+        // Generate fake restaurant data
+        const restaurants = await generateFakeRestaurants();
+        setFakeRestaurants(restaurants);
+
+        // Get current location
+        const currentLocation = await Location.getCurrentPositionAsync({});
+        setLocation(currentLocation);
+
+        // Watch for continuous location updates
+        locationSubscription = await Location.watchPositionAsync(
+          {
+            accuracy: Location.Accuracy.High,
+            timeInterval: 1000,
+            distanceInterval: 1,
+          },
+          (newLocation) => setLocation(newLocation)
+        );
+      } catch (error) {
+        console.error("Error initializing app:", error);
+      }
+    };
+
+    initialize();
+
+    // Cleanup location watcher on unmount
+    return () => {
+      if (locationSubscription) {
         locationSubscription.remove();
-      };
-    })();
+      }
+    };
   }, []);
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={{ height: 50, backgroundColor: "lightblue" }}>
-        <Text>London Map</Text>
+      <View style={styles.header}>
+        <Text style={styles.headerText}>London Map</Text>
         <Link href="/">Go back</Link>
       </View>
 
       <MapView
         style={styles.map}
-        showsUserLocation={true} // ✅ Shows the blue dot
-        followsUserLocation={true} // ✅ Keeps the map centered on the user
+        showsUserLocation={true}
         showsMyLocationButton={true}
         showsCompass={true}
         initialRegion={{
@@ -62,6 +74,21 @@ export default function Map() {
           longitudeDelta: 0.0421,
         }}
       >
+        {fakeRestaurants.map((restaurant) =>
+          restaurant.latitude && restaurant.longitude ? (
+            <Marker
+              key={restaurant.id}
+              coordinate={{
+                latitude: restaurant.latitude,
+                longitude: restaurant.longitude,
+              }}
+              title={restaurant.name}
+              pinColor={restaurant.is_available ? "green" : "red"}
+              description={restaurant.address}
+            />
+          ) : null
+        )}
+
         <Marker
           coordinate={{ latitude: 51.5074, longitude: -0.1278 }}
           title="London"
@@ -71,39 +98,21 @@ export default function Map() {
   );
 }
 
-// const styles = StyleSheet.create({
-//   container: {
-//     flex: 1,
-//   },
-//   map: {
-//     flex: 1,
-//   },
-// });
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  map: {
-    flex: 1,
-  },
-  arrowContainer: {
+  header: {
+    height: 50,
+    backgroundColor: "lightblue",
     alignItems: "center",
     justifyContent: "center",
   },
-  arrow: {
-    width: 0,
-    height: 0,
-    backgroundColor: "transparent",
-    borderStyle: "solid",
-    borderTopWidth: 20,
-    borderRightWidth: 10,
-    borderBottomWidth: 0,
-    borderLeftWidth: 10,
-    borderTopColor: "blue",
-    borderRightColor: "transparent",
-    borderBottomColor: "transparent",
-    borderLeftColor: "transparent",
-    transform: [{ rotate: "0deg" }],
+  headerText: {
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  map: {
+    flex: 1,
   },
 });

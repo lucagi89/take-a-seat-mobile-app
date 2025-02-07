@@ -17,6 +17,8 @@ export default function Profile() {
     return <Redirect href="/login" />;
   }
 
+  console.log(user);
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Profile</Text>
