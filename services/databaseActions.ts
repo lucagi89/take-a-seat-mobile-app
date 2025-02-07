@@ -1,5 +1,5 @@
 import { addDoc, collection, getDocs } from "firebase/firestore";
-import { db } from "../scripts/firebase.config";
+import { db } from "../scripts/firebase.config.node";
 import * as Location from 'expo-location';
 
 
@@ -49,5 +49,31 @@ export const geocodeAddress = async (address: string) => {
     }
   } catch (error) {
     console.error('Error geocoding address:', error);
+  }
+};
+
+export const createDatabaseEntry = async (data: any, myCollection: string) => {
+  try {
+    const { address, city, postcode } = data;
+    const fullAddress = `${address}, ${city}, ${postcode}`;
+
+    // ✅ Geocoding the address
+    const geocodedLocation = await geocodeAddress(fullAddress);
+    if (!geocodedLocation) {
+      console.warn(`Geocoding failed for address: ${fullAddress}`);
+      return { success: false, message: `Geocoding failed for ${fullAddress}` };
+    }
+
+    const { latitude, longitude } = geocodedLocation;
+    const newData = { ...data, latitude, longitude };
+
+    // ✅ Adding data to Firebase
+    await addDoc(collection(db, myCollection), newData);
+    console.log(`Successfully added: ${data.name}`);
+
+    return { success: true, message: `Added ${data.name}` };
+  } catch (error) {
+    console.error(`Error creating entry for ${data.name}:`, error);
+    return { success: false, message: `Error adding ${data.name}` };
   }
 };

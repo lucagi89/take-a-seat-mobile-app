@@ -1,14 +1,8 @@
 import { faker } from '@faker-js/faker';
-import { geocodeAddress } from '../services/databaseActions';
+// import { geocodeAddress } from '../services/databaseActions';
 
 // Async function to generate fake restaurant data
-export const generateFakeRestaurants = async () => {
-  try {
-    const geolocation1 = await geocodeAddress('279 Willesden Lane, London, NW2 5JA');
-    const geolocation2 = await geocodeAddress('Whitehall Place, London, SW1A 2BD');
-    const geolocation3 = await geocodeAddress("150 Piccadilly, St. James's, London, W1J 9BR");
-
-    return [
+export const fakeRestaurants = [
       {
         id: 1,
         id_owner: '1',
@@ -16,8 +10,6 @@ export const generateFakeRestaurants = async () => {
         city: "London",
         address: "279 Willesden Lane",
         postcode: "NW2 5JA",
-        latitude: geolocation1?.latitude || 0,
-        longitude: geolocation1?.longitude || 0,
         phone: '020 8452 9898',
         email: faker.internet.email(),
         website: faker.internet.url(),
@@ -47,8 +39,6 @@ export const generateFakeRestaurants = async () => {
         city: "London",
         address: "Whitehall Place",
         postcode: "SW1A 2BD",
-        latitude: geolocation2?.latitude || 0,
-        longitude: geolocation2?.longitude || 0,
         phone: '020 8452 9898',
         email: faker.internet.email(),
         website: faker.internet.url(),
@@ -78,8 +68,6 @@ export const generateFakeRestaurants = async () => {
         city: "London",
         address: "150 Piccadilly, St. James's",
         postcode: "W1J 9BR",
-        latitude: geolocation3?.latitude || 0,
-        longitude: geolocation3?.longitude || 0,
         phone: '020 8452 9898',
         email: faker.internet.email(),
         website: faker.internet.url(),
@@ -103,8 +91,3 @@ export const generateFakeRestaurants = async () => {
         updatedAt: new Date(),
       },
     ];
-  } catch (error) {
-    console.error('Error generating fake restaurant data:', error);
-    return [];
-  }
-};
