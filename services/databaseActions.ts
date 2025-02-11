@@ -1,5 +1,5 @@
-import { addDoc, collection, getDocs } from "firebase/firestore";
-import { db } from "../scripts/firebase.config.node";
+import { addDoc, collection, getDocs, deleteDoc, doc } from "firebase/firestore";
+import { db } from "../scripts/firebase.config";
 import * as Location from 'expo-location';
 
 
@@ -14,12 +14,14 @@ export async function addData(data: any, myCollection: any): Promise<void> {
 }
 
 
-export async function fetchData(myCollection: any): Promise<void> {
+export async function fetchData(myCollection: string): Promise<any[]> {
   try {
     const querySnapshot = await getDocs(collection(db, myCollection));
-    const data = querySnapshot.forEach((doc) => {
-      return doc.data();
-    });
+    const data: any[] = querySnapshot.docs.map((doc) => ({
+      id: doc.id,          // Include document ID
+      ...doc.data(),       // Spread the document data
+    }));
+
     console.log('Data fetched:', data);
     return data;
   } catch (error) {
@@ -75,5 +77,42 @@ export const createDatabaseEntry = async (data: any, myCollection: string) => {
   } catch (error) {
     console.error(`Error creating entry for ${data.name}:`, error);
     return { success: false, message: `Error adding ${data.name}` };
+  }
+};
+
+
+
+// ✅ Check if Collection Has Documents
+export const checkIfCollectionHasDocuments = async (myCollection: string) => {
+  try {
+    const querySnapshot = await getDocs(collection(db, myCollection));
+    const hasDocuments = !querySnapshot.empty;
+    console.log(`Collection '${myCollection}' has documents: ${hasDocuments}`);
+    return hasDocuments;
+  } catch (error) {
+    console.error("Error checking collection:", error);
+    throw error;
+  }
+};
+
+// ✅ Delete All Documents in a Collection
+export const deleteAllDocuments = async (myCollection: string) => {
+  try {
+    const querySnapshot = await getDocs(collection(db, myCollection));
+
+    if (querySnapshot.empty) {
+      console.log(`Collection '${myCollection}' is already empty.`);
+      return;
+    }
+
+    const deletePromises = querySnapshot.docs.map((docItem) =>
+      deleteDoc(doc(db, myCollection, docItem.id))
+    );
+
+    await Promise.all(deletePromises); // ✅ Delete all documents in parallel
+    console.log(`✅ All documents in '${myCollection}' have been deleted.`);
+  } catch (error) {
+    console.error(`🚨 Error deleting documents from '${myCollection}':`, error);
+    throw error;
   }
 };

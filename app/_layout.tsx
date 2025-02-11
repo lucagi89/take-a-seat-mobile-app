@@ -6,15 +6,17 @@ import { View, ActivityIndicator } from "react-native";
 export default function RootLayout() {
   return (
     <UserContextProvider>
-      <AuthStack />
+      <Stack screenOptions={{ headerShown: false }}>
+        <Slot />
+      </Stack>
     </UserContextProvider>
   );
 }
 
-function AuthStack() {
-  return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Slot />
-    </Stack>
-  );
-}
+// function AuthStack() {
+//   return (
+//     <Stack screenOptions={{ headerShown: false }}>
+//       <Slot />
+//     </Stack>
+//   );
+// }
