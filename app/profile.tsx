@@ -21,7 +21,7 @@ export default function Profile() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Profile</Text>
+      <Text style={styles.title}>Hello {user.email}</Text>
       <Text style={styles.text}>This is your profile page.</Text>
       <Link href="/">Go to Mainpage</Link>
     </View>
