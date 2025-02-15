@@ -6,14 +6,24 @@ import { Redirect, Link } from "expo-router";
 import { getDoc, doc } from "firebase/firestore";
 import { db } from "../scripts/firebase.config";
 
+import { Image } from "react-native";
+
 export default function Profile() {
   const { user, loading } = useUser();
-  interface UserData {
-    name: string;
-    // add other properties as needed
-  }
-
   const [userData, setUserData] = useState<UserData | null>(null);
+
+  useEffect(() => {
+    const checkUserData = async () => {
+      const userDoc = await getDoc(doc(db, "users", user.uid));
+      if (userDoc.exists()) {
+        const data = userDoc.data() as UserData;
+        setUserData(data);
+      }
+    };
+
+    if (user) checkUserData();
+  }, [user]);
+
   if (loading) {
     return (
       <View style={styles.container}>
@@ -26,21 +36,6 @@ export default function Profile() {
     return <Redirect href="/login" />;
   }
 
-  useEffect(() => {
-    // Check if user already has data in Firestore
-    const checkUserData = async () => {
-      const userDoc = await getDoc(doc(db, "users", user.uid));
-      if (userDoc.exists()) {
-        const userData = userDoc.data() as UserData;
-        if (userData) {
-          setUserData(userData);
-        }
-      }
-    };
-
-    checkUserData();
-  }, []);
-
   if (!userData) {
     return (
       <View style={styles.container}>
@@ -51,7 +46,19 @@ export default function Profile() {
 
   return (
     <View style={styles.container}>
+      {/* Display name */}
       <Text style={styles.title}>Hello {userData.name}</Text>
+
+      {/* Display profile picture if available */}
+      {userData.photoURL ? (
+        <Image
+          source={{ uri: userData.photoURL }}
+          style={styles.profileImage}
+        />
+      ) : (
+        <Text>No profile picture</Text>
+      )}
+
       <Text style={styles.text}>This is your profile page.</Text>
       <Link href="/">Go to Mainpage</Link>
       <Link href="/complete-profile">Complete Profile</Link>
@@ -70,6 +77,12 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "bold",
     marginBottom: 10,
+  },
+  profileImage: {
+    width: 120,
+    height: 120,
+    borderRadius: 60, // for a circular image
+    marginVertical: 10,
   },
   text: {
     fontSize: 16,
