@@ -11,7 +11,6 @@ import {
 import { Link, useRouter } from "expo-router";
 import MapView, { Marker, Region, Callout } from "react-native-maps";
 import * as Location from "expo-location";
-// import { fakeRestaurants } from "../data/data";
 import { fetchData } from "../services/databaseActions";
 
 export default function Map() {
@@ -27,6 +26,7 @@ export default function Map() {
   const [showSearchButton, setShowSearchButton] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
+  // Fetch restaurants from database
   useEffect(() => {
     const fetchRestaurants = async () => {
       try {
@@ -38,8 +38,10 @@ export default function Map() {
     };
 
     fetchRestaurants();
+    console.log(allRestaurants);
   }, []);
 
+  // Get user location and set region
   useEffect(() => {
     const getLocation = async () => {
       try {
@@ -58,7 +60,7 @@ export default function Map() {
           longitudeDelta: 0.01,
         };
         setRegion(userRegion);
-        filterMarkersInRegion(userRegion, allRestaurants);
+        // Removed filtering from here since allRestaurants might still be empty
       } catch (error) {
         console.error("Error fetching location:", error);
       } finally {
@@ -72,7 +74,6 @@ export default function Map() {
   const filterMarkersInRegion = useCallback(
     (mapRegion: Region, restaurants = allRestaurants) => {
       const { latitude, longitude, latitudeDelta, longitudeDelta } = mapRegion;
-
       const latMin = latitude - latitudeDelta / 2;
       const latMax = latitude + latitudeDelta / 2;
       const lonMin = longitude - longitudeDelta / 2;
@@ -91,6 +92,13 @@ export default function Map() {
     },
     [allRestaurants]
   );
+
+  // Filter markers when both region and restaurants data are available
+  useEffect(() => {
+    if (region && allRestaurants.length > 0) {
+      filterMarkersInRegion(region);
+    }
+  }, [region, allRestaurants, filterMarkersInRegion]);
 
   const handleSearchHere = () => {
     if (region) {
@@ -138,6 +146,7 @@ export default function Map() {
                     <View>
                       <Text style={styles.calloutTitle}>{restaurant.name}</Text>
                       <Text>{restaurant.address}</Text>
+                      <Text>{`${restaurant.cuisine_one}, ${restaurant.cuisine_two}, ${restaurant.cuisine_three}`}</Text>
                     </View>
                   </Callout>
                 </Marker>

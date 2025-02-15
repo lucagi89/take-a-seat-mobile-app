@@ -8,6 +8,11 @@ import { db } from "../scripts/firebase.config";
 
 import { Image } from "react-native";
 
+interface UserData {
+  name: string;
+  photoURL: string;
+}
+
 export default function Profile() {
   const { user, loading } = useUser();
   const [userData, setUserData] = useState<UserData | null>(null);
