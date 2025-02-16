@@ -4,7 +4,7 @@ import * as Location from 'expo-location';
 import { useUser } from "../contexts/userContext";
 
 
-export async function addData(data: any, myCollection: any): Promise<void> {
+export async function addData(data: any, myCollection: string): Promise<void> {
   try {
     const docRef = await addDoc(collection(db, myCollection), data);
     console.log("Document written with ID: ", docRef.id);

@@ -62,7 +62,7 @@ export default function Profile() {
       <Text style={styles.text}>This is your profile page.</Text>
       <Link href="/">Go to Mainpage</Link>
       <Link href="/complete-profile">Complete Profile</Link>
-      
+      <Link href="/create-restaurant">Create a Restaurant</Link>
     </View>
   );
 }
