@@ -15,6 +15,7 @@ import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import * as ImagePicker from "expo-image-picker";
 import { db, storage } from "../scripts/firebase.config";
 import { useRouter } from "expo-router";
+// import placeholderImage from '../assets/images/placeholderprofilepic.png'
 
 const CompleteProfileScreen = () => {
   const auth = getAuth();
@@ -22,8 +23,11 @@ const CompleteProfileScreen = () => {
 
   const [userData, setUserData] = useState({
     name: "",
-    surname: "",
-    address: "",
+    lastName: "",
+    streetAddress: "",
+    postcode: "",
+    city: "",
+    phone: "",
   });
   const [userId, setUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -41,18 +45,12 @@ const CompleteProfileScreen = () => {
             const existingUserData = userDoc.data();
             setUserData({
               name: existingUserData.name || "",
-              surname: existingUserData.surname || "",
-              address: existingUserData.address || "",
+              lastName: existingUserData.lastName || "",
+              streetAddress: existingUserData.streetAddress || "",
+              postcode: existingUserData.postcode || "",
+              city: existingUserData.city || "",
+              phone: existingUserData.phone || "",
             });
-
-            // If profile is already complete, navigate to home
-            // if (
-            //   existingUserData.name &&
-            //   existingUserData.surname &&
-            //   existingUserData.address
-            // ) {
-            //   router.push("/" as never);
-            // }
           }
         } catch (error) {
           console.error("Error fetching user data:", error);
@@ -107,7 +105,7 @@ const CompleteProfileScreen = () => {
   };
 
   const handleSaveProfile = async () => {
-    if (!userData.name || !userData.surname || !userData.address) {
+    if (!userData.name || !userData.lastName || !userData.streetAddress) {
       Alert.alert("Error", "All fields are required!");
       return;
     }
@@ -139,7 +137,7 @@ const CompleteProfileScreen = () => {
       );
 
       Alert.alert("Success", "Profile completed!");
-      router.push("/" as never);
+      router.push("/profile");
     } catch (error) {
       console.error("Error saving profile:", error);
       Alert.alert("Error", "Could not save profile.");
@@ -161,10 +159,17 @@ const CompleteProfileScreen = () => {
       <Text style={styles.title}>Complete Your Profile</Text>
 
       {/* Profile Picture Section */}
-      <Button title="Select Profile Picture" onPress={pickImage} />
-      {imageUri && (
-        <Image source={{ uri: imageUri }} style={styles.imagePreview} />
-      )}
+      <View style={styles.profilePicContainer}>
+        <Image
+          source={
+            imageUri
+              ? { uri: imageUri }
+              : require("../assets/images/placeholderprofilepic.png")
+          }
+          style={styles.imagePreview}
+        />
+        <Button title="Select Profile Picture" onPress={pickImage} />
+      </View>
       {uploading && <ActivityIndicator size="small" color="#0000ff" />}
 
       <Text>Name:</Text>
@@ -177,24 +182,54 @@ const CompleteProfileScreen = () => {
         placeholder="Enter your name"
       />
 
-      <Text>Surname:</Text>
+      <Text>Last Name:</Text>
       <TextInput
-        value={userData.surname}
+        value={userData.lastName}
         onChangeText={(text) =>
-          setUserData((prev) => ({ ...prev, surname: text }))
+          setUserData((prev) => ({ ...prev, lastName: text }))
         }
         style={styles.input}
         placeholder="Enter your surname"
       />
 
-      <Text>Address:</Text>
+      <Text>Street Address:</Text>
       <TextInput
-        value={userData.address}
+        value={userData.streetAddress}
         onChangeText={(text) =>
-          setUserData((prev) => ({ ...prev, address: text }))
+          setUserData((prev) => ({ ...prev, streetAddress: text }))
         }
         style={styles.input}
         placeholder="Enter your address"
+      />
+
+      <Text>Postcode:</Text>
+      <TextInput
+        value={userData.postcode}
+        onChangeText={(text) =>
+          setUserData((prev) => ({ ...prev, postcode: text }))
+        }
+        style={styles.input}
+        placeholder="Enter your postcode"
+      />
+
+      <Text>City:</Text>
+      <TextInput
+        value={userData.city}
+        onChangeText={(text) =>
+          setUserData((prev) => ({ ...prev, city: text }))
+        }
+        style={styles.input}
+        placeholder="Enter your city"
+      />
+
+      <Text>Phone:</Text>
+      <TextInput
+        value={userData.phone}
+        onChangeText={(text) =>
+          setUserData((prev) => ({ ...prev, phone: text }))
+        }
+        style={styles.input}
+        placeholder="Enter your phone number"
       />
 
       <Button
@@ -215,6 +250,10 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: "bold",
+    marginBottom: 20,
+  },
+  profilePicContainer: {
+    alignItems: "center",
     marginBottom: 20,
   },
   input: {

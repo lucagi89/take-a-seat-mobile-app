@@ -11,9 +11,11 @@ import {
 import { Link, useRouter } from "expo-router";
 import MapView, { Marker, Region, Callout } from "react-native-maps";
 import * as Location from "expo-location";
-import { fetchData } from "../services/databaseActions";
+import { fetchData, checkUserData } from "../services/databaseActions";
+import { useUser } from "../contexts/userContext";
 
 export default function Map() {
+  const { user } = useUser();
   const router = useRouter();
 
   const [location, setLocation] = useState<Location.LocationObject | null>(
@@ -25,6 +27,7 @@ export default function Map() {
   const [region, setRegion] = useState<Region | null>(null);
   const [showSearchButton, setShowSearchButton] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [firstLoad, setFirstLoad] = useState(true);
 
   // Fetch restaurants from database
   useEffect(() => {
@@ -38,7 +41,6 @@ export default function Map() {
     };
 
     fetchRestaurants();
-    console.log(allRestaurants);
   }, []);
 
   // Get user location and set region
@@ -60,7 +62,6 @@ export default function Map() {
           longitudeDelta: 0.01,
         };
         setRegion(userRegion);
-        // Removed filtering from here since allRestaurants might still be empty
       } catch (error) {
         console.error("Error fetching location:", error);
       } finally {
@@ -71,6 +72,7 @@ export default function Map() {
     getLocation();
   }, []);
 
+  // Filtering function: update markers based on provided region
   const filterMarkersInRegion = useCallback(
     (mapRegion: Region, restaurants = allRestaurants) => {
       const { latitude, longitude, latitudeDelta, longitudeDelta } = mapRegion;
@@ -88,22 +90,37 @@ export default function Map() {
       );
 
       setVisibleRestaurants(filtered);
+      // Hide the search button after filtering
       setShowSearchButton(false);
     },
     [allRestaurants]
   );
 
-  // Filter markers when both region and restaurants data are available
+  // Auto-filter markers on the first load when both region and restaurants are available
   useEffect(() => {
-    if (region && allRestaurants.length > 0) {
+    if (region && allRestaurants.length > 0 && firstLoad) {
       filterMarkersInRegion(region);
+      setFirstLoad(false);
     }
-  }, [region, allRestaurants, filterMarkersInRegion]);
+  }, [region, allRestaurants, firstLoad, filterMarkersInRegion]);
 
   const handleSearchHere = () => {
     if (region) {
       filterMarkersInRegion(region);
       setRefreshKey((prevKey) => prevKey + 1);
+    }
+  };
+
+  const restaurantSelectionHandler = async (restaurantId: string) => {
+    const userHasData = await checkUserData(user?.uid);
+    if (userHasData) {
+      router.push(`/restaurant/${restaurantId}`);
+    } else {
+      Alert.alert(
+        "Complete Profile",
+        "Please complete your profile before selecting a restaurant."
+      );
+      router.push("/complete-profile");
     }
   };
 
@@ -128,6 +145,7 @@ export default function Map() {
               region={region}
               onRegionChangeComplete={(newRegion) => {
                 setRegion(newRegion);
+                // Only show the search button on subsequent region changes
                 setShowSearchButton(true);
               }}
             >
@@ -141,7 +159,7 @@ export default function Map() {
                   pinColor={restaurant.is_available ? "green" : "red"}
                 >
                   <Callout
-                    onPress={() => router.push(`/restaurant/${restaurant.id}`)}
+                    onPress={() => restaurantSelectionHandler(restaurant.id)}
                   >
                     <View>
                       <Text style={styles.calloutTitle}>{restaurant.name}</Text>

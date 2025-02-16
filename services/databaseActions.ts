@@ -1,6 +1,7 @@
-import { addDoc, collection, getDocs, deleteDoc, doc } from "firebase/firestore";
+import { addDoc, collection, getDocs, deleteDoc, doc, getDoc } from "firebase/firestore";
 import { db } from "../scripts/firebase.config";
 import * as Location from 'expo-location';
+import { useUser } from "../contexts/userContext";
 
 
 export async function addData(data: any, myCollection: any): Promise<void> {
@@ -116,3 +117,12 @@ export const deleteAllDocuments = async (myCollection: string) => {
     throw error;
   }
 };
+
+
+export const checkUserData = async (userId: string) => {
+      const userDoc = await getDoc(doc(db, "users", userId));
+      if (userDoc.exists()) {
+        const data = userDoc.data();
+        return data;
+      }
+    };
