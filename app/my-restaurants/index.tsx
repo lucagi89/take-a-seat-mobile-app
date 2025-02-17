@@ -1,12 +1,18 @@
 import React, { useEffect, useState } from "react";
-import { ScrollView, Text, View, StyleSheet } from "react-native";
-import { useUser } from "../contexts/userContext";
-import { getUserRestaurants } from "../services/databaseActions";
-import RestaurantCard from "../components/RestaurantCard";
-import { Redirect } from "expo-router";
-import { Link } from "expo-router";
+import {
+  ScrollView,
+  Text,
+  View,
+  StyleSheet,
+  TouchableOpacity,
+} from "react-native";
+import { useUser } from "../../contexts/userContext";
+import { getUserRestaurants } from "../../services/databaseActions";
+import RestaurantCard from "../../components/RestaurantCard";
+import { Redirect, useRouter } from "expo-router";
 
 export default function MyRestaurants() {
+  const router = useRouter();
   const { user, loading } = useUser();
   const [userRestaurants, setUserRestaurants] = useState<{ id: string }[]>([]);
   const [error, setError] = useState("");
@@ -44,12 +50,17 @@ export default function MyRestaurants() {
       )}
       <ScrollView>
         {userRestaurants.map((restaurant) => (
-          <RestaurantCard key={restaurant.id} restaurant={restaurant} />
+          <TouchableOpacity
+            key={restaurant.id}
+            onPress={() => router.push(`/my-restaurants/${restaurant.id}`)}
+          >
+            <RestaurantCard key={restaurant.id} restaurant={restaurant} />
+          </TouchableOpacity>
         ))}
       </ScrollView>
-      <Link href="/" style={styles.link}>
-        Go back
-      </Link>
+      <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+        <Text style={styles.link}>Go back</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -73,5 +84,9 @@ const styles = StyleSheet.create({
   },
   link: {
     marginTop: 20,
+  },
+  backButton: {
+    marginTop: 20,
+    alignSelf: "center",
   },
 });

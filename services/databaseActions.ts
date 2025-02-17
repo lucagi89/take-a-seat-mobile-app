@@ -167,14 +167,14 @@ export const getUserRestaurants = async (userId: string) => {
 };
 
 
-// export const getRestaurantById = async (restaurantId: string) => {
-//   try {
-//     const restaurantDoc = await getDoc(doc(db, "restaurants", restaurantId));
-//     if (restaurantDoc.exists()) {
-//       return restaurantDoc.data();
-//     }
-//   } catch (error) {
-//     console.error("Error fetching restaurant:", error);
-//     throw error;
-//   }
-// };
+export const getRestaurantById = async (restaurantId: string) => {
+  try {
+    const restaurantDoc = await getDoc(doc(db, "restaurants", restaurantId));
+    if (restaurantDoc.exists()) {
+      return restaurantDoc.data();
+    }
+  } catch (error) {
+    console.error("Error fetching restaurant:", error);
+    throw error;
+  }
+};
