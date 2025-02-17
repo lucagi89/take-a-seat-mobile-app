@@ -1,22 +1,16 @@
 import { Stack } from "expo-router";
 import { useUser, UserContextProvider } from "../contexts/userContext";
 import { Redirect, Slot } from "expo-router";
-import { View, ActivityIndicator } from "react-native";
+import { View, ActivityIndicator, SafeAreaView } from "react-native";
 
 export default function RootLayout() {
   return (
     <UserContextProvider>
-      <Stack screenOptions={{ headerShown: false }}>
-        <Slot />
-      </Stack>
+      <SafeAreaView style={{ flex: 1 }}>
+        <Stack screenOptions={{ headerShown: false }}>
+          <Slot />
+        </Stack>
+      </SafeAreaView>
     </UserContextProvider>
   );
 }
-
-// function AuthStack() {
-//   return (
-//     <Stack screenOptions={{ headerShown: false }}>
-//       <Slot />
-//     </Stack>
-//   );
-// }

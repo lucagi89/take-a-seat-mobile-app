@@ -5,7 +5,7 @@ import { useUser } from "../contexts/userContext";
 import { Redirect, Link } from "expo-router";
 // import { getDoc, doc } from "firebase/firestore";
 // import { db } from "../scripts/firebase.config";
-import { checkUserData } from "../services/databaseActions";
+import { checkUserData, getUserRestaurants } from "../services/databaseActions";
 
 import { Image } from "react-native";
 
@@ -17,9 +17,14 @@ interface UserData {
 export default function Profile() {
   const { user, loading } = useUser();
   const [userData, setUserData] = useState<UserData | null>(null);
+  const [userRestaurants, setUserRestaurants] = useState([]);
 
   useEffect(() => {
     if (user) {
+      getUserRestaurants(user.uid).then((result) => {
+        setUserRestaurants(result);
+        console.log(result);
+      });
       checkUserData(user.uid).then((data) => {
         if (data) {
           setUserData(data as UserData);
@@ -62,6 +67,11 @@ export default function Profile() {
       <Text style={styles.text}>This is your profile page.</Text>
       <Link href="/">Go to Mainpage</Link>
       <Link href="/complete-profile">Complete Profile</Link>
+      {userRestaurants && userRestaurants.length > 0 ? (
+        <Link href="/my-restaurants">View My Restaurants</Link>
+      ) : (
+        ""
+      )}
       <Link href="/create-restaurant">Create a Restaurant</Link>
     </View>
   );

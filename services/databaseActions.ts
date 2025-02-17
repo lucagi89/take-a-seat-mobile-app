@@ -1,4 +1,13 @@
-import { addDoc, collection, getDocs, deleteDoc, doc, getDoc } from "firebase/firestore";
+import {
+  addDoc,
+  collection,
+  getDocs,
+  deleteDoc,
+  doc,
+  getDoc,
+  query,
+  where
+} from "firebase/firestore";
 import { db } from "../scripts/firebase.config";
 import * as Location from 'expo-location';
 import { useUser } from "../contexts/userContext";
@@ -126,3 +135,46 @@ export const checkUserData = async (userId: string) => {
         return data;
       }
     };
+
+
+
+// export const getUserResaturants = async (userId: string) => {
+//   try {
+//     const querySnapshot = await getDocs(collection(db, "restaurants"));
+//     const userRestaurants = querySnapshot.docs
+//       .map((doc) => ({ id: doc.id, ...doc.data() }))
+//       .filter((restaurant) => restaurant.userId === userId);
+//     return userRestaurants;
+//   } catch (error) {
+//     console.error("Error fetching user's restaurants:", error);
+//     throw error;
+//   }
+// };
+
+
+export const getUserRestaurants = async (userId: string) => {
+  try {
+    // Assuming the field name is "owner"
+    const restaurantsRef = collection(db, "restaurants");
+    const q = query(restaurantsRef, where("userId", "==", userId));
+    const querySnapshot = await getDocs(q);
+    const userRestaurants = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    return userRestaurants;
+  } catch (error) {
+    console.error("Error fetching user's restaurants:", error);
+    throw error;
+  }
+};
+
+
+// export const getRestaurantById = async (restaurantId: string) => {
+//   try {
+//     const restaurantDoc = await getDoc(doc(db, "restaurants", restaurantId));
+//     if (restaurantDoc.exists()) {
+//       return restaurantDoc.data();
+//     }
+//   } catch (error) {
+//     console.error("Error fetching restaurant:", error);
+//     throw error;
+//   }
+// };

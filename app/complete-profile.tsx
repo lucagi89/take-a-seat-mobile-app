@@ -51,6 +51,16 @@ const CompleteProfileScreen = () => {
               city: existingUserData.city || "",
               phone: existingUserData.phone || "",
             });
+            // If there's a photoURL in Firestore, set it as the image URI.
+            if (existingUserData.photoURL) {
+              setImageUri(existingUserData.photoURL);
+            } else if (user.photoURL) {
+              // Alternatively, check the Auth user object.
+              setImageUri(user.photoURL);
+            }
+          } else if (user.photoURL) {
+            // If no Firestore document but Auth has a photoURL
+            setImageUri(user.photoURL);
           }
         } catch (error) {
           console.error("Error fetching user data:", error);
@@ -168,7 +178,10 @@ const CompleteProfileScreen = () => {
           }
           style={styles.imagePreview}
         />
-        <Button title="Select Profile Picture" onPress={pickImage} />
+        <Button
+          title={imageUri ? "Change Your Picture" : "Select Profile Picture"}
+          onPress={pickImage}
+        />
       </View>
       {uploading && <ActivityIndicator size="small" color="#0000ff" />}
 
@@ -245,12 +258,17 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
+    width: "100%",
     justifyContent: "center",
+    borderWidth: 10,
+    borderColor: "#ccc",
+    borderRadius: 10,
   },
   title: {
     fontSize: 24,
     fontWeight: "bold",
     marginBottom: 20,
+    textAlign: "center",
   },
   profilePicContainer: {
     alignItems: "center",

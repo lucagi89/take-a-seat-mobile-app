@@ -10,7 +10,7 @@ import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { useUser } from "../contexts/userContext";
 import { logout } from "../services/auth";
-import { seedDatabase } from "../services/seedDatabase";
+// import { seedDatabase } from "../services/seedDatabase";
 import { fetchData } from "../services/databaseActions";
 
 export default function Index() {
@@ -19,9 +19,9 @@ export default function Index() {
   const [restaurants, setRestaurants] = useState([]);
 
   // Seed the database on first load
-  useEffect(() => {
-    seedDatabase();
-  }, []);
+  // useEffect(() => {
+  //   seedDatabase();
+  // }, []);
 
   // Redirect to login if user is not authenticated
   useEffect(() => {
