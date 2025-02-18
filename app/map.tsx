@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import {
   StyleSheet,
   View,
@@ -11,7 +11,9 @@ import {
 import { Link, useRouter } from "expo-router";
 import MapView, { Marker, Region, Callout } from "react-native-maps";
 import * as Location from "expo-location";
-import { fetchData, checkUserData } from "../services/databaseActions";
+import { collection, query, where, getDocs } from "firebase/firestore";
+import { db } from "../scripts/firebase.config";
+import { checkUserData } from "../services/databaseActions";
 import { useUser } from "../contexts/userContext";
 
 export default function Map() {
@@ -21,27 +23,12 @@ export default function Map() {
   const [location, setLocation] = useState<Location.LocationObject | null>(
     null
   );
-  const [allRestaurants, setAllRestaurants] = useState<any[]>([]);
+  // We no longer need to store "allRestaurants" because we fetch only visible ones.
   const [visibleRestaurants, setVisibleRestaurants] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [region, setRegion] = useState<Region | null>(null);
   const [showSearchButton, setShowSearchButton] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
-  const [firstLoad, setFirstLoad] = useState(true);
-
-  // Fetch restaurants from database
-  useEffect(() => {
-    const fetchRestaurants = async () => {
-      try {
-        const restaurants = await fetchData("restaurants");
-        setAllRestaurants(restaurants);
-      } catch (error) {
-        console.error("Error loading restaurants:", error);
-      }
-    };
-
-    fetchRestaurants();
-  }, []);
 
   // Get user location and set region
   useEffect(() => {
@@ -52,7 +39,6 @@ export default function Map() {
           Alert.alert("Permission Denied", "Location access is required.");
           return;
         }
-
         const currentLocation = await Location.getCurrentPositionAsync({});
         setLocation(currentLocation);
         const userRegion = {
@@ -68,45 +54,48 @@ export default function Map() {
         setLoading(false);
       }
     };
-
     getLocation();
   }, []);
 
-  // Filtering function: update markers based on provided region
-  const filterMarkersInRegion = useCallback(
-    (mapRegion: Region, restaurants = allRestaurants) => {
-      const { latitude, longitude, latitudeDelta, longitudeDelta } = mapRegion;
-      const latMin = latitude - latitudeDelta / 2;
-      const latMax = latitude + latitudeDelta / 2;
-      const lonMin = longitude - longitudeDelta / 2;
-      const lonMax = longitude + longitudeDelta / 2;
+  // Helper function to fetch restaurants within the given region
+  const fetchVisibleRestaurants = async (mapRegion: Region) => {
+    const { latitude, longitude, latitudeDelta, longitudeDelta } = mapRegion;
+    const latMin = latitude - latitudeDelta / 2;
+    const latMax = latitude + latitudeDelta / 2;
+    const lonMin = longitude - longitudeDelta / 2;
+    const lonMax = longitude + longitudeDelta / 2;
 
-      const filtered = restaurants.filter(
-        (restaurant) =>
-          restaurant.latitude >= latMin &&
-          restaurant.latitude <= latMax &&
-          restaurant.longitude >= lonMin &&
-          restaurant.longitude <= lonMax
+    try {
+      const restaurantsRef = collection(db, "restaurants");
+      const q = query(
+        restaurantsRef,
+        where("latitude", ">=", latMin),
+        where("latitude", "<=", latMax),
+        where("longitude", ">=", lonMin),
+        where("longitude", "<=", lonMax)
       );
-
-      setVisibleRestaurants(filtered);
-      // Hide the search button after filtering
-      setShowSearchButton(false);
-    },
-    [allRestaurants]
-  );
-
-  // Auto-filter markers on the first load when both region and restaurants are available
-  useEffect(() => {
-    if (region && allRestaurants.length > 0 && firstLoad) {
-      filterMarkersInRegion(region);
-      setFirstLoad(false);
+      const querySnapshot = await getDocs(q);
+      const fetchedRestaurants = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setVisibleRestaurants(fetchedRestaurants);
+    } catch (error) {
+      console.error("Error fetching visible restaurants:", error);
     }
-  }, [region, allRestaurants, firstLoad, filterMarkersInRegion]);
+  };
 
+  // When the region is first set, fetch visible restaurants
+  useEffect(() => {
+    if (region) {
+      fetchVisibleRestaurants(region);
+    }
+  }, [region]);
+
+  // Called when the "Search Here" button is pressed
   const handleSearchHere = () => {
     if (region) {
-      filterMarkersInRegion(region);
+      fetchVisibleRestaurants(region);
       setRefreshKey((prevKey) => prevKey + 1);
     }
   };
@@ -145,7 +134,7 @@ export default function Map() {
               region={region}
               onRegionChangeComplete={(newRegion) => {
                 setRegion(newRegion);
-                // Only show the search button on subsequent region changes
+                // When the user moves the map, show the "Search Here" button
                 setShowSearchButton(true);
               }}
             >
@@ -187,27 +176,16 @@ export default function Map() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
+  container: { flex: 1 },
   header: {
     height: 50,
     backgroundColor: "lightblue",
     alignItems: "center",
     justifyContent: "center",
   },
-  headerText: {
-    fontSize: 18,
-    fontWeight: "bold",
-  },
-  map: {
-    flex: 1,
-  },
-  loader: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
+  headerText: { fontSize: 18, fontWeight: "bold" },
+  map: { flex: 1 },
+  loader: { flex: 1, justifyContent: "center", alignItems: "center" },
   searchButton: {
     position: "absolute",
     bottom: 80,
@@ -222,14 +200,6 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
     elevation: 5,
   },
-  searchButtonText: {
-    color: "white",
-    fontWeight: "bold",
-    fontSize: 16,
-  },
-  calloutTitle: {
-    fontWeight: "bold",
-    fontSize: 16,
-    marginBottom: 4,
-  },
+  searchButtonText: { color: "white", fontWeight: "bold", fontSize: 16 },
+  calloutTitle: { fontWeight: "bold", fontSize: 16, marginBottom: 4 },
 });

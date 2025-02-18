@@ -137,21 +137,6 @@ export const checkUserData = async (userId: string) => {
     };
 
 
-
-// export const getUserResaturants = async (userId: string) => {
-//   try {
-//     const querySnapshot = await getDocs(collection(db, "restaurants"));
-//     const userRestaurants = querySnapshot.docs
-//       .map((doc) => ({ id: doc.id, ...doc.data() }))
-//       .filter((restaurant) => restaurant.userId === userId);
-//     return userRestaurants;
-//   } catch (error) {
-//     console.error("Error fetching user's restaurants:", error);
-//     throw error;
-//   }
-// };
-
-
 export const getUserRestaurants = async (userId: string) => {
   try {
     // Assuming the field name is "owner"

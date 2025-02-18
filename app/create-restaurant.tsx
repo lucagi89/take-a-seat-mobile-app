@@ -16,26 +16,86 @@ import { useUser } from "../contexts/userContext";
 import * as ImagePicker from "expo-image-picker";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { storage } from "../scripts/firebase.config";
+import Checkbox from "expo-checkbox";
 
 export default function CreateRestaurant() {
-  const [restaurant, setRestaurant] = useState({
+  const [restaurant, setRestaurant] = useState<{
+    name: string;
+    description: string;
+    address: string;
+    city: string;
+    postcode: string;
+    keywords: string[];
+    phone: string;
+    email: string;
+    website: string;
+  }>({
     name: "",
     description: "",
     address: "",
     city: "",
     postcode: "",
+    keywords: [],
     phone: "",
     email: "",
     website: "",
   });
 
-  const { name, description, address, city, postcode, phone, email, website } =
-    restaurant;
+  const {
+    name,
+    description,
+    address,
+    city,
+    postcode,
+    phone,
+    email,
+    website,
+    keywords,
+  } = restaurant;
 
   // Use an array to store multiple image URIs
   const [imageUris, setImageUris] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  // const [keywords, setKeywords] = useState<string[]>([]);
+  const availableKeywords = [
+    "Fast Food",
+    "Fine Dining",
+    "Casual Dining",
+    "Cafe",
+    "Bar",
+    "Bakery",
+    "Food Truck",
+    "Buffet",
+    "Pub",
+    "Pizzeria",
+    "Steakhouse",
+    "Seafood",
+    "Vegetarian",
+    "Vegan",
+    "Gluten-Free",
+    "Halal",
+    "Kosher",
+    "Organic",
+    "Asian",
+    "Italian",
+    "Mexican",
+    "Indian",
+    "Chinese",
+    "Japanese",
+    "Thai",
+    "Mediterranean",
+    "French",
+    "Spanish",
+    "German",
+    "Greek",
+    "Turkish",
+    "Lebanese",
+    "Brazilian",
+    "Argentinian",
+    "Middle Eastern",
+    "American",
+  ];
 
   const { user } = useUser();
   const router = useRouter();
@@ -92,6 +152,7 @@ export default function CreateRestaurant() {
       imageUris.length === 0 ||
       !city ||
       !postcode ||
+      keywords.length === 0 ||
       !phone ||
       !email ||
       !website
@@ -117,6 +178,24 @@ export default function CreateRestaurant() {
       setError("Error creating restaurant.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleKeywordChange = (keyword: string, newValue: boolean) => {
+    if (newValue) {
+      if (keywords.length >= 3) {
+        Alert.alert(
+          "Maximum Selected",
+          "You can only select up to 3 keywords."
+        );
+        return;
+      }
+      setRestaurant({ ...restaurant, keywords: [...keywords, keyword] });
+    } else {
+      setRestaurant({
+        ...restaurant,
+        keywords: keywords.filter((kw) => kw !== keyword),
+      });
     }
   };
 
@@ -185,6 +264,33 @@ export default function CreateRestaurant() {
         placeholder="Website"
       />
 
+      <View style={styles.checksContainer}>
+        <Text style={styles.checkTitle}>Keywords:</Text>
+        <View style={styles.keywordsContainer}>
+          {availableKeywords.map((keyword) => {
+            const isSelected = keywords.includes(keyword);
+            return (
+              <View key={keyword} style={styles.checkboxContainer}>
+                <Checkbox
+                  value={isSelected}
+                  // If not selected and we already have 3, disable this checkbox
+                  disabled={!isSelected && keywords.length >= 3}
+                  onValueChange={(newValue) =>
+                    handleKeywordChange(keyword, newValue)
+                  }
+                  // Optional: color the checkbox when checked
+                  color={isSelected ? "#4630EB" : undefined}
+                />
+                <Text style={styles.checkboxLabel}>{keyword}</Text>
+              </View>
+            );
+          })}
+        </View>
+        <Text style={styles.selectedText}>
+          Selected Keywords: {keywords.join(", ")}
+        </Text>
+      </View>
+
       <Text style={styles.label}>Description:</Text>
       <TextInput
         style={[styles.input, styles.multilineInput]}
@@ -212,6 +318,8 @@ export default function CreateRestaurant() {
       ) : (
         <Button title="Create Restaurant" onPress={handleSubmit} />
       )}
+
+      <Button title="Cancel" onPress={() => router.push("/profile")} />
     </ScrollView>
   );
 }
@@ -263,5 +371,35 @@ const styles = StyleSheet.create({
     height: 100,
     marginRight: 8,
     marginBottom: 8,
+  },
+  checksContainer: {
+    margin: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 5,
+  },
+  checkTitle: {
+    fontSize: 18,
+    marginBottom: 8,
+    fontWeight: "bold",
+  },
+  keywordsContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+  },
+  checkboxContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    width: "40%",
+    marginRight: 16,
+    marginBottom: 8,
+  },
+  checkboxLabel: {
+    marginLeft: 8,
+  },
+  selectedText: {
+    marginTop: 16,
+    fontStyle: "italic",
   },
 });

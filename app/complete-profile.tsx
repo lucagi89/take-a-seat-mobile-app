@@ -250,6 +250,12 @@ const CompleteProfileScreen = () => {
         onPress={handleSaveProfile}
         disabled={uploading}
       />
+
+      <Button
+        title="Skip for now"
+        onPress={() => router.push("/profile")}
+        disabled={uploading}
+      />
     </View>
   );
 };
