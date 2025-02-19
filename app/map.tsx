@@ -59,6 +59,7 @@ export default function Map() {
 
   // Helper function to fetch restaurants within the given region
   const fetchVisibleRestaurants = async (mapRegion: Region) => {
+    if (!mapRegion) return;
     const { latitude, longitude, latitudeDelta, longitudeDelta } = mapRegion;
     const latMin = latitude - latitudeDelta / 2;
     const latMax = latitude + latitudeDelta / 2;
@@ -85,14 +86,6 @@ export default function Map() {
     }
   };
 
-  // When the region is first set, fetch visible restaurants
-  useEffect(() => {
-    if (region) {
-      fetchVisibleRestaurants(region);
-    }
-  }, [region]);
-
-  // Called when the "Search Here" button is pressed
   const handleSearchHere = () => {
     if (region) {
       fetchVisibleRestaurants(region);
@@ -112,6 +105,15 @@ export default function Map() {
       router.push("/complete-profile");
     }
   };
+
+  useEffect(() => {
+    if (region) {
+      setTimeout(() => {
+        console.log("Fetching visible restaurants...");
+        fetchVisibleRestaurants(region);
+      }, 1000);
+    }
+  }, [region]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -135,7 +137,8 @@ export default function Map() {
               onRegionChangeComplete={(newRegion) => {
                 setRegion(newRegion);
                 // When the user moves the map, show the "Search Here" button
-                setShowSearchButton(true);
+                // setShowSearchButton(true);
+                // fetchVisibleRestaurants(newRegion);
               }}
             >
               {visibleRestaurants.map((restaurant) => (
