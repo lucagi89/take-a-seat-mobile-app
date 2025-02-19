@@ -52,7 +52,12 @@ export default function MyRestaurants() {
         {userRestaurants.map((restaurant) => (
           <TouchableOpacity
             key={restaurant.id}
-            onPress={() => router.push(`/my-restaurants/${restaurant.id}`)}
+            onPress={() =>
+              router.push({
+                pathname: `/my-restaurants/${restaurant.id}`,
+                params: { ownerId: restaurant.userId }, // Passing only ownerId
+              })
+            }
           >
             <RestaurantCard key={restaurant.id} restaurant={restaurant} />
           </TouchableOpacity>

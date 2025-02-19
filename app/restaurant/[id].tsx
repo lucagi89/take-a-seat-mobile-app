@@ -1,18 +1,42 @@
 import { useLocalSearchParams, Link } from "expo-router";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, Image } from "react-native";
+import { useEffect, useState } from "react";
+import { getRestaurantById } from "../../services/databaseActions";
 
 export default function RestaurantDetails() {
   const { id } = useLocalSearchParams(); // Get restaurant ID from the route
+  const restaurantId = Array.isArray(id) ? id[0] : id;
+  const [restaurant, setRestaurant] = useState<DocumentData | undefined>(
+    undefined
+  );
 
-  return (
+  useEffect(() => {
+    getRestaurantById(restaurantId).then((restaurant) => {
+      setRestaurant(restaurant);
+    });
+  }, []);
+
+  return !restaurant ? (
+    <Text>Loading...</Text>
+  ) : (
     <View style={styles.container}>
-      <Text style={styles.title}>Restaurant ID: {id}</Text>
+      <Text style={styles.title}>{restaurant?.name}</Text>
+      <Text>{restaurant?.description}</Text>
+      <Text>{restaurant?.address}</Text>
+      {restaurant?.imageUrls &&
+        restaurant.imageUrls.map((url) => (
+          <Image
+            key={url}
+            source={{ uri: url }}
+            style={{ width: 200, height: 200 }}
+          />
+        ))}
+
       {/* You can fetch restaurant details here based on the ID */}
       <Link href="/map">Back to the Map</Link>
     </View>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,

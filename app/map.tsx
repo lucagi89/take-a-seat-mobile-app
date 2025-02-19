@@ -7,6 +7,7 @@ import {
   Alert,
   TouchableOpacity,
   ActivityIndicator,
+  Button,
 } from "react-native";
 import { Link, useRouter } from "expo-router";
 import MapView, { Marker, Region, Callout } from "react-native-maps";
@@ -119,7 +120,7 @@ export default function Map() {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerText}>Map</Text>
-        <Link href="/">Go back</Link>
+        <Link href="/">Go to Mainpage</Link>
       </View>
 
       {loading ? (

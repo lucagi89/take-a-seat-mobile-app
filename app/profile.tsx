@@ -3,8 +3,6 @@ import { useState, useEffect } from "react";
 import { Text, View, StyleSheet } from "react-native";
 import { useUser } from "../contexts/userContext";
 import { Redirect, Link } from "expo-router";
-// import { getDoc, doc } from "firebase/firestore";
-// import { db } from "../scripts/firebase.config";
 import { checkUserData, getUserRestaurants } from "../services/databaseActions";
 
 import { Image } from "react-native";
@@ -23,7 +21,6 @@ export default function Profile() {
     if (user) {
       getUserRestaurants(user.uid).then((result) => {
         setUserRestaurants(result);
-        console.log(result);
       });
       checkUserData(user.uid).then((data) => {
         if (data) {

@@ -40,6 +40,18 @@ export async function fetchData(myCollection: string): Promise<any[]> {
   }
 }
 
+export async function createElement(myCollection: string, data: any): Promise<void> {
+  try {
+    const docRef = await addDoc(collection(db, myCollection), data);
+    console.log("Document written with ID: ", docRef.id);
+  } catch (error) {
+    console.error('Error adding document:', error);
+    throw error;
+  }
+}
+
+
+
 
 export const geocodeAddress = async (address: string) => {
   try {
