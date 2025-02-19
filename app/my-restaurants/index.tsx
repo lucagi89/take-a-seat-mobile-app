@@ -5,9 +5,13 @@ import {
   View,
   StyleSheet,
   TouchableOpacity,
+  Button,
 } from "react-native";
 import { useUser } from "../../contexts/userContext";
-import { getUserRestaurants } from "../../services/databaseActions";
+import {
+  getUserRestaurants,
+  deleteElement,
+} from "../../services/databaseActions";
 import RestaurantCard from "../../components/RestaurantCard";
 import { Redirect, useRouter } from "expo-router";
 
@@ -41,6 +45,17 @@ export default function MyRestaurants() {
     return <Redirect href="/login" />;
   }
 
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteElement("restaurants", id);
+      setUserRestaurants(
+        userRestaurants.filter((restaurant) => restaurant.id !== id)
+      );
+    } catch (error) {
+      setError("Error deleting restaurant");
+    }
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>My Restaurants</Text>
@@ -50,17 +65,24 @@ export default function MyRestaurants() {
       )}
       <ScrollView>
         {userRestaurants.map((restaurant) => (
-          <TouchableOpacity
-            key={restaurant.id}
-            onPress={() =>
-              router.push({
-                pathname: `/my-restaurants/${restaurant.id}`,
-                params: { ownerId: restaurant.userId }, // Passing only ownerId
-              })
-            }
-          >
-            <RestaurantCard key={restaurant.id} restaurant={restaurant} />
-          </TouchableOpacity>
+          <View key={restaurant.id}>
+            <TouchableOpacity
+              key={restaurant.id}
+              onPress={() =>
+                router.push({
+                  pathname: `/my-restaurants/${restaurant.id}`,
+                  params: { ownerId: restaurant.userId }, // Passing only ownerId
+                })
+              }
+            >
+              <RestaurantCard key={restaurant.id} restaurant={restaurant} />
+            </TouchableOpacity>
+            <Button
+              title="Xoooooo"
+              style={styles.deleteButton}
+              onPress={() => handleDelete(restaurant.id)}
+            />
+          </View>
         ))}
       </ScrollView>
       <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
@@ -93,5 +115,13 @@ const styles = StyleSheet.create({
   backButton: {
     marginTop: 20,
     alignSelf: "center",
+  },
+  deleteButton: {
+    marginTop: 10,
+    backgroundColor: "red",
+    color: "white",
+    borderRadius: 5,
+    width: 30,
+    height: 30,
   },
 });

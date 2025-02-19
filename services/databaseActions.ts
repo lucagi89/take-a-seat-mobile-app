@@ -50,6 +50,17 @@ export async function createElement(myCollection: string, data: any): Promise<vo
   }
 }
 
+export async function deleteElement(myCollection: string, id: string): Promise<void> {
+  try {
+    await deleteDoc(doc(db, myCollection, id));
+    console.log("Document with ID: ", id, " deleted");
+  } catch (error) {
+    console.error('Error deleting document:', error);
+    throw error;
+  }
+}
+
+
 
 
 
