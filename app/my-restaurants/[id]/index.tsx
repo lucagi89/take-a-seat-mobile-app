@@ -1,5 +1,6 @@
 import { View, Text } from "react-native";
 import { useLocalSearchParams, Link } from "expo-router";
+import { useUser } from "../../../contexts/userContext";
 import { useEffect, useState } from "react";
 import {
   getRestaurantById,
@@ -8,12 +9,25 @@ import {
 import { DocumentData } from "firebase/firestore";
 import RestaurantFloorPlan from "../../../components/RestaurantFloorPlan";
 
+interface Table {
+  id: string;
+  x: number;
+  y: number;
+  capacity: number;
+  isAvailable: boolean;
+  height: number;
+  width: number;
+  seatsTaken: number;
+}
+
 export default function MyRestaurantPage() {
-  const { id, ownerId } = useLocalSearchParams();
+  const { user } = useUser();
+  const { id, ownerId: ownerIdParam } = useLocalSearchParams();
+  const ownerId = Array.isArray(ownerIdParam) ? ownerIdParam[0] : ownerIdParam;
   const restaurantId = Array.isArray(id) ? id[0] : id;
 
   const [restaurant, setRestaurant] = useState<DocumentData | null>(null);
-  const [tables, setTables] = useState<DocumentData[]>([]);
+  const [tables, setTables] = useState<Table[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -33,20 +47,20 @@ export default function MyRestaurantPage() {
     fetchRestaurant();
   }, [restaurantId]);
 
-  useEffect(() => {
-    if (!restaurantId) return;
+  // useEffect(() => {
+  //   if (!restaurantId) return;
 
-    const fetchTables = async () => {
-      try {
-        const tablesData = await findRestaurantTables(restaurantId);
-        setTables(tablesData);
-      } catch (error) {
-        console.error("Error fetching tables:", error);
-      }
-    };
+  //   const fetchTables = async () => {
+  //     try {
+  //       const tablesData = await findRestaurantTables(restaurantId);
+  //       setTables(tablesData);
+  //     } catch (error) {
+  //       console.error("Error fetching tables:", error);
+  //     }
+  //   };
 
-    fetchTables();
-  }, [restaurantId]);
+  //   fetchTables();
+  // }, [restaurantId]);
 
   if (loading) {
     return <Text>Loading...</Text>;
@@ -66,7 +80,10 @@ export default function MyRestaurantPage() {
       <Link href="/my-restaurants">Back to My Restaurants</Link>
 
       <Text>Floor Plan:</Text>
-      <RestaurantFloorPlan tables={tables} />
+      <RestaurantFloorPlan
+        restaurantId={restaurantId}
+        restaurant={restaurant}
+      />
 
       <Link
         href={{

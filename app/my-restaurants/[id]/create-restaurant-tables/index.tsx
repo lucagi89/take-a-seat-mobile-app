@@ -137,7 +137,7 @@ export default function CreateRestaurantTables() {
         "Success",
         `${tableEntries.length} tables added successfully!`
       );
-      router.push(`/restaurant/${restaurantId}`);
+      router.push(`/my-restaurants/${restaurantId}`);
     } catch (error) {
       console.error("Error adding tables:", error);
       Alert.alert("Error", "Could not add tables. Please try again.");

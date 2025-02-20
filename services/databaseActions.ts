@@ -81,6 +81,7 @@ export async function findRestaurantTables(restaurantId: string): Promise<Table[
       ...doc.data(),
     })) as Table[];
 
+    console.log("Tables fetched:", tables);
     return tables;
   } catch (error) {
     console.error("Error fetching tables:", error);
@@ -224,5 +225,45 @@ export const updateTablePosition = async (tableId: string, x: number, y: number)
     console.log("Table position updated:", { x, y });
   } catch (error) {
     console.error("Error updating table position:", error);
+  }
+}
+
+export const updateTableAvailability = async (tableId: string, isAvailable: boolean) => {
+  try {
+    const tableRef = doc(db, "restaurantTables", tableId);
+    await updateDoc(tableRef, { isAvailable });
+    console.log("Table availability updated:", { isAvailable });
+  } catch (error) {
+    console.error("Error updating table availability:", error);
+  }
+}
+
+export const updateTableCapacity = async (tableId: string, capacity: number) => {
+  try {
+    const tableRef = doc(db, "restaurantTables", tableId);
+    await updateDoc(tableRef, { capacity });
+    console.log("Table capacity updated:", { capacity });
+  } catch (error) {
+    console.error("Error updating table capacity:", error);
+  }
+}
+
+export const updateTableSeatsTaken = async (tableId: string, seatsTaken: number) => {
+  try {
+    const tableRef = doc(db, "restaurantTables", tableId);
+    await updateDoc(tableRef, { seatsTaken });
+    console.log("Table seats taken updated:", { seatsTaken });
+  } catch (error) {
+    console.error("Error updating table seats taken:", error);
+  }
+}
+
+
+export const deleteTable = async (tableId: string) => {
+  try {
+    await deleteDoc(doc(db, "restaurantTables", tableId));
+    console.log("Table deleted:", tableId);
+  } catch (error) {
+    console.error("Error deleting table:", error);
   }
 }
