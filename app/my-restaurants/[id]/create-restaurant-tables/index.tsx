@@ -13,6 +13,16 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import { createElement } from "../../../../services/databaseActions";
 import { useUser } from "../../../../contexts/userContext";
 
+const FLOOR_WIDTH = 300;
+const FLOOR_HEIGHT = 400;
+const PADDING = 10;
+
+const getTableSize = (capacity: number) => {
+  if (capacity <= 4) return { width: 50, height: 50 };
+  if (capacity <= 6) return { width: 70, height: 50 };
+  return { width: 90, height: 50 };
+};
+
 export default function CreateRestaurantTables() {
   const { id: restaurantId, ownerId } = useLocalSearchParams();
   const router = useRouter();
@@ -31,11 +41,39 @@ export default function CreateRestaurantTables() {
   }
 
   const [loading, setLoading] = useState(false);
-  const [tables, setTables] = useState([
-    { capacity: "", count: "" }, // Initial empty table entry
-  ]);
+  const [tables, setTables] = useState([{ capacity: "", count: "" }]);
 
-  // Function to handle table input change
+  // Store assigned positions to prevent overlap
+  const assignedPositions: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  }[] = [];
+
+  // Generate non-overlapping positions
+  const getNonOverlappingPosition = (width: number, height: number) => {
+    let x: Number, y: Number;
+    let maxAttempts = 50; // Prevent infinite loops
+
+    do {
+      x = Math.floor(Math.random() * (FLOOR_WIDTH - width));
+      y = Math.floor(Math.random() * (FLOOR_HEIGHT - height));
+      maxAttempts--;
+    } while (
+      assignedPositions.some(
+        (pos) =>
+          Math.abs(pos.x - x) < pos.width + PADDING &&
+          Math.abs(pos.y - y) < pos.height + PADDING
+      ) &&
+      maxAttempts > 0
+    );
+
+    assignedPositions.push({ x, y, width, height });
+    return { x, y };
+  };
+
+  // Handle input changes
   const handleInputChange = (
     index: number,
     field: keyof (typeof tables)[0],
@@ -46,14 +84,14 @@ export default function CreateRestaurantTables() {
     setTables(updatedTables);
   };
 
-  // Function to add a new table input row
+  // Add another table type
   const addTableType = () => {
     if (!loading) {
       setTables([...tables, { capacity: "", count: "" }]);
     }
   };
 
-  // Function to remove a table input row
+  // Remove a table type
   const removeTableType = (index: number) => {
     if (!loading) {
       const updatedTables = tables.filter((_, i) => i !== index);
@@ -61,6 +99,7 @@ export default function CreateRestaurantTables() {
     }
   };
 
+  // Handle form submission
   const handleSubmit = async () => {
     if (tables.some((table) => !table.capacity || !table.count)) {
       Alert.alert("Error", "Please fill in all fields before submitting.");
@@ -69,18 +108,25 @@ export default function CreateRestaurantTables() {
 
     setLoading(true);
     try {
-      // Flatten the tables array into individual table entries
-      const tableEntries = tables.flatMap((table) =>
-        Array.from({ length: Number(table.count) }, () => ({
-          restaurantId: restaurantId,
-          capacity: table.capacity,
-          seatsTaken: 0,
-          isAvailable: true,
-          createdBy: user?.uid,
-        }))
-      );
+      const tableEntries = tables.flatMap((table) => {
+        const size = getTableSize(Number(table.capacity));
+        return Array.from({ length: Number(table.count) }, () => {
+          const { x, y } = getNonOverlappingPosition(size.width, size.height);
+          return {
+            restaurantId,
+            capacity: Number(table.capacity),
+            seatsTaken: 0,
+            isAvailable: true,
+            x,
+            y,
+            width: size.width,
+            height: size.height,
+            createdBy: user?.uid,
+          };
+        });
+      });
 
-      // Insert each table as a separate database entry
+      // Insert tables into the database
       const promises = tableEntries.map(async (table) =>
         createElement("restaurantTables", table)
       );
@@ -102,9 +148,7 @@ export default function CreateRestaurantTables() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>
-        Create Tables for Restaurant ID: {restaurantId}
-      </Text>
+      <Text style={styles.title}>Create Tables for Restaurant</Text>
 
       {tables.map((table, index) => (
         <View key={index} style={styles.tableRow}>
@@ -140,12 +184,6 @@ export default function CreateRestaurantTables() {
       </TouchableOpacity>
 
       <Button title="Submit Tables" onPress={handleSubmit} disabled={loading} />
-
-      <Button
-        title="Back to Restaurant Details"
-        onPress={() => router.push(`/restaurant/${restaurantId}`)}
-      />
-      <Button title="Back to Map" onPress={() => router.push("/map")} />
 
       {loading && <Text style={styles.loadingText}>Submitting...</Text>}
     </ScrollView>

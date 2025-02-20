@@ -3,6 +3,7 @@ import {
   collection,
   getDocs,
   deleteDoc,
+  updateDoc,
   doc,
   getDoc,
   query,
@@ -69,7 +70,7 @@ interface Table {
 export async function findRestaurantTables(restaurantId: string): Promise<Table[]> {
   try {
     const q = query(
-      collection(db, "tables"),
+      collection(db, "restaurantTables"),
       where("restaurantId", "==", String(restaurantId)) // 🔥 Ensure it's a string
     );
     const querySnapshot = await getDocs(q);
@@ -213,3 +214,15 @@ export const getRestaurantById = async (restaurantId: string) => {
     throw error;
   }
 };
+
+
+
+export const updateTablePosition = async (tableId: string, x: number, y: number) => {
+  try {
+    const tableRef = doc(db, "restaurantTables", tableId);
+    await updateDoc(tableRef, { x, y });
+    console.log("Table position updated:", { x, y });
+  } catch (error) {
+    console.error("Error updating table position:", error);
+  }
+}
