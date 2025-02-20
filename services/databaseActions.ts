@@ -60,6 +60,18 @@ export async function deleteElement(myCollection: string, id: string): Promise<v
   }
 }
 
+export async function findRestaurantTables(restaurantId: string): Promise<any[]> {
+  try {
+    const q = query(collection(db, "tables"), where("restaurantId", "==", restaurantId));
+    const querySnapshot = await getDocs(q);
+    const tables = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    return tables;
+  } catch (error) {
+    console.error("Error fetching tables:", error);
+    throw error;
+  }
+}
+
 
 
 
