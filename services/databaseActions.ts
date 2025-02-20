@@ -60,15 +60,30 @@ export async function deleteElement(myCollection: string, id: string): Promise<v
   }
 }
 
-export async function findRestaurantTables(restaurantId: string): Promise<any[]> {
+interface Table {
+  id: string;
+  restaurantId: string;
+  capacity: number; // Adjust based on your database schema
+}
+
+export async function findRestaurantTables(restaurantId: string): Promise<Table[]> {
   try {
-    const q = query(collection(db, "tables"), where("restaurantId", "==", restaurantId));
+    const q = query(
+      collection(db, "tables"),
+      where("restaurantId", "==", String(restaurantId)) // 🔥 Ensure it's a string
+    );
     const querySnapshot = await getDocs(q);
-    const tables = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+
+    // Map Firestore data to the Table type
+    const tables: Table[] = querySnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    })) as Table[];
+
     return tables;
   } catch (error) {
     console.error("Error fetching tables:", error);
-    throw error;
+    throw error; // Let the caller handle the error
   }
 }
 

@@ -1,42 +1,85 @@
 import { View, Text } from "react-native";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, Link } from "expo-router";
+import { useEffect, useState } from "react";
 import {
   getRestaurantById,
   findRestaurantTables,
 } from "../../../services/databaseActions";
-import { useEffect, useState } from "react";
-import { Link } from "expo-router";
+import { DocumentData } from "firebase/firestore"; // Ensure this import if using Firestore
 
-export default function myRestaurantPage() {
+export default function MyRestaurantPage() {
   const { id, ownerId } = useLocalSearchParams();
   const restaurantId = Array.isArray(id) ? id[0] : id;
-  //state to store the restaurant datas
-  const [restaurant, setRestaurant] = useState<DocumentData | undefined>(
-    undefined
-  );
+
+  // State to store restaurant data
+  const [restaurant, setRestaurant] = useState<DocumentData | null>(null);
   const [tables, setTables] = useState<DocumentData[]>([]);
-  //fetch the restaurant data from the database
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
-    getRestaurantById(restaurantId).then((restaurant) => {
-      setRestaurant(restaurant);
-    });
-    findRestaurantTables(restaurantId).then((tables) => {
-      setTables(tables);
-    });
+    if (!restaurantId) return;
+
+    const fetchRestaurant = async () => {
+      try {
+        const restaurantData = await getRestaurantById(restaurantId);
+        setRestaurant(restaurantData);
+      } catch (error) {
+        console.error("Error fetching restaurant:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRestaurant();
   }, [restaurantId]);
 
-  //display the restaurant data
-  if (!restaurant) {
+  useEffect(() => {
+    if (!restaurantId) return;
+
+    const fetchTables = async () => {
+      try {
+        const tablesData = await findRestaurantTables(restaurantId);
+        console.log("Fetched Tables:", tablesData); // ✅ Debugging
+        setTables(tablesData);
+      } catch (error) {
+        console.error("Error fetching tables:", error);
+      }
+    };
+
+    fetchTables();
+  }, [restaurantId]); // ✅ Correct dependency
+
+  if (loading) {
     return <Text>Loading...</Text>;
+  }
+
+  if (!restaurant) {
+    return <Text>Restaurant not found.</Text>;
   }
 
   return (
     <View>
       <Text>My Restaurant</Text>
-      <Text>{restaurant?.name}</Text>
-      <Text>{restaurant?.description}</Text>
-      <Text>{restaurant?.address}</Text>
+      <Text>{restaurant.name}</Text>
+      <Text>{restaurant.description}</Text>
+      <Text>{restaurant.address}</Text>
+
       <Link href="/my-restaurants">Back to My Restaurants</Link>
+
+      <View>
+        <Text>Tables</Text>
+        {tables.length > 0 ? (
+          tables.map((table) => (
+            <View key={table.id}>
+              <Text>Table ID: {table.id}</Text>
+              <Text>Capacity: {table.capacity}</Text>
+            </View>
+          ))
+        ) : (
+          <Text>No tables available.</Text>
+        )}
+      </View>
+
       <Link
         href={{
           pathname: "/my-restaurants/[id]/create-restaurant-tables",
