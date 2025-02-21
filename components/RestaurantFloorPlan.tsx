@@ -1,5 +1,5 @@
 import { View, Text, TouchableOpacity, Alert, Platform } from "react-native";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Draggable from "react-native-draggable";
 import {
   updateTablePosition,
@@ -38,18 +38,23 @@ export default function RestaurantFloorPlan({
   const ownerId = restaurant?.userId;
   const isOwner = userId === ownerId;
   const [localTables, setLocalTables] = useState<Table[]>([]);
+  const positionsRef = useRef<Record<string, { x: number; y: number }>>({});
 
-  // Ensure state updates when tables prop changes
-  // useEffect(() => {
-  //   setLocalTables(tables);
-  // }, [tables]);
-
+  // Fetch tables once on mount
   useEffect(() => {
-    if (!restaurant) return;
+    if (!restaurantId) return;
 
     const fetchTables = async () => {
       try {
         const tablesData = await findRestaurantTables(restaurantId);
+
+        // Initialize both state and positionsRef
+        const positions = tablesData.reduce((acc, table) => {
+          acc[table.id] = { x: table.x, y: table.y };
+          return acc;
+        }, {} as Record<string, { x: number; y: number }>);
+
+        positionsRef.current = positions;
         setLocalTables(tablesData);
       } catch (error) {
         console.error("Error fetching tables:", error);
@@ -57,7 +62,7 @@ export default function RestaurantFloorPlan({
     };
 
     fetchTables();
-  }, []);
+  }, [restaurantId]);
 
   const handleTablePress = (table: Table) => {
     if (isOwner) {
@@ -89,33 +94,39 @@ export default function RestaurantFloorPlan({
           "plain-text"
         );
       } else {
-        // TODO: Implement Android booking input modal
         Alert.alert("Booking", "Please enter your party size manually.");
       }
     }
   };
 
-  const removeTable = (tableId: string) => {
-    deleteTable(tableId); // Update database first
-
-    setLocalTables((prevTables) =>
-      prevTables.filter((table) => table.id !== tableId)
-    );
+  const removeTable = async (tableId: string) => {
+    try {
+      await deleteTable(tableId);
+      setLocalTables((prevTables) =>
+        prevTables.filter((table) => table.id !== tableId)
+      );
+      delete positionsRef.current[tableId];
+    } catch (error) {
+      console.error("Error removing table:", error);
+    }
   };
 
-  const toggleTableAvailability = (tableId: string) => {
-    setLocalTables((prev) =>
-      prev.map((table) =>
-        table.id === tableId
-          ? { ...table, isAvailable: !table.isAvailable }
-          : table
-      )
-    );
+  const toggleTableAvailability = async (tableId: string) => {
+    const table = localTables.find((t) => t.id === tableId);
+    if (!table) return;
 
-    // Ensure database update happens after state change
-    const newAvailability = !localTables.find((table) => table.id === tableId)
-      ?.isAvailable;
-    updateTableAvailability(tableId, newAvailability);
+    const newAvailability = !table.isAvailable;
+
+    try {
+      await updateTableAvailability(tableId, newAvailability);
+      setLocalTables((prev) =>
+        prev.map((t) =>
+          t.id === tableId ? { ...t, isAvailable: newAvailability } : t
+        )
+      );
+    } catch (error) {
+      console.error("Error updating availability:", error);
+    }
   };
 
   const handleBooking = (table: Table, partySize: number) => {
@@ -142,35 +153,70 @@ export default function RestaurantFloorPlan({
     >
       {localTables.map((table) => {
         const { width, height } = getTableSize(table.capacity);
+        const { x, y } = positionsRef.current[table.id] || {
+          x: table.x,
+          y: table.y,
+        };
+
         return (
           <Draggable
             key={table.id}
-            x={table.x ?? 0}
-            y={table.y ?? 0}
-            disabled={!isOwner} // Only allow dragging if owner
-            onDragRelease={(event, gestureState) => {
-              if (isOwner) {
-                const newX =
-                  event.nativeEvent.pageX - gestureState.moveX + table.x;
-                const newY =
-                  event.nativeEvent.pageY - gestureState.moveY + table.y;
+            x={positionsRef.current[table.id]?.x ?? table.x}
+            y={positionsRef.current[table.id]?.y ?? table.y}
+            disabled={!isOwner}
+            onDrag={(event, gestureState) => {
+              // ✅ Update the ref live as the user drags
+              const newX =
+                (positionsRef.current[table.id]?.x ?? table.x) +
+                gestureState.dx;
+              const newY =
+                (positionsRef.current[table.id]?.y ?? table.y) +
+                gestureState.dy;
 
-                setLocalTables((prev) =>
-                  prev.map((t) =>
-                    t.id === table.id ? { ...t, x: newX, y: newY } : t
-                  )
+              positionsRef.current[table.id] = { x: newX, y: newY };
+
+              setLocalTables((prev) =>
+                prev.map((t) =>
+                  t.id === table.id ? { ...t, x: newX, y: newY } : t
+                )
+              );
+            }}
+            onDragRelease={async (event, gestureState) => {
+              if (!isOwner) return;
+
+              const finalX = positionsRef.current[table.id]?.x ?? table.x;
+              const finalY = positionsRef.current[table.id]?.y ?? table.y;
+
+              console.log(`Final table position: X:${finalX}, Y:${finalY}`);
+
+              try {
+                // ✅ Save final position to DB
+                const updateResult = await updateTablePosition(
+                  table.id,
+                  finalX,
+                  finalY
                 );
 
-                // Update database with new position
-                updateTablePosition(table.id, newX, newY);
+                if (updateResult?.success) {
+                  console.log("Database update successful", updateResult);
+                } else {
+                  console.error("Database update failed", updateResult);
+                  Alert.alert("Error", "Failed to update table position.");
+                }
+              } catch (error) {
+                console.error("Error during table position update:", error);
+                Alert.alert(
+                  "Error",
+                  "An error occurred while updating table position."
+                );
               }
             }}
           >
             <TouchableOpacity onPress={() => handleTablePress(table)}>
               <View
                 style={{
-                  width,
-                  height,
+                  width: getTableSize(table.capacity).width,
+                  height: getTableSize(table.capacity).height,
                   backgroundColor: table.isAvailable ? "green" : "red",
                   alignItems: "center",
                   justifyContent: "center",

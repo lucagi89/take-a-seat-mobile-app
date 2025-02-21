@@ -15,12 +15,18 @@ import { useUser } from "../../../../contexts/userContext";
 
 const FLOOR_WIDTH = 300;
 const FLOOR_HEIGHT = 400;
-const PADDING = 10;
 
 const getTableSize = (capacity: number) => {
   if (capacity <= 4) return { width: 50, height: 50 };
   if (capacity <= 6) return { width: 70, height: 50 };
   return { width: 90, height: 50 };
+};
+
+// Generate random position within floor bounds
+const getRandomPosition = (width: number, height: number) => {
+  const x = Math.floor(Math.random() * (FLOOR_WIDTH - width));
+  const y = Math.floor(Math.random() * (FLOOR_HEIGHT - height));
+  return { x, y };
 };
 
 export default function CreateRestaurantTables() {
@@ -41,37 +47,13 @@ export default function CreateRestaurantTables() {
   }
 
   const [loading, setLoading] = useState(false);
-  const [tables, setTables] = useState([{ capacity: "", count: "" }]);
-
-  // Store assigned positions to prevent overlap
-  const assignedPositions: {
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-  }[] = [];
-
-  // Generate non-overlapping positions
-  const getNonOverlappingPosition = (width: number, height: number) => {
-    let x: Number, y: Number;
-    let maxAttempts = 50; // Prevent infinite loops
-
-    do {
-      x = Math.floor(Math.random() * (FLOOR_WIDTH - width));
-      y = Math.floor(Math.random() * (FLOOR_HEIGHT - height));
-      maxAttempts--;
-    } while (
-      assignedPositions.some(
-        (pos) =>
-          Math.abs(pos.x - x) < pos.width + PADDING &&
-          Math.abs(pos.y - y) < pos.height + PADDING
-      ) &&
-      maxAttempts > 0
-    );
-
-    assignedPositions.push({ x, y, width, height });
-    return { x, y };
-  };
+  const [tables, setTables] = useState<
+    {
+      capacity: string;
+      count: string;
+      positions?: { x: number; y: number }[];
+    }[]
+  >([{ capacity: "", count: "" }]);
 
   // Handle input changes
   const handleInputChange = (
@@ -110,20 +92,23 @@ export default function CreateRestaurantTables() {
     try {
       const tableEntries = tables.flatMap((table) => {
         const size = getTableSize(Number(table.capacity));
-        return Array.from({ length: Number(table.count) }, () => {
-          const { x, y } = getNonOverlappingPosition(size.width, size.height);
-          return {
-            restaurantId,
-            capacity: Number(table.capacity),
-            seatsTaken: 0,
-            isAvailable: true,
-            x,
-            y,
-            width: size.width,
-            height: size.height,
-            createdBy: user?.uid,
-          };
-        });
+
+        // Generate random positions for each new table
+        const positions = Array.from({ length: Number(table.count) }, () =>
+          getRandomPosition(size.width, size.height)
+        );
+
+        return positions.map(({ x, y }) => ({
+          restaurantId,
+          capacity: Number(table.capacity),
+          seatsTaken: 0,
+          isAvailable: true,
+          x,
+          y,
+          width: size.width,
+          height: size.height,
+          createdBy: user?.uid,
+        }));
       });
 
       // Insert tables into the database
@@ -137,7 +122,10 @@ export default function CreateRestaurantTables() {
         "Success",
         `${tableEntries.length} tables added successfully!`
       );
+
       router.push(`/my-restaurants/${restaurantId}`);
+      // ✅ And update only the new tables
+      setTables([{ capacity: "", count: "" }]); // Reset the form
     } catch (error) {
       console.error("Error adding tables:", error);
       Alert.alert("Error", "Could not add tables. Please try again.");

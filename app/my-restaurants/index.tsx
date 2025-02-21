@@ -85,8 +85,11 @@ export default function MyRestaurants() {
           </View>
         ))}
       </ScrollView>
-      <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-        <Text style={styles.link}>Go back</Text>
+      <TouchableOpacity
+        style={styles.backButton}
+        onPress={() => router.push("/")}
+      >
+        <Text style={styles.link}>Go to Mainpage</Text>
       </TouchableOpacity>
     </View>
   );

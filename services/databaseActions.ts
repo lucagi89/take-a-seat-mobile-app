@@ -217,16 +217,24 @@ export const getRestaurantById = async (restaurantId: string) => {
 };
 
 
-
-export const updateTablePosition = async (tableId: string, x: number, y: number) => {
+export const updateTablePosition = async (tableId, x, y) => {
   try {
-    const tableRef = doc(db, "restaurantTables", tableId);
-    await updateDoc(tableRef, { x, y });
-    console.log("Table position updated:", { x, y });
+
+    const tableRef = doc(db, "restaurantTables", tableId); // ✅ Verify collection name
+
+    await updateDoc(tableRef, {
+      x: x,
+      y: y,
+    });
+
+    console.log("Table position updated successfully");
+    return { success: true };
   } catch (error) {
     console.error("Error updating table position:", error);
+    return { success: false, error };
   }
-}
+};
+
 
 export const updateTableAvailability = async (tableId: string, isAvailable: boolean) => {
   try {
