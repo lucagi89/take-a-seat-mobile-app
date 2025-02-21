@@ -2,7 +2,6 @@ import { useLocalSearchParams, Link } from "expo-router";
 import { View, Text, StyleSheet, Image } from "react-native";
 import { useEffect, useState } from "react";
 import { getRestaurantById } from "../../services/databaseActions";
-import FastImage from "react-native-fast-image";
 // import RestaurantFloorMap from "../../components/RestaurantFloorPlan";
 
 export default function RestaurantDetails() {
@@ -25,24 +24,12 @@ export default function RestaurantDetails() {
       <Text style={styles.title}>{restaurant?.name}</Text>
       <Text>{restaurant?.description}</Text>
       <Text>{restaurant?.address}</Text>
-      {/* {restaurant?.imageUrls &&
+      {restaurant?.imageUrls &&
         restaurant.imageUrls.map((url) => (
           <Image
             key={url}
-            source={{ uri: url }}
+            source={{ uri: url, cache: "force-cache" }}
             style={{ width: 200, height: 200 }}
-          />
-        ))} */}
-      {restaurant?.imageUrls &&
-        restaurant.imageUrls.map((url) => (
-          <FastImage
-            key={url}
-            style={{ width: 200, height: 200 }}
-            source={{
-              uri: url,
-              priority: FastImage.priority.normal,
-            }}
-            resizeMode={FastImage.resizeMode.cover}
           />
         ))}
       {/* Render the floor plan */}
