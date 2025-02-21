@@ -1,7 +1,8 @@
 import { View, Text } from "react-native";
-import { useLocalSearchParams, Link } from "expo-router";
+import { useLocalSearchParams, Link, useRouter } from "expo-router";
 import { useUser } from "../../../contexts/userContext";
-import { useEffect, useState } from "react";
+import { useFocusEffect } from "@react-navigation/native";
+import { useCallback, useState } from "react";
 import {
   getRestaurantById,
   findRestaurantTables,
@@ -23,6 +24,8 @@ interface Table {
 export default function MyRestaurantPage() {
   const { user } = useUser();
   const { id, ownerId: ownerIdParam } = useLocalSearchParams();
+  const router = useRouter();
+
   const ownerId = Array.isArray(ownerIdParam) ? ownerIdParam[0] : ownerIdParam;
   const restaurantId = Array.isArray(id) ? id[0] : id;
 
@@ -30,37 +33,48 @@ export default function MyRestaurantPage() {
   const [tables, setTables] = useState<Table[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (!restaurantId) return;
+  // Fetch restaurant data when screen gains focus
+  useFocusEffect(
+    useCallback(() => {
+      if (!restaurantId) return;
 
-    const fetchRestaurant = async () => {
-      try {
-        const restaurantData = await getRestaurantById(restaurantId);
-        setRestaurant(restaurantData);
-      } catch (error) {
-        console.error("Error fetching restaurant:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+      const fetchRestaurant = async () => {
+        setLoading(true);
+        try {
+          const restaurantData = await getRestaurantById(restaurantId);
+          setRestaurant(restaurantData);
+        } catch (error) {
+          console.error("Error fetching restaurant:", error);
+        } finally {
+          setLoading(false);
+        }
+      };
 
-    fetchRestaurant();
-  }, [restaurantId]);
+      fetchRestaurant();
 
-  // useEffect(() => {
-  //   if (!restaurantId) return;
+      // Cleanup when navigating away
+      return () => {
+        setRestaurant(null);
+        setLoading(true);
+      };
+    }, [restaurantId])
+  );
 
-  //   const fetchTables = async () => {
-  //     try {
-  //       const tablesData = await findRestaurantTables(restaurantId);
-  //       setTables(tablesData);
-  //     } catch (error) {
-  //       console.error("Error fetching tables:", error);
-  //     }
-  //   };
-
-  //   fetchTables();
-  // }, [restaurantId]);
+  // Optional: Fetch tables if needed
+  // useFocusEffect(
+  //   useCallback(() => {
+  //     if (!restaurantId) return;
+  //     const fetchTables = async () => {
+  //       try {
+  //         const tablesData = await findRestaurantTables(restaurantId);
+  //         setTables(tablesData);
+  //       } catch (error) {
+  //         console.error("Error fetching tables:", error);
+  //       }
+  //     };
+  //     fetchTables();
+  //   }, [restaurantId])
+  // );
 
   if (loading) {
     return <Text>Loading...</Text>;
@@ -71,13 +85,19 @@ export default function MyRestaurantPage() {
   }
 
   return (
-    <View>
+    <View key={restaurantId}>
       <Text>My Restaurant</Text>
       <Text>{restaurant.name}</Text>
       <Text>{restaurant.description}</Text>
       <Text>{restaurant.address}</Text>
 
-      <Link href="/my-restaurants">Back to My Restaurants</Link>
+      {/* Back button using router.replace to avoid stale history */}
+      <Text
+        onPress={() => router.replace("/my-restaurants")}
+        style={{ color: "blue", marginVertical: 10 }}
+      >
+        Back to My Restaurants
+      </Text>
 
       <Text>Floor Plan:</Text>
       <RestaurantFloorPlan
@@ -85,7 +105,9 @@ export default function MyRestaurantPage() {
         restaurant={restaurant}
       />
 
+      {/* Using replace in Link to avoid stacking */}
       <Link
+        replace
         href={{
           pathname: "/my-restaurants/[id]/create-restaurant-tables",
           params: { id: restaurantId, ownerId },

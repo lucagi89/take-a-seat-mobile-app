@@ -7,7 +7,6 @@ import {
   Alert,
   TouchableOpacity,
   ActivityIndicator,
-  Button,
 } from "react-native";
 import { Link, useRouter } from "expo-router";
 import MapView, { Marker, Region, Callout } from "react-native-maps";
@@ -24,12 +23,10 @@ export default function Map() {
   const [location, setLocation] = useState<Location.LocationObject | null>(
     null
   );
-  // We no longer need to store "allRestaurants" because we fetch only visible ones.
   const [visibleRestaurants, setVisibleRestaurants] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [region, setRegion] = useState<Region | null>(null);
   const [showSearchButton, setShowSearchButton] = useState(false);
-  const [refreshKey, setRefreshKey] = useState(0);
 
   // Get user location and set region
   useEffect(() => {
@@ -38,29 +35,37 @@ export default function Map() {
         const { status } = await Location.requestForegroundPermissionsAsync();
         if (status !== "granted") {
           Alert.alert("Permission Denied", "Location access is required.");
+          setLoading(false);
           return;
         }
         const currentLocation = await Location.getCurrentPositionAsync({});
         setLocation(currentLocation);
+
         const userRegion = {
           latitude: currentLocation.coords.latitude,
           longitude: currentLocation.coords.longitude,
           latitudeDelta: 0.01,
           longitudeDelta: 0.01,
         };
+
         setRegion(userRegion);
+
+        // Immediately fetch restaurants for initial region
+        await fetchVisibleRestaurants(userRegion);
       } catch (error) {
         console.error("Error fetching location:", error);
       } finally {
         setLoading(false);
       }
     };
+
     getLocation();
   }, []);
 
-  // Helper function to fetch restaurants within the given region
+  // Fetch restaurants within the given region
   const fetchVisibleRestaurants = async (mapRegion: Region) => {
     if (!mapRegion) return;
+
     const { latitude, longitude, latitudeDelta, longitudeDelta } = mapRegion;
     const latMin = latitude - latitudeDelta / 2;
     const latMax = latitude + latitudeDelta / 2;
@@ -81,7 +86,7 @@ export default function Map() {
         id: doc.id,
         ...doc.data(),
       }));
-      setVisibleRestaurants(fetchedRestaurants);
+      setVisibleRestaurants(fetchedRestaurants); // Only update markers
     } catch (error) {
       console.error("Error fetching visible restaurants:", error);
     }
@@ -89,8 +94,7 @@ export default function Map() {
 
   const handleSearchHere = () => {
     if (region) {
-      fetchVisibleRestaurants(region);
-      setRefreshKey((prevKey) => prevKey + 1);
+      fetchVisibleRestaurants(region); // Just update markers
     }
   };
 
@@ -107,15 +111,6 @@ export default function Map() {
     }
   };
 
-  useEffect(() => {
-    if (region) {
-      setTimeout(() => {
-        console.log("Fetching visible restaurants...");
-        fetchVisibleRestaurants(region);
-      }, 1000);
-    }
-  }, [region]);
-
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -129,7 +124,6 @@ export default function Map() {
         region && (
           <>
             <MapView
-              key={refreshKey}
               style={styles.map}
               showsUserLocation={true}
               showsMyLocationButton={true}
@@ -137,9 +131,7 @@ export default function Map() {
               region={region}
               onRegionChangeComplete={(newRegion) => {
                 setRegion(newRegion);
-                // When the user moves the map, show the "Search Here" button
-                // setShowSearchButton(true);
-                // fetchVisibleRestaurants(newRegion);
+                setShowSearchButton(true); // Show "Search Here" if map moved
               }}
             >
               {visibleRestaurants.map((restaurant) => (

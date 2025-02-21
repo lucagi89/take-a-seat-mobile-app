@@ -2,6 +2,8 @@ import { useLocalSearchParams, Link } from "expo-router";
 import { View, Text, StyleSheet, Image } from "react-native";
 import { useEffect, useState } from "react";
 import { getRestaurantById } from "../../services/databaseActions";
+import FastImage from "react-native-fast-image";
+// import RestaurantFloorMap from "../../components/RestaurantFloorPlan";
 
 export default function RestaurantDetails() {
   const { id } = useLocalSearchParams(); // Get restaurant ID from the route
@@ -23,15 +25,34 @@ export default function RestaurantDetails() {
       <Text style={styles.title}>{restaurant?.name}</Text>
       <Text>{restaurant?.description}</Text>
       <Text>{restaurant?.address}</Text>
-      {restaurant?.imageUrls &&
+      {/* {restaurant?.imageUrls &&
         restaurant.imageUrls.map((url) => (
           <Image
             key={url}
             source={{ uri: url }}
             style={{ width: 200, height: 200 }}
           />
+        ))} */}
+      {restaurant?.imageUrls &&
+        restaurant.imageUrls.map((url) => (
+          <FastImage
+            key={url}
+            style={{ width: 200, height: 200 }}
+            source={{
+              uri: url,
+              priority: FastImage.priority.normal,
+            }}
+            resizeMode={FastImage.resizeMode.cover}
+          />
         ))}
-
+      {/* Render the floor plan */}
+      {/* if(restaurant)
+      {
+        <RestaurantFloorMap
+          restaurant={restaurant}
+          restaurantId={restaurantId}
+        />
+      } */}
       {/* You can fetch restaurant details here based on the ID */}
       <Link href="/map">Back to the Map</Link>
     </View>
