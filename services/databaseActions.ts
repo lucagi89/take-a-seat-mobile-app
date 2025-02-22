@@ -41,6 +41,18 @@ export async function fetchData(myCollection: string): Promise<any[]> {
   }
 }
 
+export async function updateData(myCollection: string, id: string, data: any): Promise<void> {
+  try {
+    const docRef = doc(db, myCollection, id);
+    await updateDoc(docRef, data);
+    console.log("Document updated with ID: ", id);
+  } catch (error) {
+    console.error('Error updating document:', error);
+    throw error;
+  }
+}
+
+
 export async function createElement(myCollection: string, data: any): Promise<void> {
   try {
     const docRef = await addDoc(collection(db, myCollection), data);
@@ -51,15 +63,68 @@ export async function createElement(myCollection: string, data: any): Promise<vo
   }
 }
 
+
+/**
+ * Deletes a document and its associated sub-collections.
+ *
+ * @param {string} myCollection - The collection name (e.g., 'users', 'restaurants').
+ * @param {string} id - The ID of the document to delete.
+ */
 export async function deleteElement(myCollection: string, id: string): Promise<void> {
   try {
+    // Delete associated data based on the main collection
+    if (myCollection === "users") {
+      await deleteUserRestaurants(id);
+    } else if (myCollection === "restaurants") {
+      await deleteRestaurantTables(id);
+    }
+
+    // Delete the main document
     await deleteDoc(doc(db, myCollection, id));
-    console.log("Document with ID: ", id, " deleted");
+    console.log(`Document with ID: ${id} deleted from ${myCollection}`);
   } catch (error) {
-    console.error('Error deleting document:', error);
+    console.error("Error deleting document:", error);
     throw error;
   }
 }
+
+/**
+ * Deletes all restaurants associated with a specific user.
+ *
+ * @param {string} userId - The user's ID.
+ */
+async function deleteUserRestaurants(userId: string): Promise<void> {
+  const restaurantsRef = collection(db, "restaurants");
+  const q = query(restaurantsRef, where("ownerId", "==", userId));
+  const querySnapshot = await getDocs(q);
+
+  const deletePromises = querySnapshot.docs.map(async (docSnapshot) => {
+    await deleteRestaurantTables(docSnapshot.id); // Delete associated tables first
+    await deleteDoc(doc(db, "restaurants", docSnapshot.id)); // Delete the restaurant
+    console.log(`Deleted restaurant with ID: ${docSnapshot.id}`);
+  });
+
+  await Promise.all(deletePromises);
+}
+
+/**
+ * Deletes all tables associated with a specific restaurant.
+ *
+ * @param {string} restaurantId - The restaurant's ID.
+ */
+async function deleteRestaurantTables(restaurantId: string): Promise<void> {
+  const tablesRef = collection(db, "tables");
+  const q = query(tablesRef, where("restaurantId", "==", restaurantId)); // Assuming 'restaurantId' links tables to restaurant
+  const querySnapshot = await getDocs(q);
+
+  const deletePromises = querySnapshot.docs.map(async (docSnapshot) => {
+    await deleteDoc(doc(db, "tables", docSnapshot.id));
+    console.log(`Deleted table with ID: ${docSnapshot.id}`);
+  });
+
+  await Promise.all(deletePromises);
+}
+
 
 interface Table {
   id: string;

@@ -11,7 +11,7 @@ import {
   Alert,
 } from "react-native";
 import { useRouter } from "expo-router";
-import { createDatabaseEntry } from "../services/databaseActions";
+import { createDatabaseEntry, updateData } from "../services/databaseActions";
 import { useUser } from "../contexts/userContext";
 import * as ImagePicker from "expo-image-picker";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
@@ -97,7 +97,7 @@ export default function CreateRestaurant() {
     "American",
   ];
 
-  const { user } = useUser();
+  const { user, setUserData } = useUser();
   const router = useRouter();
 
   // Open the image library to pick one or more images
@@ -172,6 +172,10 @@ export default function CreateRestaurant() {
         { ...restaurant, userId: user.uid, is_available: true, imageUrls },
         "restaurants"
       );
+
+      await updateData("users", user.uid, { isOwner: true });
+      setUserData({ ...user, isOwner: true });
+
       router.push("/profile");
     } catch (err) {
       console.error("Error creating restaurant:", err);

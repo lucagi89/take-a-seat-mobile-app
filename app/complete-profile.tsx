@@ -15,18 +15,21 @@ import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import * as ImagePicker from "expo-image-picker";
 import { db, storage } from "../scripts/firebase.config";
 import { useRouter } from "expo-router";
+import { useUser } from "../contexts/userContext";
 // import placeholderImage from '../assets/images/placeholderprofilepic.png'
 
 const CompleteProfileScreen = () => {
   const auth = getAuth();
   const router = useRouter();
+  const { setUserData } = useUser();
 
-  const [userData, setUserData] = useState({
+  const [userInfo, setUserInfo] = useState({
     name: "",
     lastName: "",
     streetAddress: "",
     postcode: "",
     city: "",
+    country: "",
     phone: "",
   });
   const [userId, setUserId] = useState<string | null>(null);
@@ -43,11 +46,12 @@ const CompleteProfileScreen = () => {
           const userDoc = await getDoc(doc(db, "users", user.uid));
           if (userDoc.exists()) {
             const existingUserData = userDoc.data();
-            setUserData({
+            setUserInfo({
               name: existingUserData.name || "",
               lastName: existingUserData.lastName || "",
               streetAddress: existingUserData.streetAddress || "",
               postcode: existingUserData.postcode || "",
+              country: existingUserData.country || "",
               city: existingUserData.city || "",
               phone: existingUserData.phone || "",
             });
@@ -115,7 +119,7 @@ const CompleteProfileScreen = () => {
   };
 
   const handleSaveProfile = async () => {
-    if (!userData.name || !userData.lastName || !userData.streetAddress) {
+    if (!userInfo.name || !userInfo.lastName || !userInfo.streetAddress) {
       Alert.alert("Error", "All fields are required!");
       return;
     }
@@ -132,7 +136,7 @@ const CompleteProfileScreen = () => {
 
       // Update Firebase Auth with displayName and photoURL (if available)
       await updateProfile(auth.currentUser!, {
-        displayName: userData.name,
+        displayName: userInfo.name,
         ...(photoURL && { photoURL }),
       });
 
@@ -140,11 +144,21 @@ const CompleteProfileScreen = () => {
       await setDoc(
         doc(db, "users", userId),
         {
-          ...userData,
+          ...userInfo,
+          isProfileComplete: true,
+          isOwner: false,
           ...(photoURL && { photoURL }),
         },
         { merge: true }
       );
+
+      // Update the user context with the new data
+      setUserData({
+        ...userInfo,
+        isProfileComplete: true,
+        isOwner: false,
+        ...(photoURL && { photoURL }),
+      });
 
       Alert.alert("Success", "Profile completed!");
       router.push("/profile");
@@ -187,9 +201,9 @@ const CompleteProfileScreen = () => {
 
       <Text>Name:</Text>
       <TextInput
-        value={userData.name}
+        value={userInfo.name}
         onChangeText={(text) =>
-          setUserData((prev) => ({ ...prev, name: text }))
+          setUserInfo((prev) => ({ ...prev, name: text }))
         }
         style={styles.input}
         placeholder="Enter your name"
@@ -197,9 +211,9 @@ const CompleteProfileScreen = () => {
 
       <Text>Last Name:</Text>
       <TextInput
-        value={userData.lastName}
+        value={userInfo.lastName}
         onChangeText={(text) =>
-          setUserData((prev) => ({ ...prev, lastName: text }))
+          setUserInfo((prev) => ({ ...prev, lastName: text }))
         }
         style={styles.input}
         placeholder="Enter your surname"
@@ -207,9 +221,9 @@ const CompleteProfileScreen = () => {
 
       <Text>Street Address:</Text>
       <TextInput
-        value={userData.streetAddress}
+        value={userInfo.streetAddress}
         onChangeText={(text) =>
-          setUserData((prev) => ({ ...prev, streetAddress: text }))
+          setUserInfo((prev) => ({ ...prev, streetAddress: text }))
         }
         style={styles.input}
         placeholder="Enter your address"
@@ -217,9 +231,9 @@ const CompleteProfileScreen = () => {
 
       <Text>Postcode:</Text>
       <TextInput
-        value={userData.postcode}
+        value={userInfo.postcode}
         onChangeText={(text) =>
-          setUserData((prev) => ({ ...prev, postcode: text }))
+          setUserInfo((prev) => ({ ...prev, postcode: text }))
         }
         style={styles.input}
         placeholder="Enter your postcode"
@@ -227,19 +241,29 @@ const CompleteProfileScreen = () => {
 
       <Text>City:</Text>
       <TextInput
-        value={userData.city}
+        value={userInfo.city}
         onChangeText={(text) =>
-          setUserData((prev) => ({ ...prev, city: text }))
+          setUserInfo((prev) => ({ ...prev, city: text }))
         }
         style={styles.input}
         placeholder="Enter your city"
       />
 
+      <Text>Country:</Text>
+      <TextInput
+        value={userInfo.country}
+        onChangeText={(text) =>
+          setUserInfo((prev) => ({ ...prev, country: text }))
+        }
+        style={styles.input}
+        placeholder="Enter your country"
+      />
+
       <Text>Phone:</Text>
       <TextInput
-        value={userData.phone}
+        value={userInfo.phone}
         onChangeText={(text) =>
-          setUserData((prev) => ({ ...prev, phone: text }))
+          setUserInfo((prev) => ({ ...prev, phone: text }))
         }
         style={styles.input}
         placeholder="Enter your phone number"

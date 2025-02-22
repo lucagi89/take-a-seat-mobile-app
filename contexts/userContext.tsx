@@ -2,12 +2,29 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "../scripts/firebase.config"; // Ensure this points to your Firebase setup
+import { checkUserData } from "../services/databaseActions";
+
+type UserData = {
+  name: string;
+  lastName: string;
+  photoURL: string;
+  streetAddress: string;
+  city: string;
+  country: string;
+  postcode: string;
+  email: string;
+  phone: string;
+  isOwner: boolean;
+  isProfileComplete: boolean;
+};
 
 // Define types for better TypeScript support
 type UserContextType = {
   user: any;
   loading: boolean;
+  userData: Partial<UserData> | undefined;
   setUser: (user: any) => void;
+  setUserData: (userData: Partial<UserData> | undefined) => void;
 };
 
 const UserContext = createContext<UserContextType | null>(null);
@@ -19,6 +36,7 @@ export const UserContextProvider = ({
 }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [userData, setUserData] = useState<{} | undefined>(undefined);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -28,6 +46,15 @@ export const UserContextProvider = ({
           uid: currentUser.uid,
           email: currentUser.email,
           displayName: currentUser.displayName,
+        });
+
+        // Fetch user data from Firestore
+        checkUserData(currentUser.uid).then((data) => {
+          if (data) {
+            setUserData(data);
+          } else {
+            setUserData(undefined);
+          }
         });
       } else {
         setUser(null);
@@ -39,7 +66,9 @@ export const UserContextProvider = ({
   }, []);
 
   return (
-    <UserContext.Provider value={{ user, loading, setUser }}>
+    <UserContext.Provider
+      value={{ user, loading, userData, setUser, setUserData }}
+    >
       {children}
     </UserContext.Provider>
   );
