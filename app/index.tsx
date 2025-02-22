@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   Image,
 } from "react-native";
+import { Picker } from "@react-native-picker/picker";
 import { Link, useRouter, useFocusEffect } from "expo-router";
 import MapView, { Marker, Region, Callout } from "react-native-maps";
 import * as Location from "expo-location";
@@ -33,6 +34,47 @@ export default function Map() {
   const [showSearchButton, setShowSearchButton] = useState(false);
   const [sidebarVisible, setSidebarVisible] = useState(false);
   const slideAnim = useState(new Animated.Value(-250))[0];
+  const [selectedCuisineOne, setSelectedCuisineOne] = useState<string>("");
+  const [selectedCuisineTwo, setSelectedCuisineTwo] = useState<string>("");
+
+  const cuisineOptions = [
+    "Fast Food",
+    "Fine Dining",
+    "Casual Dining",
+    "Cafe",
+    "Bar",
+    "Bakery",
+    "Food Truck",
+    "Buffet",
+    "Pub",
+    "Pizzeria",
+    "Steakhouse",
+    "Seafood",
+    "Vegetarian",
+    "Vegan",
+    "Gluten-Free",
+    "Halal",
+    "Kosher",
+    "Organic",
+    "Asian",
+    "Italian",
+    "Mexican",
+    "Indian",
+    "Chinese",
+    "Japanese",
+    "Thai",
+    "Mediterranean",
+    "French",
+    "Spanish",
+    "German",
+    "Greek",
+    "Turkish",
+    "Lebanese",
+    "Brazilian",
+    "Argentinian",
+    "Middle Eastern",
+    "American",
+  ];
 
   useEffect(() => {
     const getLocation = async () => {
@@ -100,6 +142,20 @@ export default function Map() {
         id: doc.id,
         ...doc.data(),
       }));
+
+      // Apply cuisine filters
+      const filteredRestaurants = fetchedRestaurants.filter((restaurant) =>
+        [
+          restaurant.cuisine_one,
+          restaurant.cuisine_two,
+          restaurant.cuisine_three,
+        ].some(
+          (cuisine) =>
+            (selectedCuisineOne && cuisine === selectedCuisineOne) ||
+            (selectedCuisineTwo && cuisine === selectedCuisineTwo)
+        )
+      );
+
       setVisibleRestaurants(fetchedRestaurants);
     } catch (error) {
       console.error("Error fetching visible restaurants:", error);
@@ -179,6 +235,51 @@ export default function Map() {
                   </Marker>
                 ))}
               </MapView>
+
+              <View style={styles.filterContainer}>
+                <Text style={styles.filterTitle}>Filter by Cuisines:</Text>
+
+                <Picker
+                  selectedValue={selectedCuisineOne}
+                  onValueChange={(itemValue) =>
+                    setSelectedCuisineOne(itemValue)
+                  }
+                  style={styles.picker}
+                >
+                  <Picker.Item label="Select Cuisine One" value="" />
+                  {cuisineOptions.map((cuisine) => (
+                    <Picker.Item
+                      key={cuisine}
+                      label={cuisine}
+                      value={cuisine}
+                    />
+                  ))}
+                </Picker>
+
+                <Picker
+                  selectedValue={selectedCuisineTwo}
+                  onValueChange={(itemValue) =>
+                    setSelectedCuisineTwo(itemValue)
+                  }
+                  style={styles.picker}
+                >
+                  <Picker.Item label="Select Cuisine Two" value="" />
+                  {cuisineOptions.map((cuisine) => (
+                    <Picker.Item
+                      key={cuisine}
+                      label={cuisine}
+                      value={cuisine}
+                    />
+                  ))}
+                </Picker>
+
+                <TouchableOpacity
+                  style={styles.searchButton}
+                  onPress={handleSearchHere}
+                >
+                  <Text style={styles.searchButtonText}>Filter</Text>
+                </TouchableOpacity>
+              </View>
 
               {showSearchButton && (
                 <TouchableOpacity
@@ -287,4 +388,26 @@ const styles = StyleSheet.create({
   },
   sidebarText: { fontSize: 18, fontWeight: "bold", marginBottom: 20 },
   profileImage: { width: 60, height: 60, borderRadius: 30, marginBottom: 20 },
+  filterContainer: {
+    position: "absolute",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    width: "100%",
+    borderColor: "#ccc",
+    borderWidth: 1,
+    borderRadius: 10,
+    top: 20,
+    padding: 10,
+    borderRadius: 10,
+    shadowColor: "#000",
+  },
+
+  picker: {
+    width: 100,
+    height: 30,
+    marginBottom: 10,
+    backgroundColor: "#fff",
+    color: "black",
+  },
 });
