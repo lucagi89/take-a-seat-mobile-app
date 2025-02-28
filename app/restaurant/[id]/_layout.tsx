@@ -21,7 +21,7 @@ const LayoutContent = () => {
       <Stack screenOptions={{ headerShown: false }} />
       {/* 🟡 Navbar */}
       <View style={styles.navbar}>
-        {["info", "floorplan", "menu", "reviews"].map((tab) => (
+        {["info", "floorplan", "dishes", "reviews"].map((tab) => (
           <Link
             key={tab}
             href={`/restaurant/${restaurantId}/${tab}`}
