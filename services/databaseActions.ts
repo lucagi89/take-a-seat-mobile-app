@@ -340,3 +340,54 @@ export const deleteTable = async (tableId: string) => {
     console.error("Error deleting table:", error);
   }
 }
+
+
+
+
+
+//REVIEWS
+
+export const addReview = async (data: any) => {
+  try {
+    await addDoc(collection(db, "reviews"), data);
+    console.log("Review added successfully");
+  } catch (error) {
+    console.error("Error adding review:", error);
+  }
+};
+
+export const getReviews = async (restaurantId: string) => {
+  try {
+    const q = query(collection(db, "reviews"), where("restaurantId", "==", restaurantId));
+    const querySnapshot = await getDocs(q);
+    const reviews = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    return reviews;
+  } catch (error) {
+    console.error("Error fetching reviews:", error);
+    throw error;
+  }
+};
+
+
+export const deleteReview = async (reviewId: string) => {
+  try {
+    await deleteDoc(doc(db, "reviews", reviewId));
+    console.log("Review deleted:", reviewId);
+  } catch (error) {
+    console.error("Error deleting review:", error);
+  }
+};
+
+
+export const updateReview = async (reviewId: string, data: any) => {
+  try {
+    const reviewRef = doc(db, "reviews", reviewId);
+    await updateDoc(reviewRef, data);
+    console.log("Review updated:", reviewId);
+  } catch (error) {
+    console.error("Error updating review:", error);
+  }
+};
+
+
+

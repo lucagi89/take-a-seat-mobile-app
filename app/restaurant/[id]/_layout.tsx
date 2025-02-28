@@ -30,7 +30,7 @@ const LayoutContent = () => {
             <Text style={styles.navText}>{tab.toUpperCase()}</Text>
           </Link>
         ))}
-        <Link href={`/map`} style={styles.navItem}>
+        <Link href={`/`} style={styles.navItem}>
           <Text style={styles.navText}>{"map".toUpperCase()}</Text>
         </Link>
       </View>
