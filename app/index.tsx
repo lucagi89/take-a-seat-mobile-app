@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Image,
+  ScrollView,
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import { Link, useRouter, useFocusEffect } from "expo-router";
@@ -19,7 +20,7 @@ import { checkUserData } from "../services/databaseActions";
 import { useUser } from "../contexts/userContext"; // ✅ Import userData
 import { Ionicons } from "@expo/vector-icons";
 import { Animated } from "react-native";
-import { logout } from "../services/auth";
+import { handleLogout } from "../services/auth";
 
 export default function Map() {
   const { user, userData } = useUser(); // ✅ Use userData from context
@@ -34,47 +35,6 @@ export default function Map() {
   const [showSearchButton, setShowSearchButton] = useState(false);
   const [sidebarVisible, setSidebarVisible] = useState(false);
   const slideAnim = useState(new Animated.Value(-250))[0];
-  const [selectedCuisineOne, setSelectedCuisineOne] = useState<string>("");
-  const [selectedCuisineTwo, setSelectedCuisineTwo] = useState<string>("");
-
-  const cuisineOptions = [
-    "Fast Food",
-    "Fine Dining",
-    "Casual Dining",
-    "Cafe",
-    "Bar",
-    "Bakery",
-    "Food Truck",
-    "Buffet",
-    "Pub",
-    "Pizzeria",
-    "Steakhouse",
-    "Seafood",
-    "Vegetarian",
-    "Vegan",
-    "Gluten-Free",
-    "Halal",
-    "Kosher",
-    "Organic",
-    "Asian",
-    "Italian",
-    "Mexican",
-    "Indian",
-    "Chinese",
-    "Japanese",
-    "Thai",
-    "Mediterranean",
-    "French",
-    "Spanish",
-    "German",
-    "Greek",
-    "Turkish",
-    "Lebanese",
-    "Brazilian",
-    "Argentinian",
-    "Middle Eastern",
-    "American",
-  ];
 
   useEffect(() => {
     const getLocation = async () => {
@@ -143,19 +103,6 @@ export default function Map() {
         ...doc.data(),
       }));
 
-      // Apply cuisine filters
-      const filteredRestaurants = fetchedRestaurants.filter((restaurant) =>
-        [
-          restaurant.cuisine_one,
-          restaurant.cuisine_two,
-          restaurant.cuisine_three,
-        ].some(
-          (cuisine) =>
-            (selectedCuisineOne && cuisine === selectedCuisineOne) ||
-            (selectedCuisineTwo && cuisine === selectedCuisineTwo)
-        )
-      );
-
       setVisibleRestaurants(fetchedRestaurants);
     } catch (error) {
       console.error("Error fetching visible restaurants:", error);
@@ -169,6 +116,9 @@ export default function Map() {
   };
 
   const restaurantSelectionHandler = async (restaurantId: string) => {
+    if (!user) {
+      router.push("/login");
+    }
     const userHasData = await checkUserData(user?.uid);
     if (userHasData) {
       router.push({ pathname: `/restaurant/${restaurantId}` });
@@ -236,51 +186,6 @@ export default function Map() {
                 ))}
               </MapView>
 
-              <View style={styles.filterContainer}>
-                <Text style={styles.filterTitle}>Filter by Cuisines:</Text>
-
-                <Picker
-                  selectedValue={selectedCuisineOne}
-                  onValueChange={(itemValue) =>
-                    setSelectedCuisineOne(itemValue)
-                  }
-                  style={styles.picker}
-                >
-                  <Picker.Item label="Select Cuisine One" value="" />
-                  {cuisineOptions.map((cuisine) => (
-                    <Picker.Item
-                      key={cuisine}
-                      label={cuisine}
-                      value={cuisine}
-                    />
-                  ))}
-                </Picker>
-
-                <Picker
-                  selectedValue={selectedCuisineTwo}
-                  onValueChange={(itemValue) =>
-                    setSelectedCuisineTwo(itemValue)
-                  }
-                  style={styles.picker}
-                >
-                  <Picker.Item label="Select Cuisine Two" value="" />
-                  {cuisineOptions.map((cuisine) => (
-                    <Picker.Item
-                      key={cuisine}
-                      label={cuisine}
-                      value={cuisine}
-                    />
-                  ))}
-                </Picker>
-
-                <TouchableOpacity
-                  style={styles.searchButton}
-                  onPress={handleSearchHere}
-                >
-                  <Text style={styles.searchButtonText}>Filter</Text>
-                </TouchableOpacity>
-              </View>
-
               {showSearchButton && (
                 <TouchableOpacity
                   style={styles.searchButton}
@@ -304,11 +209,13 @@ export default function Map() {
                 ]}
               >
                 {/* ✅ Use userData instead of user for updated info */}
-                {userData?.photoURL && (
+                {userData?.photoURL ? (
                   <Image
                     source={{ uri: userData.photoURL }}
                     style={styles.profileImage}
                   />
+                ) : (
+                  <Ionicons name="person-circle" size={60} color="black" />
                 )}
                 <Text style={styles.sidebarText}>
                   Welcome, {userData?.name || user?.displayName}
@@ -324,7 +231,7 @@ export default function Map() {
                   <Link href="/my-restaurants">My Restaurants</Link>
                 )}
                 <Link href="/create-restaurant">Create a Restaurant</Link>
-                <TouchableOpacity onPress={async () => await logout()}>
+                <TouchableOpacity onPress={handleLogout}>
                   <Text style={{ color: "red", fontWeight: "bold" }}>
                     Logout
                   </Text>
@@ -388,26 +295,4 @@ const styles = StyleSheet.create({
   },
   sidebarText: { fontSize: 18, fontWeight: "bold", marginBottom: 20 },
   profileImage: { width: 60, height: 60, borderRadius: 30, marginBottom: 20 },
-  filterContainer: {
-    position: "absolute",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    width: "100%",
-    borderColor: "#ccc",
-    borderWidth: 1,
-    borderRadius: 10,
-    top: 20,
-    padding: 10,
-    borderRadius: 10,
-    shadowColor: "#000",
-  },
-
-  picker: {
-    width: 100,
-    height: 30,
-    marginBottom: 10,
-    backgroundColor: "#fff",
-    color: "black",
-  },
 });

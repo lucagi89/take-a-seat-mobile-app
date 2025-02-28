@@ -1,18 +1,22 @@
 // src/services/auth.ts
-import { auth } from '../scripts/firebase.config';
+import { auth, provider } from '../scripts/firebase.config';
 import { User } from 'firebase/auth';
+import { useRouter } from "expo-router";
+
 import {
   createUserWithEmailAndPassword,
-  Auth,
-  UserCredential,
+  getAuth,
   signInWithEmailAndPassword,
-  signInWithPopup,
   GoogleAuthProvider,
-  signInWithRedirect,
-  getRedirectResult,
-  AuthCredential,
+  signInWithCredential,
+  signOut
 
 } from 'firebase/auth';
+import * as WebBrowser from 'expo-web-browser';
+import * as Google from 'expo-auth-session/providers/google';
+const router = useRouter();
+
+WebBrowser.maybeCompleteAuthSession();
 
 interface AccessResponse {
   user: User;
@@ -29,6 +33,29 @@ export async function handleUser(email: string, password: string): Promise<Acces
   }
 }
 
+
+export async function signInWithGoogle(): Promise<AccessResponse> {
+  const [request, response, promptAsync] = Google.useAuthRequest({
+    expoClientId: process.env.EXPO_PUBLIC_GOOGLE_EXPO_CLIENT_ID,
+    iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
+    androidClientId: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID,
+    webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+  });
+
+  if (response?.type === 'success') {
+    const { id_token } = response.params;
+    const credential = GoogleAuthProvider.credential(id_token);
+    const auth = getAuth();
+    const userCredential = await signInWithCredential(auth, credential);
+    return { user: userCredential.user };
+  } else {
+    throw new Error('Google sign-in failed');
+  }
+}
+
+
+
+
 export async function signUp(email: string, password: string): Promise<AccessResponse> {
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
@@ -40,11 +67,12 @@ export async function signUp(email: string, password: string): Promise<AccessRes
   }
 }
 
-export async function logout(): Promise<void> {
+export const handleLogout = async () => {
+  console.log("Logging out...");
   try {
-    await auth.signOut();
+    await signOut(auth);
+    router.push("/login");
   } catch (error) {
-    console.error('Error signing out:', error);
-    throw error;
+    console.error("Error signing out:", error);
   }
-}
+};
