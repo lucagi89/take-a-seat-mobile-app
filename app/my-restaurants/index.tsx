@@ -14,18 +14,19 @@ import {
 } from "../../services/databaseActions";
 import RestaurantCard from "../../components/RestaurantCard";
 import { Redirect, useRouter } from "expo-router";
+import { Restaurant } from "../../data/types";
 
 export default function MyRestaurants() {
   const router = useRouter();
   const { user, loading } = useUser();
-  const [userRestaurants, setUserRestaurants] = useState<{ id: string }[]>([]);
+  const [userRestaurants, setUserRestaurants] = useState<Restaurant[]>([]);
   const [error, setError] = useState("");
 
   useEffect(() => {
     if (user) {
       getUserRestaurants(user.uid)
         .then((result) => {
-          setUserRestaurants(result);
+          setUserRestaurants(result as Restaurant[]);
         })
         .catch((error) => {
           setError("Error fetching user's restaurants");

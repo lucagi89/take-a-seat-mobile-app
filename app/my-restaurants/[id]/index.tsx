@@ -9,17 +9,7 @@ import {
 } from "../../../services/databaseActions";
 import { DocumentData } from "firebase/firestore";
 import RestaurantFloorPlan from "../../../components/RestaurantFloorPlan";
-
-interface Table {
-  id: string;
-  x: number;
-  y: number;
-  capacity: number;
-  isAvailable: boolean;
-  height: number;
-  width: number;
-  seatsTaken: number;
-}
+import { Table, Restaurant } from "../../../data/types";
 
 export default function MyRestaurantPage() {
   const { user } = useUser();
@@ -42,7 +32,7 @@ export default function MyRestaurantPage() {
         setLoading(true);
         try {
           const restaurantData = await getRestaurantById(restaurantId);
-          setRestaurant(restaurantData);
+          setRestaurant(restaurantData as Restaurant);
         } catch (error) {
           console.error("Error fetching restaurant:", error);
         } finally {

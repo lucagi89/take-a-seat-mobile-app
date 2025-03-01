@@ -17,34 +17,39 @@ import * as ImagePicker from "expo-image-picker";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { storage } from "../scripts/firebase.config";
 import Checkbox from "expo-checkbox";
+import { Restaurant } from "../data/types";
 
 export default function CreateRestaurant() {
-  const [restaurant, setRestaurant] = useState<{
-    name: string;
-    description: string;
-    address: string;
-    city: string;
-    postcode: string;
-    keywords: string[];
-    phone: string;
-    email: string;
-    website: string;
-  }>({
+  const [restaurant, setRestaurant] = useState<Omit<Restaurant, "id">>({
     name: "",
     description: "",
-    address: "",
+    streetAddress: "",
     city: "",
     postcode: "",
-    keywords: [],
     phone: "",
     email: "",
     website: "",
+    imageUrls: [],
+    keywords: [],
+    isAvailable: true,
+    latitude: 0,
+    longitude: 0,
+    userId: "",
+    country: "United States",
+    cuisine_one: "",
+    cuisine_two: "",
+    cuisine_three: "",
+    openingHours: "",
+    closingHours: "",
+    secondOpeningHours: "",
+    secondClosingHours: "",
+    isClosed: false,
   });
 
   const {
     name,
     description,
-    address,
+    streetAddress,
     city,
     postcode,
     phone,
@@ -148,7 +153,7 @@ export default function CreateRestaurant() {
     if (
       !name ||
       !description ||
-      !address ||
+      !streetAddress ||
       imageUris.length === 0 ||
       !city ||
       !postcode ||
@@ -221,8 +226,10 @@ export default function CreateRestaurant() {
       <Text style={styles.label}>Street Address:</Text>
       <TextInput
         style={styles.input}
-        value={address}
-        onChangeText={(text) => setRestaurant({ ...restaurant, address: text })}
+        value={streetAddress}
+        onChangeText={(text) =>
+          setRestaurant({ ...restaurant, streetAddress: text })
+        }
         placeholder="Street Address"
       />
 

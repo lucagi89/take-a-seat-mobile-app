@@ -1,27 +1,30 @@
 import React from "react";
 import { View, Text, Image, StyleSheet } from "react-native";
 
-interface Restaurant {
-  name: string;
-  description: string;
-  address: string;
-  city: string;
-  postcode: string;
-  phone: string;
-  email: string;
-  website: string;
-}
+import { Restaurant } from "../data/types";
 
-export default function RestaurantCard({ restaurant }: { restaurant: Restaurant }) {
-  const { name, description, address, city, postcode, phone, email, website } =
-    restaurant;
+export default function RestaurantCard({
+  restaurant,
+}: {
+  restaurant: Restaurant;
+}) {
+  const {
+    name,
+    description,
+    streetAddress,
+    city,
+    postcode,
+    phone,
+    email,
+    website,
+  } = restaurant;
   return (
     <View style={styles.card}>
       {/* <Image source={{ uri: image }} style={styles.image} /> */}
       <Text style={styles.name}>{name}</Text>
       <Text style={styles.description}>{description}</Text>
       <Text style={styles.address}>
-        {address}, {city}, {postcode}
+        {streetAddress}, {city}, {postcode}
       </Text>
       <Text style={styles.contact}>
         {phone} | {email} | {website}
