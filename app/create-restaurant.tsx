@@ -9,6 +9,9 @@ import {
   ScrollView,
   Image,
   Alert,
+  Switch,
+  TouchableOpacity,
+  Platform,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { createDatabaseEntry, updateData } from "../services/databaseActions";
@@ -17,6 +20,7 @@ import * as ImagePicker from "expo-image-picker";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { storage } from "../scripts/firebase.config";
 import Checkbox from "expo-checkbox";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import { Restaurant } from "../data/types";
 
 export default function CreateRestaurant() {
@@ -43,7 +47,6 @@ export default function CreateRestaurant() {
     closingHours: "",
     secondOpeningHours: "",
     secondClosingHours: "",
-    isClosed: false,
   });
 
   const {
@@ -62,7 +65,6 @@ export default function CreateRestaurant() {
   const [imageUris, setImageUris] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  // const [keywords, setKeywords] = useState<string[]>([]);
   const availableKeywords = [
     "Fast Food",
     "Fine Dining",
@@ -104,6 +106,48 @@ export default function CreateRestaurant() {
 
   const { user, setUserData } = useUser();
   const router = useRouter();
+
+  const [isContinuousOpening, setIsContinuousOpening] = useState(true);
+  const [showPicker, setShowPicker] = useState<{ [key: string]: boolean }>({
+    openingHours: false,
+    closingHours: false,
+    secondOpeningHours: false,
+    secondClosingHours: false,
+  });
+
+  const [times, setTimes] = useState({
+    openingHours: new Date(),
+    closingHours: new Date(),
+    secondOpeningHours: new Date(),
+    secondClosingHours: new Date(),
+  });
+
+  // Function to show picker for a specific time field
+  const showTimePicker = (field: keyof typeof times) => {
+    setShowPicker((prev) => ({ ...prev, [field]: true }));
+  };
+
+  // Function to handle time selection
+  const handleTimeChange = (
+    event: any,
+    selectedTime: Date | undefined,
+    field: keyof typeof times
+  ) => {
+    setShowPicker((prev) => ({
+      ...prev,
+      [field]: Platform.OS === "android" ? false : prev[field],
+    }));
+    if (selectedTime) {
+      setTimes((prev) => ({ ...prev, [field]: selectedTime }));
+      setRestaurant((prev) => ({
+        ...prev,
+        [field]: selectedTime.toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+      }));
+    }
+  };
 
   // Open the image library to pick one or more images
   const pickImages = async () => {
@@ -151,30 +195,35 @@ export default function CreateRestaurant() {
 
   const handleSubmit = async () => {
     if (
-      !name ||
-      !description ||
-      !streetAddress ||
+      !restaurant.name ||
+      !restaurant.description ||
+      !restaurant.streetAddress ||
       imageUris.length === 0 ||
-      !city ||
-      !postcode ||
+      !restaurant.city ||
+      !restaurant.postcode ||
       keywords.length === 0 ||
-      !phone ||
-      !email ||
-      !website
+      !restaurant.phone ||
+      !restaurant.email ||
+      !restaurant.website ||
+      !restaurant.openingHours ||
+      !restaurant.closingHours ||
+      (!isContinuousOpening &&
+        (!restaurant.secondOpeningHours || !restaurant.secondClosingHours))
     ) {
-      setError("Please fill out all fields and select at least one image.");
+      setError("Please fill out all required fields.");
       return;
     }
+
     setLoading(true);
     setError("");
 
     try {
-      // Upload all images concurrently and wait for all download URLs
       const imageUrls = await Promise.all(
         imageUris.map((uri) => uploadImageAsync(uri))
       );
+
       await createDatabaseEntry(
-        { ...restaurant, userId: user.uid, is_available: true, imageUrls },
+        { ...restaurant, userId: user.uid, isAvailable: true, imageUrls },
         "restaurants"
       );
 
@@ -274,6 +323,102 @@ export default function CreateRestaurant() {
         onChangeText={(text) => setRestaurant({ ...restaurant, website: text })}
         placeholder="Website"
       />
+
+      <View style={styles.switchContainer}>
+        <Text style={styles.label}>Continuous Opening?</Text>
+        <Switch
+          value={isContinuousOpening}
+          onValueChange={(value) => {
+            setIsContinuousOpening(value);
+            if (value) {
+              setRestaurant({
+                ...restaurant,
+                secondOpeningHours: "",
+                secondClosingHours: "",
+              });
+            }
+          }}
+        />
+      </View>
+
+      {/* Opening Hours */}
+      <Text style={styles.label}>Opening Hours:</Text>
+      <TouchableOpacity
+        onPress={() => showTimePicker("openingHours")}
+        style={styles.timePicker}
+      >
+        <Text>{restaurant.openingHours || "Select Time"}</Text>
+      </TouchableOpacity>
+      {showPicker.openingHours && (
+        <DateTimePicker
+          value={times.openingHours}
+          mode="time"
+          display="spinner"
+          onChange={(event, time) =>
+            handleTimeChange(event, time, "openingHours")
+          }
+        />
+      )}
+
+      {/* Closing Hours */}
+      <Text style={styles.label}>Closing Hours:</Text>
+      <TouchableOpacity
+        onPress={() => showTimePicker("closingHours")}
+        style={styles.timePicker}
+      >
+        <Text>{restaurant.closingHours || "Select Time"}</Text>
+      </TouchableOpacity>
+      {showPicker.closingHours && (
+        <DateTimePicker
+          value={times.closingHours}
+          mode="time"
+          display="spinner"
+          onChange={(event, time) =>
+            handleTimeChange(event, time, "closingHours")
+          }
+        />
+      )}
+
+      {/* Second Opening & Closing Hours - Only if NOT Continuous */}
+      {!isContinuousOpening && (
+        <>
+          <Text style={styles.label}>Second Opening Hours:</Text>
+          <TouchableOpacity
+            onPress={() => showTimePicker("secondOpeningHours")}
+            style={styles.timePicker}
+          >
+            <Text>{restaurant.secondOpeningHours || "Select Time"}</Text>
+          </TouchableOpacity>
+          {showPicker.secondOpeningHours && (
+            <DateTimePicker
+              value={times.secondOpeningHours}
+              mode="time"
+              display="spinner"
+              onChange={(event, time) =>
+                handleTimeChange(event, time, "secondOpeningHours")
+              }
+            />
+          )}
+
+          <Text style={styles.label}>Second Closing Hours:</Text>
+          <TouchableOpacity
+            onPress={() => showTimePicker("secondClosingHours")}
+            style={styles.timePicker}
+          >
+            <Text>{restaurant.secondClosingHours || "Select Time"}</Text>
+          </TouchableOpacity>
+          {showPicker.secondClosingHours && (
+            <DateTimePicker
+              value={times.secondClosingHours}
+              mode="time"
+              display="spinner"
+              onChange={(event, time) =>
+                handleTimeChange(event, time, "secondClosingHours")
+              }
+            />
+          )}
+        </>
+      )}
 
       <View style={styles.checksContainer}>
         <Text style={styles.checkTitle}>Keywords:</Text>
@@ -398,6 +543,22 @@ const styles = StyleSheet.create({
   keywordsContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
+  },
+  switchContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginVertical: 10,
+  },
+  timePicker: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    padding: 12,
+    borderRadius: 5,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 12,
+    backgroundColor: "#f8f8f8",
   },
   checkboxContainer: {
     flexDirection: "row",

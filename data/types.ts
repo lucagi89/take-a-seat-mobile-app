@@ -40,7 +40,6 @@ export interface Restaurant {
   closingHours: string;
   secondOpeningHours: string;
   secondClosingHours: string;
-  isClosed: boolean;
 }
 
 
