@@ -356,11 +356,36 @@ export const addReview = async (data: any) => {
   }
 };
 
-export const getReviews = async (restaurantId: string) => {
+
+// Define the Review type
+export interface Review {
+  id: string;
+  title: string;
+  body: string;
+  rating: number;
+  userId: string;
+  restaurantId: string;
+}
+
+// Explicitly define return type as `Promise<Review[]>`
+export const getReviews = async (restaurantId: string): Promise<Review[]> => {
   try {
     const q = query(collection(db, "reviews"), where("restaurantId", "==", restaurantId));
     const querySnapshot = await getDocs(q);
-    const reviews = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+
+    // Ensure Firestore data is correctly typed
+    const reviews: Review[] = querySnapshot.docs.map((doc) => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        title: data.title || "",
+        body: data.body || "",
+        rating: data.rating ?? 0, // Ensure rating is a number (fallback to 0)
+        userId: data.userId || "",
+        restaurantId: data.restaurantId || restaurantId, // Ensure restaurantId exists
+      };
+    });
+
     return reviews;
   } catch (error) {
     console.error("Error fetching reviews:", error);
@@ -388,6 +413,3 @@ export const updateReview = async (reviewId: string, data: any) => {
     console.error("Error updating review:", error);
   }
 };
-
-
-

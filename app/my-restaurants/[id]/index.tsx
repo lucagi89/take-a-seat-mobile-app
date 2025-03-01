@@ -60,22 +60,6 @@ export default function MyRestaurantPage() {
     }, [restaurantId])
   );
 
-  // Optional: Fetch tables if needed
-  // useFocusEffect(
-  //   useCallback(() => {
-  //     if (!restaurantId) return;
-  //     const fetchTables = async () => {
-  //       try {
-  //         const tablesData = await findRestaurantTables(restaurantId);
-  //         setTables(tablesData);
-  //       } catch (error) {
-  //         console.error("Error fetching tables:", error);
-  //       }
-  //     };
-  //     fetchTables();
-  //   }, [restaurantId])
-  // );
-
   if (loading) {
     return <Text>Loading...</Text>;
   }

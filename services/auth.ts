@@ -14,7 +14,7 @@ import {
 } from 'firebase/auth';
 import * as WebBrowser from 'expo-web-browser';
 import * as Google from 'expo-auth-session/providers/google';
-const router = useRouter();
+
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -67,11 +67,11 @@ export async function signUp(email: string, password: string): Promise<AccessRes
   }
 }
 
+
 export const handleLogout = async () => {
   console.log("Logging out...");
   try {
     await signOut(auth);
-    router.push("/login");
   } catch (error) {
     console.error("Error signing out:", error);
   }

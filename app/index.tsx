@@ -21,6 +21,7 @@ import { useUser } from "../contexts/userContext"; // ✅ Import userData
 import { Ionicons } from "@expo/vector-icons";
 import { Animated } from "react-native";
 import { handleLogout } from "../services/auth";
+import { Restaurant } from "../data/types";
 
 export default function Map() {
   const { user, userData } = useUser(); // ✅ Use userData from context
@@ -29,7 +30,9 @@ export default function Map() {
   const [location, setLocation] = useState<Location.LocationObject | null>(
     null
   );
-  const [visibleRestaurants, setVisibleRestaurants] = useState<any[]>([]);
+  const [visibleRestaurants, setVisibleRestaurants] = useState<Restaurant[]>(
+    []
+  );
   const [loading, setLoading] = useState(true);
   const [region, setRegion] = useState<Region | null>(null);
   const [showSearchButton, setShowSearchButton] = useState(false);
@@ -103,7 +106,7 @@ export default function Map() {
         ...doc.data(),
       }));
 
-      setVisibleRestaurants(fetchedRestaurants);
+      setVisibleRestaurants(fetchedRestaurants as Restaurant[]);
     } catch (error) {
       console.error("Error fetching visible restaurants:", error);
     }
@@ -169,7 +172,7 @@ export default function Map() {
                       latitude: restaurant.latitude,
                       longitude: restaurant.longitude,
                     }}
-                    pinColor={restaurant.is_available ? "green" : "red"}
+                    pinColor={restaurant.isAvailable ? "green" : "red"}
                   >
                     <Callout
                       onPress={() => restaurantSelectionHandler(restaurant.id)}
@@ -178,7 +181,7 @@ export default function Map() {
                         <Text style={styles.calloutTitle}>
                           {restaurant.name}
                         </Text>
-                        <Text>{restaurant.address}</Text>
+                        <Text>{restaurant.streetAddress}</Text>
                         <Text>{`${restaurant.cuisine_one}, ${restaurant.cuisine_two}, ${restaurant.cuisine_three}`}</Text>
                       </View>
                     </Callout>
@@ -202,41 +205,45 @@ export default function Map() {
                 <Ionicons name="menu" size={32} color="white" />
               </TouchableOpacity>
 
-              <Animated.View
-                style={[
-                  styles.sidebar,
-                  { transform: [{ translateX: slideAnim }] },
-                ]}
-              >
-                {/* ✅ Use userData instead of user for updated info */}
-                {userData?.photoURL ? (
-                  <Image
-                    source={{ uri: userData.photoURL }}
-                    style={styles.profileImage}
-                  />
-                ) : (
-                  <Ionicons name="person-circle" size={60} color="black" />
-                )}
-                <Text style={styles.sidebarText}>
-                  Welcome, {userData?.name || user?.displayName}
-                </Text>
-                <Link href="/profile">Profile</Link>
-                <Link href="/settings">Settings</Link>
-                <Link href="/complete-profile">
-                  {userData?.isProfileComplete
-                    ? "Edit Profile"
-                    : "Complete Profile"}
-                </Link>
-                {userData?.isOwner && (
-                  <Link href="/my-restaurants">My Restaurants</Link>
-                )}
-                <Link href="/create-restaurant">Create a Restaurant</Link>
-                <TouchableOpacity onPress={handleLogout}>
-                  <Text style={{ color: "red", fontWeight: "bold" }}>
-                    Logout
+              {user ? (
+                <Animated.View
+                  style={[
+                    styles.sidebar,
+                    { transform: [{ translateX: slideAnim }] },
+                  ]}
+                >
+                  {/* ✅ Use userData instead of user for updated info */}
+                  {userData?.photoURL ? (
+                    <Image
+                      source={{ uri: userData.photoURL }}
+                      style={styles.profileImage}
+                    />
+                  ) : (
+                    <Ionicons name="person-circle" size={60} color="black" />
+                  )}
+                  <Text style={styles.sidebarText}>
+                    Welcome, {userData?.name || user?.displayName}
                   </Text>
-                </TouchableOpacity>
-              </Animated.View>
+                  <Link href="/profile">Profile</Link>
+                  <Link href="/settings">Settings</Link>
+                  <Link href="/complete-profile">
+                    {userData?.isProfileComplete
+                      ? "Edit Profile"
+                      : "Complete Profile"}
+                  </Link>
+                  {userData?.isOwner && (
+                    <Link href="/my-restaurants">My Restaurants</Link>
+                  )}
+                  <Link href="/create-restaurant">Create a Restaurant</Link>
+                  <TouchableOpacity onPress={handleLogout}>
+                    <Text style={{ color: "red", fontWeight: "bold" }}>
+                      Logout
+                    </Text>
+                  </TouchableOpacity>
+                </Animated.View>
+              ) : (
+                router.push("/login")
+              )}
             </>
           )
         )}

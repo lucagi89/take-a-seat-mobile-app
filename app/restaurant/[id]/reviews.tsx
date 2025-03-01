@@ -17,25 +17,36 @@ import {
 import { useRestaurant } from "./RestaurantContext";
 import { useUser } from "../../../contexts/userContext";
 
+// Define TypeScript types for reviews
+interface Review {
+  id: string;
+  title: string;
+  body: string;
+  rating: number;
+  userId: string;
+  restaurantId: string;
+}
+
 export default function Reviews() {
-  const [reviews, setReviews] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
   const { restaurantId } = useRestaurant();
   const { user } = useUser();
-  const userId = user?.uid;
+  const userId = user?.uid || "";
 
-  const [newReview, setNewReview] = useState({
+  // Initialize newReview with correct typing
+  const [newReview, setNewReview] = useState<Omit<Review, "id">>({
     title: "",
     body: "",
     rating: 0,
     userId: userId,
-    restaurantId: restaurantId,
+    restaurantId: restaurantId || "",
   });
 
   useEffect(() => {
     if (!restaurantId) return;
     getReviews(restaurantId)
-      .then((reviews) => setReviews(reviews))
+      .then((reviewsData: Review[]) => setReviews(reviewsData))
       .finally(() => setLoading(false));
   }, [restaurantId]);
 
@@ -46,26 +57,26 @@ export default function Reviews() {
     }
 
     try {
-      const reviewData = { ...newReview, userId }; // Ensure userId is included
-      await addReview(restaurantId, reviewData);
-      setReviews([...reviews, reviewData]); // Update state optimistically
-      setNewReview({ title: "", body: "", rating: 0 });
+      const reviewData = { ...newReview, userId };
+      const newReviewId = await addReview(restaurantId, reviewData); // Assume addReview returns the ID
+      setReviews([...reviews, { ...reviewData, id: newReviewId }]); // Include ID
+      setNewReview({ title: "", body: "", rating: 0, userId, restaurantId });
     } catch (error) {
       console.error("Error adding review:", error);
     }
   };
 
-  const handleDeleteReview = async (reviewId) => {
+  const handleDeleteReview = async (reviewId: string) => {
     try {
       await deleteReview(reviewId);
-      setReviews(reviews.filter((review) => review.id !== reviewId)); // Remove from state
+      setReviews(reviews.filter((review) => review.id !== reviewId));
     } catch (error) {
       console.error("Error deleting review:", error);
     }
   };
 
-  const handleUpdateReview = async (reviewId) => {
-    const updatedData = {
+  const handleUpdateReview = async (reviewId: string) => {
+    const updatedData: Partial<Review> = {
       title: "Updated title",
       body: "Updated body",
       rating: 5,
@@ -142,9 +153,12 @@ export default function Reviews() {
         placeholder="Rating (1-5)"
         keyboardType="numeric"
         value={newReview.rating.toString()}
-        onChangeText={(text) =>
-          setNewReview({ ...newReview, rating: parseInt(text) || 0 })
-        }
+        onChangeText={(text) => {
+          const ratingValue = parseInt(text) || 0;
+          if (ratingValue >= 1 && ratingValue <= 5) {
+            setNewReview({ ...newReview, rating: ratingValue });
+          }
+        }}
       />
 
       <TouchableOpacity style={styles.addButton} onPress={handleAddReview}>
