@@ -10,7 +10,6 @@ import {
   Image,
   ScrollView,
 } from "react-native";
-import { Picker } from "@react-native-picker/picker";
 import { Link, useRouter, useFocusEffect } from "expo-router";
 import MapView, { Marker, Region, Callout } from "react-native-maps";
 import * as Location from "expo-location";

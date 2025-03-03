@@ -17,92 +17,22 @@ import { useRouter } from "expo-router";
 import { createDatabaseEntry, updateData } from "../services/databaseActions";
 import { useUser } from "../contexts/userContext";
 import * as ImagePicker from "expo-image-picker";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { storage } from "../scripts/firebase.config";
 import Checkbox from "expo-checkbox";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Restaurant } from "../data/types";
+import { availableKeywords } from "../data/variables";
+import { tamplateRestaurant } from "../data/variables";
 
 export default function CreateRestaurant() {
-  const [restaurant, setRestaurant] = useState<Omit<Restaurant, "id">>({
-    name: "",
-    description: "",
-    streetAddress: "",
-    city: "",
-    postcode: "",
-    phone: "",
-    email: "",
-    website: "",
-    imageUrls: [],
-    keywords: [],
-    isAvailable: true,
-    latitude: 0,
-    longitude: 0,
-    userId: "",
-    country: "United States",
-    cuisine_one: "",
-    cuisine_two: "",
-    cuisine_three: "",
-    openingHours: "",
-    closingHours: "",
-    secondOpeningHours: "",
-    secondClosingHours: "",
-  });
-
-  const {
-    name,
-    description,
-    streetAddress,
-    city,
-    postcode,
-    phone,
-    email,
-    website,
-    keywords,
-  } = restaurant;
+  const [restaurant, setRestaurant] =
+    useState<Omit<Restaurant, "id">>(tamplateRestaurant);
 
   // Use an array to store multiple image URIs
   const [imageUris, setImageUris] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const availableKeywords = [
-    "Fast Food",
-    "Fine Dining",
-    "Casual Dining",
-    "Cafe",
-    "Bar",
-    "Bakery",
-    "Food Truck",
-    "Buffet",
-    "Pub",
-    "Pizzeria",
-    "Steakhouse",
-    "Seafood",
-    "Vegetarian",
-    "Vegan",
-    "Gluten-Free",
-    "Halal",
-    "Kosher",
-    "Organic",
-    "Asian",
-    "Italian",
-    "Mexican",
-    "Indian",
-    "Chinese",
-    "Japanese",
-    "Thai",
-    "Mediterranean",
-    "French",
-    "Spanish",
-    "German",
-    "Greek",
-    "Turkish",
-    "Lebanese",
-    "Brazilian",
-    "Argentinian",
-    "Middle Eastern",
-    "American",
-  ];
 
   const { user, setUserData } = useUser();
   const router = useRouter();
@@ -122,9 +52,21 @@ export default function CreateRestaurant() {
     secondClosingHours: new Date(),
   });
 
+  const {
+    name,
+    description,
+    streetAddress,
+    city,
+    postcode,
+    phone,
+    email,
+    website,
+    keywords,
+  } = restaurant;
+
   // Function to show picker for a specific time field
   const showTimePicker = (field: keyof typeof times) => {
-    setShowPicker((prev) => ({ ...prev, [field]: true }));
+    setShowPicker((prev) => ({ ...prev, [field]: !prev[field] })); // Toggle value
   };
 
   // Function to handle time selection
@@ -141,10 +83,11 @@ export default function CreateRestaurant() {
       setTimes((prev) => ({ ...prev, [field]: selectedTime }));
       setRestaurant((prev) => ({
         ...prev,
-        [field]: selectedTime.toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
+        // [field]: selectedTime.toLocaleTimeString([], {
+        //   hour: "2-digit",
+        //   minute: "2-digit",
+        // }),
+        [field]: selectedTime,
       }));
     }
   };
@@ -300,6 +243,14 @@ export default function CreateRestaurant() {
         placeholder="Postcode"
       />
 
+      <Text style={styles.label}>Country:</Text>
+      <TextInput
+        style={styles.input}
+        value={restaurant.country}
+        onChangeText={(text) => setRestaurant({ ...restaurant, country: text })}
+        placeholder="Country"
+      />
+
       <Text style={styles.label}>Phone:</Text>
       <TextInput
         style={styles.input}
@@ -353,7 +304,9 @@ export default function CreateRestaurant() {
         <DateTimePicker
           value={times.openingHours}
           mode="time"
-          display="spinner"
+          style={styles.wheelTimePicker}
+          display={Platform.OS === "ios" ? "spinner" : "default"}
+          textColor="black"
           onChange={(event, time) =>
             handleTimeChange(event, time, "openingHours")
           }
@@ -372,7 +325,8 @@ export default function CreateRestaurant() {
         <DateTimePicker
           value={times.closingHours}
           mode="time"
-          display="spinner"
+          display={Platform.OS === "ios" ? "spinner" : "default"}
+          textColor="black"
           onChange={(event, time) =>
             handleTimeChange(event, time, "closingHours")
           }
@@ -393,7 +347,9 @@ export default function CreateRestaurant() {
             <DateTimePicker
               value={times.secondOpeningHours}
               mode="time"
-              display="spinner"
+              style={styles.wheelTimePicker}
+              display={Platform.OS === "ios" ? "spinner" : "default"}
+              textColor="black"
               onChange={(event, time) =>
                 handleTimeChange(event, time, "secondOpeningHours")
               }
@@ -411,7 +367,8 @@ export default function CreateRestaurant() {
             <DateTimePicker
               value={times.secondClosingHours}
               mode="time"
-              display="spinner"
+              display={Platform.OS === "ios" ? "spinner" : "default"}
+              textColor="black"
               onChange={(event, time) =>
                 handleTimeChange(event, time, "secondClosingHours")
               }
@@ -551,14 +508,20 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
   timePicker: {
+    width: "100%",
     borderWidth: 1,
-    borderColor: "#ccc",
+    borderColor: "black",
     padding: 12,
     borderRadius: 5,
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 12,
     backgroundColor: "#f8f8f8",
+  },
+  wheelTimePicker: {
+    width: "100%",
+    alignSelf: "center",
+    backgroundColor: "white",
   },
   checkboxContainer: {
     flexDirection: "row",
