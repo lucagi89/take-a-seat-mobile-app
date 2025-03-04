@@ -8,7 +8,6 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Image,
-  ScrollView,
 } from "react-native";
 import { Link, useRouter, useFocusEffect } from "expo-router";
 import MapView, { Marker, Region, Callout } from "react-native-maps";
@@ -38,6 +37,7 @@ export default function Map() {
   const [sidebarVisible, setSidebarVisible] = useState(false);
   const slideAnim = useState(new Animated.Value(-250))[0];
 
+  // Fetches and sets the user's current location and nearby restaurants on component mount.
   useEffect(() => {
     const getLocation = async () => {
       try {
@@ -69,6 +69,7 @@ export default function Map() {
     getLocation();
   }, []);
 
+  // Animates the sidebar out of view when the screen loses focus.
   useFocusEffect(
     React.useCallback(() => {
       return () => {
@@ -81,6 +82,7 @@ export default function Map() {
     }, [])
   );
 
+  // fetches restaurants within the current map region
   const fetchVisibleRestaurants = async (mapRegion: Region) => {
     if (!mapRegion) return;
 
@@ -111,12 +113,22 @@ export default function Map() {
     }
   };
 
+  // Handles the "search here" button press to fetch restaurants within the current map region.
   const handleSearchHere = () => {
     if (region) {
-      fetchVisibleRestaurants(region);
+      setShowSearchButton(false);
+      setRegion({ ...region });
     }
   };
 
+  // Fetches and sets the visible restaurants whenever the map region changes.
+  useEffect(() => {
+    if (region) {
+      fetchVisibleRestaurants(region);
+    }
+  }, [region]);
+
+  // Navigates to the selected restaurant's page.
   const restaurantSelectionHandler = async (restaurantId: string) => {
     if (!user) {
       router.push("/login");
@@ -133,6 +145,7 @@ export default function Map() {
     }
   };
 
+  // Animates the sidebar in and out of view.
   const toggleSidebar = () => {
     Animated.timing(slideAnim, {
       toValue: sidebarVisible ? -250 : 0,
