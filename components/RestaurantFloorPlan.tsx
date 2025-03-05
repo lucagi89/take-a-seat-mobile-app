@@ -6,6 +6,7 @@ import {
   deleteTable,
   updateTableAvailability,
   findRestaurantTables,
+  createElement,
 } from "../services/databaseActions";
 import { useUser } from "../contexts/userContext";
 
@@ -129,13 +130,27 @@ export default function RestaurantFloorPlan({
     }
   };
 
-  const handleBooking = (table: Table, partySize: number) => {
+  const handleBooking = async (table: Table, partySize: number) => {
     if (partySize > table.capacity) {
       Alert.alert("Too Many People", "Please select a larger table.");
     } else if (table.capacity - partySize >= 3) {
       Alert.alert("Table Too Big", "Consider choosing a smaller table.");
     } else {
-      Alert.alert("Booking Confirmed", `Table booked for ${partySize} people.`);
+      // if user paid booking fee
+      await createElement("bookings", {
+        userId,
+        restaurantId,
+        tableId: table.id,
+        partySize,
+        bookedTime: new Date(), //now
+        limitTime: new Date(new Date().getTime() + 15 * 60 * 1000), //now plus 15 minutes
+        isApproved: false,
+        isFullfilled: false,
+      });
+      Alert.alert(
+        "Booking Confirmed",
+        `Table booked for ${partySize} people. We will notify you once the booking is approved. Once it is approved, you will have 15 minutes to arrive before the booking falls off.`
+      );
     }
   };
 
@@ -187,7 +202,7 @@ export default function RestaurantFloorPlan({
               const finalX = positionsRef.current[table.id]?.x ?? table.x;
               const finalY = positionsRef.current[table.id]?.y ?? table.y;
 
-              console.log(`Final table position: X:${finalX}, Y:${finalY}`);
+              // console.log(`Final table position: X:${finalX}, Y:${finalY}`);
 
               try {
                 // ✅ Save final position to DB

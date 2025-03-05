@@ -298,8 +298,16 @@ export default function CreateRestaurant() {
         onPress={() => showTimePicker("openingHours")}
         style={styles.timePicker}
       >
-        <Text>{restaurant.openingHours || "Select Time"}</Text>
+        <Text>
+          {restaurant.openingHours
+            ? new Date(restaurant.openingHours).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })
+            : "Select Time"}
+        </Text>
       </TouchableOpacity>
+
       {showPicker.openingHours && (
         <DateTimePicker
           value={times.openingHours}
@@ -319,7 +327,14 @@ export default function CreateRestaurant() {
         onPress={() => showTimePicker("closingHours")}
         style={styles.timePicker}
       >
-        <Text>{restaurant.closingHours || "Select Time"}</Text>
+        <Text>
+          {restaurant.closingHours
+            ? new Date(restaurant.closingHours).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })
+            : "Select Time"}
+        </Text>
       </TouchableOpacity>
       {showPicker.closingHours && (
         <DateTimePicker
@@ -341,7 +356,17 @@ export default function CreateRestaurant() {
             onPress={() => showTimePicker("secondOpeningHours")}
             style={styles.timePicker}
           >
-            <Text>{restaurant.secondOpeningHours || "Select Time"}</Text>
+            <Text>
+              {restaurant.openingHours
+                ? new Date(restaurant.secondOpeningHours).toLocaleTimeString(
+                    [],
+                    {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    }
+                  )
+                : "Select Time"}
+            </Text>
           </TouchableOpacity>
           {showPicker.secondOpeningHours && (
             <DateTimePicker
@@ -358,11 +383,22 @@ export default function CreateRestaurant() {
 
           <Text style={styles.label}>Second Closing Hours:</Text>
           <TouchableOpacity
-            onPress={() => showTimePicker("secondClosingHours")}
+            onPress={() => showTimePicker("openingHours")}
             style={styles.timePicker}
           >
-            <Text>{restaurant.secondClosingHours || "Select Time"}</Text>
+            <Text>
+              {restaurant.secondClosingHours
+                ? new Date(restaurant.secondClosingHours).toLocaleTimeString(
+                    [],
+                    {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    }
+                  )
+                : "Select Time"}
+            </Text>
           </TouchableOpacity>
+
           {showPicker.secondClosingHours && (
             <DateTimePicker
               value={times.secondClosingHours}
