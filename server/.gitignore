@@ -1,4 +1,0 @@
-.env*.local
-.env
-
-serviceAccountKey.json
