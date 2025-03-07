@@ -147,6 +147,9 @@ export default function RestaurantFloorPlan({
         isApproved: false,
         isFullfilled: false,
       });
+
+      updateTableAvailability(table.id, false);
+
       Alert.alert(
         "Booking Confirmed",
         `Table booked for ${partySize} people. We will notify you once the booking is approved. Once it is approved, you will have 15 minutes to arrive before the booking falls off.`
