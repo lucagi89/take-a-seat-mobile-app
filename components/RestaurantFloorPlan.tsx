@@ -144,11 +144,18 @@ export default function RestaurantFloorPlan({
         partySize,
         bookedTime: new Date(), //now
         limitTime: new Date(new Date().getTime() + 15 * 60 * 1000), //now plus 15 minutes
-        isApproved: false,
-        isFullfilled: false,
+        isApproved: true, //to modify later and set to false, restaurant owner will have to approve
+        isFullfilled: true, //to modify later and set to false, user has to actually arrive
+        isExpired: false,
       });
 
       updateTableAvailability(table.id, false);
+
+      setLocalTables((prevTables) =>
+        prevTables.map((t) =>
+          t.id === table.id ? { ...t, isAvailable: false } : t
+        )
+      );
 
       Alert.alert(
         "Booking Confirmed",
