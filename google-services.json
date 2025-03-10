@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "762264896678",
+    "project_id": "take-a-seat-mobile-app",
+    "storage_bucket": "take-a-seat-mobile-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:762264896678:android:fc6727c1bd6b822cd7e067",
+        "android_client_info": {
+          "package_name": "com.luca.takeaseat"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDHLEryMiQnImsV19XLeOq-s2BP376dsXw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

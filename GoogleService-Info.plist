@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>API_KEY</key>
+	<string>AIzaSyCWeEM5olx8FbGmFQ73P2gzLXMxXNiF8PU</string>
+	<key>GCM_SENDER_ID</key>
+	<string>762264896678</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.luca.takeaseat</string>
+	<key>PROJECT_ID</key>
+	<string>take-a-seat-mobile-app</string>
+	<key>STORAGE_BUCKET</key>
+	<string>take-a-seat-mobile-app.firebasestorage.app</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:762264896678:ios:add91eda8d38ddeed7e067</string>
+</dict>
+</plist>
