@@ -94,6 +94,7 @@ export default function Map() {
 
     try {
       const restaurantsRef = collection(db, "restaurants");
+      if (!restaurantsRef) return;
       const q = query(
         restaurantsRef,
         where("latitude", ">=", latMin),
@@ -101,6 +102,7 @@ export default function Map() {
         where("longitude", ">=", lonMin),
         where("longitude", "<=", lonMax)
       );
+      console.log("Querying for visible restaurants...", q);
       const querySnapshot = await getDocs(q);
       const fetchedRestaurants = querySnapshot.docs.map((doc) => ({
         id: doc.id,

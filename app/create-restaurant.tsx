@@ -34,8 +34,19 @@ export default function CreateRestaurant() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const { user, setUserData } = useUser();
+  const { user, userData, setUserData } = useUser();
+  console.log(userData);
+
   const router = useRouter();
+
+  if (!user) {
+    router.push("/login");
+    return null;
+  } else if (!userData) {
+    alert("Please complete your profile first.");
+    router.push("/complete-profile");
+    return null;
+  }
 
   const [isContinuousOpening, setIsContinuousOpening] = useState(true);
   const [showPicker, setShowPicker] = useState<{ [key: string]: boolean }>({
@@ -171,8 +182,12 @@ export default function CreateRestaurant() {
       );
 
       await updateData("users", user.uid, { isOwner: true });
-      setUserData({ ...user, isOwner: true });
 
+      if (user) {
+        setUserData({ ...user, isOwner: true });
+      }
+
+      // ✅ Redirect only if all steps are successful
       router.push("/profile");
     } catch (err) {
       console.error("Error creating restaurant:", err);

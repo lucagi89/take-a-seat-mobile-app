@@ -9,17 +9,16 @@ import {
   Image,
   ActivityIndicator,
 } from "react-native";
-import { getAuth, updateProfile, onAuthStateChanged } from "firebase/auth";
+import { updateProfile, onAuthStateChanged } from "firebase/auth";
 import { getFirestore, doc, setDoc, getDoc } from "firebase/firestore";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import * as ImagePicker from "expo-image-picker";
-import { db, storage } from "../scripts/firebase.config";
+import { db, storage, auth } from "../scripts/firebase.config";
 import { useRouter } from "expo-router";
 import { useUser } from "../contexts/userContext";
 // import placeholderImage from '../assets/images/placeholderprofilepic.png'
 
 const CompleteProfileScreen = () => {
-  const auth = getAuth();
   const router = useRouter();
   const { setUserData } = useUser();
 
@@ -46,6 +45,7 @@ const CompleteProfileScreen = () => {
           const userDoc = await getDoc(doc(db, "users", user.uid));
           if (userDoc.exists()) {
             const existingUserData = userDoc.data();
+            console.log("Existing user data:", existingUserData);
             setUserInfo({
               name: existingUserData.name || "",
               lastName: existingUserData.lastName || "",
