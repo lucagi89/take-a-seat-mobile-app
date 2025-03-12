@@ -134,6 +134,18 @@ export const deleteAllDocuments = async (myCollection: string) => {
 };
 
 
+// USER ACTIONS
+
+export async function fetchUserData(userId: string): Promise<Partial<User> | void> {
+  const userDoc = await getDoc(doc(db, "users", userId));
+  if (userDoc.exists()) {
+    const data = userDoc.data();
+    return data;
+  }
+  return undefined;
+};
+
+
 
 async function deleteUserRestaurants(): Promise<void> {
   if (!user) { return; }
@@ -150,6 +162,10 @@ async function deleteUserRestaurants(): Promise<void> {
 
   await Promise.all(deletePromises);
 }
+
+
+// RESTAURANT ACTIONS
+
 
 async function deleteAllRestaurantData(restaurantId: string): Promise<void> {
   await deleteRestaurantTables(restaurantId);
@@ -221,7 +237,7 @@ export async function findRestaurantTables(restaurantId: string): Promise<Partia
 }
 
 
-export async function findRestaurantDishes(restaurantId: string): Promise<Partial<Dish[]>> {
+export async function findRestaurantDishes(restaurantId: string): Promise<Partial<Dish[]> | undefined> {
   try {
     const q = query(
       collection(db, "dishes"),
@@ -269,17 +285,6 @@ export async function createNewRestaurant(data: any, myCollection: string): Prom
     console.error(`Error creating entry for ${data.name}:`, error);
     return { success: false, message: `Error adding ${data.name}` };
   }
-};
-
-
-
-export async function fetchUserData(userId: string): Promise<Partial<User> | void> {
-  const userDoc = await getDoc(doc(db, "users", userId));
-  if (userDoc.exists()) {
-    const data = userDoc.data();
-    return data;
-  }
-  return undefined;
 };
 
 
