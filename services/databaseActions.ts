@@ -13,6 +13,14 @@ import { db } from "../scripts/firebase.config";
 import {geocodeAddress} from "./geolocation";
 import { useUser } from "../contexts/userContext";
 const { user } = useUser();
+import { Restaurant, Dish, Review, Table, User } from "../data/types";
+// import { User } from "firebase/auth";
+
+
+
+
+
+//GENERAL DATABASE ACTIONS
 
 export async function addDocument(data: any, myCollection: string): Promise<void> {
 if (!user) { return; }
@@ -72,6 +80,7 @@ export async function deleteDocument(myCollection: string, id: string): Promise<
   }
 }
 
+// COLLECTION ACTIONS
 
 export async function fetchCollectionData(myCollection: string): Promise<any[]> {
   try {
@@ -89,9 +98,46 @@ export async function fetchCollectionData(myCollection: string): Promise<any[]> 
   }
 }
 
+// ✅ Check if Collection Has Documents
+export const checkIfCollectionHasDocuments = async (myCollection: string) => {
+  try {
+    const querySnapshot = await getDocs(collection(db, myCollection));
+    const hasDocuments = !querySnapshot.empty;
+    console.log(`Collection '${myCollection}' has documents: ${hasDocuments}`);
+    return hasDocuments;
+  } catch (error) {
+    console.error("Error checking collection:", error);
+    throw error;
+  }
+};
+
+// ✅ Delete All Documents in a Collection
+export const deleteAllDocuments = async (myCollection: string) => {
+  try {
+    const querySnapshot = await getDocs(collection(db, myCollection));
+
+    if (querySnapshot.empty) {
+      console.log(`Collection '${myCollection}' is already empty.`);
+      return;
+    }
+
+    const deletePromises = querySnapshot.docs.map((docItem) =>
+      deleteDoc(doc(db, myCollection, docItem.id))
+    );
+
+    await Promise.all(deletePromises); // ✅ Delete all documents in parallel
+    console.log(`✅ All documents in '${myCollection}' have been deleted.`);
+  } catch (error) {
+    console.error(`🚨 Error deleting documents from '${myCollection}':`, error);
+    throw error;
+  }
+};
 
 
-async function deleteUserRestaurants(userId: string): Promise<void> {
+
+async function deleteUserRestaurants(): Promise<void> {
+  if (!user) { return; }
+  const userId = user.uid;
   const restaurantsRef = collection(db, "restaurants");
   const q = query(restaurantsRef, where("ownerId", "==", userId));
   const querySnapshot = await getDocs(q);
@@ -105,11 +151,6 @@ async function deleteUserRestaurants(userId: string): Promise<void> {
   await Promise.all(deletePromises);
 }
 
-/**
- * Deletes all tables associated with a specific restaurant.
- *
- * @param {string} restaurantId - The restaurant's ID.
- */
 async function deleteAllRestaurantData(restaurantId: string): Promise<void> {
   await deleteRestaurantTables(restaurantId);
   await deleteRestaurantDishes(restaurantId);
@@ -157,16 +198,7 @@ async function deleteRestaurantReviews(restaurantId: string): Promise<void> {
 
 
 
-
-
-
-interface Table {
-  id: string;
-  restaurantId: string;
-  capacity: number; // Adjust based on your database schema
-}
-
-export async function findRestaurantTables(restaurantId: string): Promise<Table[]> {
+export async function findRestaurantTables(restaurantId: string): Promise<Partial<Table[]>> {
   try {
     const q = query(
       collection(db, "restaurantTables"),
@@ -188,7 +220,8 @@ export async function findRestaurantTables(restaurantId: string): Promise<Table[
   }
 }
 
-export async function findRestaurantDishes(restaurantId: string): Promise<any[]> {
+
+export async function findRestaurantDishes(restaurantId: string): Promise<Partial<Dish[]>> {
   try {
     const q = query(
       collection(db, "dishes"),
@@ -212,7 +245,7 @@ export async function findRestaurantDishes(restaurantId: string): Promise<any[]>
 
 
 
-export const createNewRestaurant = async (data: any, myCollection: string) => {
+export async function createNewRestaurant(data: any, myCollection: string): Promise<any> {
   try {
     const { address, city, postcode } = data;
     const fullAddress = `${address}, ${city}, ${postcode}`;
@@ -240,49 +273,14 @@ export const createNewRestaurant = async (data: any, myCollection: string) => {
 
 
 
-// ✅ Check if Collection Has Documents
-export const checkIfCollectionHasDocuments = async (myCollection: string) => {
-  try {
-    const querySnapshot = await getDocs(collection(db, myCollection));
-    const hasDocuments = !querySnapshot.empty;
-    console.log(`Collection '${myCollection}' has documents: ${hasDocuments}`);
-    return hasDocuments;
-  } catch (error) {
-    console.error("Error checking collection:", error);
-    throw error;
+export async function fetchUserData(userId: string): Promise<Partial<User> | void> {
+  const userDoc = await getDoc(doc(db, "users", userId));
+  if (userDoc.exists()) {
+    const data = userDoc.data();
+    return data;
   }
+  return undefined;
 };
-
-// ✅ Delete All Documents in a Collection
-export const deleteAllDocuments = async (myCollection: string) => {
-  try {
-    const querySnapshot = await getDocs(collection(db, myCollection));
-
-    if (querySnapshot.empty) {
-      console.log(`Collection '${myCollection}' is already empty.`);
-      return;
-    }
-
-    const deletePromises = querySnapshot.docs.map((docItem) =>
-      deleteDoc(doc(db, myCollection, docItem.id))
-    );
-
-    await Promise.all(deletePromises); // ✅ Delete all documents in parallel
-    console.log(`✅ All documents in '${myCollection}' have been deleted.`);
-  } catch (error) {
-    console.error(`🚨 Error deleting documents from '${myCollection}':`, error);
-    throw error;
-  }
-};
-
-
-export const checkUserData = async (userId: string) => {
-      const userDoc = await getDoc(doc(db, "users", userId));
-      if (userDoc.exists()) {
-        const data = userDoc.data();
-        return data;
-      }
-    };
 
 
 export const getUserRestaurants = async (userId: string) => {
@@ -313,7 +311,7 @@ export const getRestaurantById = async (restaurantId: string) => {
 };
 
 
-export const updateTablePosition = async (tableId, x, y) => {
+export const updateTablePosition = async (tableId: string, x: number, y: number) => {
   try {
 
     const tableRef = doc(db, "restaurantTables", tableId); // ✅ Verify collection name
@@ -363,33 +361,13 @@ export const updateTableSeatsTaken = async (tableId: string, seatsTaken: number)
 }
 
 
-export const deleteTable = async (tableId: string) => {
-  try {
-    await deleteDoc(doc(db, "restaurantTables", tableId));
-    console.log("Table deleted:", tableId);
-  } catch (error) {
-    console.error("Error deleting table:", error);
-  }
-}
-
-
 
 
 
 //REVIEWS
 
-// Define the Review type
-export interface Review {
-  id: string;
-  title: string;
-  body: string;
-  rating: number;
-  userId: string;
-  restaurantId: string;
-}
 
-
-export const addReview = async (data: any) => {
+export const addReview = async (data: Review) => {
   try {
     await addDoc(collection(db, "reviews"), data);
     console.log("Review added successfully");
@@ -435,7 +413,7 @@ export const deleteReview = async (reviewId: string) => {
 };
 
 
-export const updateReview = async (reviewId: string, data: any) => {
+export const updateReview = async (reviewId: string, data: Partial<Review>) => {
   try {
     const reviewRef = doc(db, "reviews", reviewId);
     await updateDoc(reviewRef, data);
