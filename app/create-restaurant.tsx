@@ -14,7 +14,10 @@ import {
   Platform,
 } from "react-native";
 import { useRouter } from "expo-router";
-import { createDatabaseEntry, updateData } from "../services/databaseActions";
+import {
+  createNewRestaurant,
+  updateDocument,
+} from "../services/databaseActions";
 import { useUser } from "../contexts/userContext";
 import * as ImagePicker from "expo-image-picker";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
@@ -176,12 +179,12 @@ export default function CreateRestaurant() {
         imageUris.map((uri) => uploadImageAsync(uri))
       );
 
-      await createDatabaseEntry(
+      await createNewRestaurant(
         { ...restaurant, userId: user.uid, isAvailable: true, imageUrls },
         "restaurants"
       );
 
-      await updateData("users", user.uid, { isOwner: true });
+      await updateDocument("users", user.uid, { isOwner: true });
 
       if (user) {
         setUserData({ ...user, isOwner: true });

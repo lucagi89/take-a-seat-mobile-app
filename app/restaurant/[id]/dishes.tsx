@@ -10,7 +10,7 @@ import {
 import React, { useEffect, useState } from "react";
 import { useRestaurant } from "./RestaurantContext";
 import { useUser } from "../../../contexts/userContext";
-import { fetchData } from "../../../services/databaseActions";
+import { fetchCollectionData } from "../../../services/databaseActions";
 
 export default function Menu() {
   const [dishes, setDishes] = useState([]);
@@ -21,7 +21,7 @@ export default function Menu() {
 
   useEffect(() => {
     if (!restaurantId) return;
-    fetchData(restaurantId, "dishes")
+    fetchCollectionData(restaurantId, "dishes")
       .then((dishes) => setDishes(dishes))
       .finally(() => setLoading(false));
   }, [restaurantId]);

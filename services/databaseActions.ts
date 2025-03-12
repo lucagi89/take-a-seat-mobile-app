@@ -10,11 +10,12 @@ import {
   where
 } from "firebase/firestore";
 import { db } from "../scripts/firebase.config";
-import * as Location from 'expo-location';
+import {geocodeAddress} from "./geolocation";
 import { useUser } from "../contexts/userContext";
+const { user } = useUser();
 
-
-export async function addData(data: any, myCollection: string): Promise<void> {
+export async function addDocument(data: any, myCollection: string): Promise<void> {
+if (!user) { return; }
   try {
     const docRef = await addDoc(collection(db, myCollection), data);
     console.log("Document written with ID: ", docRef.id);
@@ -24,24 +25,8 @@ export async function addData(data: any, myCollection: string): Promise<void> {
   }
 }
 
-
-export async function fetchData(myCollection: string): Promise<any[]> {
-  try {
-    const querySnapshot = await getDocs(collection(db, myCollection));
-    const data: any[] = querySnapshot.docs.map((doc) => ({
-      id: doc.id,          // Include document ID
-      ...doc.data(),       // Spread the document data
-    }));
-
-    console.log('Data fetched:', data);
-    return data;
-  } catch (error) {
-    console.error('Error fetching document:', error);
-    throw error;
-  }
-}
-
-export async function updateData(myCollection: string, id: string, data: any): Promise<void> {
+export async function updateDocument(myCollection: string, id: string, data: any): Promise<void> {
+  if (!user) { return; }
   try {
     const docRef = doc(db, myCollection, id);
     await updateDoc(docRef, data);
@@ -53,24 +38,23 @@ export async function updateData(myCollection: string, id: string, data: any): P
 }
 
 
-export async function createElement(myCollection: string, data: any): Promise<void> {
+export async function fetchDocument(myCollection: string, id: string): Promise<any> {
   try {
-    const docRef = await addDoc(collection(db, myCollection), data);
-    console.log("Document written with ID: ", docRef.id);
+    const docRef = doc(db, myCollection, id);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      return docSnap.data();
+    } else {
+      console.log("No such document!");
+      return null;
+    }
   } catch (error) {
-    console.error('Error adding document:', error);
+    console.error('Error fetching document:', error);
     throw error;
   }
 }
 
-
-/**
- * Deletes a document and its associated sub-collections.
- *
- * @param {string} myCollection - The collection name (e.g., 'users', 'restaurants').
- * @param {string} id - The ID of the document to delete.
- */
-export async function deleteElement(myCollection: string, id: string): Promise<void> {
+export async function deleteDocument(myCollection: string, id: string): Promise<void> {
   try {
     // Delete associated data based on the main collection
     if (myCollection === "users") {
@@ -88,18 +72,32 @@ export async function deleteElement(myCollection: string, id: string): Promise<v
   }
 }
 
-/**
- * Deletes all restaurants associated with a specific user.
- *
- * @param {string} userId - The user's ID.
- */
+
+export async function fetchCollectionData(myCollection: string): Promise<any[]> {
+  try {
+    const querySnapshot = await getDocs(collection(db, myCollection));
+    const data: any[] = querySnapshot.docs.map((doc) => ({
+      id: doc.id,          // Include document ID
+      ...doc.data(),       // Spread the document data
+    }));
+
+    console.log('Data fetched:', data);
+    return data;
+  } catch (error) {
+    console.error('Error fetching document:', error);
+    throw error;
+  }
+}
+
+
+
 async function deleteUserRestaurants(userId: string): Promise<void> {
   const restaurantsRef = collection(db, "restaurants");
   const q = query(restaurantsRef, where("ownerId", "==", userId));
   const querySnapshot = await getDocs(q);
 
   const deletePromises = querySnapshot.docs.map(async (docSnapshot) => {
-    await deleteRestaurantTables(docSnapshot.id); // Delete associated tables first
+    await deleteAllRestaurantData(docSnapshot.id); // Delete associated restaurant data first
     await deleteDoc(doc(db, "restaurants", docSnapshot.id)); // Delete the restaurant
     console.log(`Deleted restaurant with ID: ${docSnapshot.id}`);
   });
@@ -112,18 +110,54 @@ async function deleteUserRestaurants(userId: string): Promise<void> {
  *
  * @param {string} restaurantId - The restaurant's ID.
  */
+async function deleteAllRestaurantData(restaurantId: string): Promise<void> {
+  await deleteRestaurantTables(restaurantId);
+  await deleteRestaurantDishes(restaurantId);
+  await deleteRestaurantReviews(restaurantId);
+}
+
 async function deleteRestaurantTables(restaurantId: string): Promise<void> {
-  const tablesRef = collection(db, "tables");
-  const q = query(tablesRef, where("restaurantId", "==", restaurantId)); // Assuming 'restaurantId' links tables to restaurant
+  const tablesRef = collection(db, "restaurantTables");
+  const q = query(tablesRef, where("restaurantId", "==", restaurantId));
   const querySnapshot = await getDocs(q);
 
-  const deletePromises = querySnapshot.docs.map(async (docSnapshot) => {
-    await deleteDoc(doc(db, "tables", docSnapshot.id));
-    console.log(`Deleted table with ID: ${docSnapshot.id}`);
-  });
+  const deletePromises = querySnapshot.docs.map((doc) =>
+    deleteDoc(doc.ref)
+  );
 
   await Promise.all(deletePromises);
+  console.log(`Deleted tables for restaurant: ${restaurantId}`);
 }
+
+async function deleteRestaurantDishes(restaurantId: string): Promise<void> {
+  const dishesRef = collection(db, "dishes");
+  const q = query(dishesRef, where("restaurantId", "==", restaurantId));
+  const querySnapshot = await getDocs(q);
+
+  const deletePromises = querySnapshot.docs.map((doc) =>
+    deleteDoc(doc.ref)
+  );
+
+  await Promise.all(deletePromises);
+  console.log(`Deleted dishes for restaurant: ${restaurantId}`);
+}
+
+async function deleteRestaurantReviews(restaurantId: string): Promise<void> {
+  const reviewsRef = collection(db, "reviews");
+  const q = query(reviewsRef, where("restaurantId", "==", restaurantId));
+  const querySnapshot = await getDocs(q);
+
+  const deletePromises = querySnapshot.docs.map((doc) =>
+    deleteDoc(doc.ref)
+  );
+
+  await Promise.all(deletePromises);
+  console.log(`Deleted reviews for restaurant: ${restaurantId}`);
+}
+
+
+
+
 
 
 interface Table {
@@ -154,34 +188,31 @@ export async function findRestaurantTables(restaurantId: string): Promise<Table[
   }
 }
 
-
-
-
-
-export const geocodeAddress = async (address: string) => {
+export async function findRestaurantDishes(restaurantId: string): Promise<any[]> {
   try {
-    // Request permission (iOS-specific, Android handles this differently)
-    const { status } = await Location.requestForegroundPermissionsAsync();
-    if (status !== 'granted') {
-      alert('Permission to access location was denied');
-      return;
-    }
+    const q = query(
+      collection(db, "dishes"),
+      where("restaurantId", "==", String(restaurantId))
+    );
+    const querySnapshot = await getDocs(q);
 
-    // Geocode the address
-    const geocodedLocation = await Location.geocodeAsync(address);
+    const dishes = querySnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
 
-    if (geocodedLocation.length > 0) {
-      const { latitude, longitude } = geocodedLocation[0];
-      return { latitude, longitude };
-    } else {
-      alert('No coordinates found for this address.');
-    }
+    console.log("Dishes fetched:", dishes);
+    return dishes;
   } catch (error) {
-    console.error('Error geocoding address:', error);
+    console.error("Error fetching dishes:", error);
+    throw error;
   }
-};
+}
 
-export const createDatabaseEntry = async (data: any, myCollection: string) => {
+
+
+
+export const createNewRestaurant = async (data: any, myCollection: string) => {
   try {
     const { address, city, postcode } = data;
     const fullAddress = `${address}, ${city}, ${postcode}`;
@@ -347,16 +378,6 @@ export const deleteTable = async (tableId: string) => {
 
 //REVIEWS
 
-export const addReview = async (data: any) => {
-  try {
-    await addDoc(collection(db, "reviews"), data);
-    console.log("Review added successfully");
-  } catch (error) {
-    console.error("Error adding review:", error);
-  }
-};
-
-
 // Define the Review type
 export interface Review {
   id: string;
@@ -366,6 +387,16 @@ export interface Review {
   userId: string;
   restaurantId: string;
 }
+
+
+export const addReview = async (data: any) => {
+  try {
+    await addDoc(collection(db, "reviews"), data);
+    console.log("Review added successfully");
+  } catch (error) {
+    console.error("Error adding review:", error);
+  }
+};
 
 // Explicitly define return type as `Promise<Review[]>`
 export const getReviews = async (restaurantId: string): Promise<Review[]> => {

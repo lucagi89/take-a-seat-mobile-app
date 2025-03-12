@@ -10,7 +10,7 @@ import {
 import { useUser } from "../../contexts/userContext";
 import {
   getUserRestaurants,
-  deleteElement,
+  deleteDocument,
 } from "../../services/databaseActions";
 import RestaurantCard from "../../components/RestaurantCard";
 import { Redirect, useRouter } from "expo-router";
@@ -48,7 +48,7 @@ export default function MyRestaurants() {
 
   const handleDelete = async (id: string) => {
     try {
-      await deleteElement("restaurants", id);
+      await deleteDocument("restaurants", id);
       setUserRestaurants(
         userRestaurants.filter((restaurant) => restaurant.id !== id)
       );

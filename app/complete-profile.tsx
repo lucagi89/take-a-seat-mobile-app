@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import { updateProfile, onAuthStateChanged } from "firebase/auth";
 import { getFirestore, doc, setDoc, getDoc } from "firebase/firestore";
+import { addDocument } from "../services/databaseActions";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import * as ImagePicker from "expo-image-picker";
 import { db, storage, auth } from "../scripts/firebase.config";
