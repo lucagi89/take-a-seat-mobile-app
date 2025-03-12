@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { Text, View, StyleSheet } from "react-native";
 import { useUser } from "../contexts/userContext";
 import { Redirect, Link } from "expo-router";
-import { checkUserData, getUserRestaurants } from "../services/databaseActions";
+import { fetchUserData, getUserRestaurants } from "../services/databaseActions";
 
 import { Image } from "react-native";
 
@@ -13,8 +13,8 @@ interface UserData {
 }
 
 export default function Profile() {
-  const { user, loading } = useUser();
-  const [userData, setUserData] = useState<UserData | null>(null);
+  const { user, loading, userData } = useUser();
+
   const [userRestaurants, setUserRestaurants] = useState([]);
 
   useEffect(() => {
@@ -22,15 +22,8 @@ export default function Profile() {
       getUserRestaurants(user.uid).then((result) => {
         setUserRestaurants(result);
       });
-      checkUserData(user.uid).then((data) => {
-        if (data) {
-          setUserData(data as UserData);
-        } else {
-          setUserData(null);
-        }
-      });
     }
-  }, [user]);
+  }, []);
 
   if (loading) {
     return (

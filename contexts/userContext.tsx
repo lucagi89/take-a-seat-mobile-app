@@ -2,7 +2,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "../scripts/firebase.config"; // Ensure this points to your Firebase setup
-import { checkUserData } from "../services/databaseActions";
+import { fetchUserData } from "../services/databaseActions";
 
 type UserData = {
   name: string;
@@ -41,7 +41,6 @@ export const UserContextProvider = ({
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser) {
-        // You can fetch more user details here if needed
         setUser({
           uid: currentUser.uid,
           email: currentUser.email,
@@ -49,7 +48,7 @@ export const UserContextProvider = ({
         });
 
         // Fetch user data from Firestore
-        checkUserData(currentUser.uid).then((data) => {
+        fetchUserData(currentUser.uid).then((data) => {
           if (data) {
             setUserData(data);
           } else {

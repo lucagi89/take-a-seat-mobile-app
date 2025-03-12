@@ -1,5 +1,5 @@
 import { Stack } from "expo-router";
-import { useUser, UserContextProvider } from "../contexts/userContext";
+import { UserContextProvider } from "../contexts/userContext";
 import { Slot } from "expo-router";
 import { SafeAreaView } from "react-native";
 import { StripeProvider } from "@stripe/stripe-react-native";

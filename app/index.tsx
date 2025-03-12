@@ -14,7 +14,7 @@ import MapView, { Marker, Region, Callout } from "react-native-maps";
 import * as Location from "expo-location";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "../scripts/firebase.config";
-import { checkUserData } from "../services/databaseActions";
+import { fetchUserData } from "../services/databaseActions";
 import { useUser } from "../contexts/userContext"; // ✅ Import userData
 import { Ionicons } from "@expo/vector-icons";
 import { Animated } from "react-native";
@@ -135,7 +135,7 @@ export default function Map() {
     if (!user) {
       router.push("/login");
     }
-    const userHasData = await checkUserData(user?.uid);
+    const userHasData = await fetchUserData(user?.uid);
     if (userHasData) {
       router.push({ pathname: `/restaurant/${restaurantId}` });
     } else {

@@ -7,11 +7,10 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  Alert,
 } from "react-native";
-import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../../scripts/firebase.config";
 import { signUp } from "../../services/auth";
+import { addDocument } from "../../services/databaseActions";
 
 export default function SignUpScreen() {
   const router = useRouter();
@@ -28,6 +27,20 @@ export default function SignUpScreen() {
 
     try {
       await signUp(email, password);
+      if (auth.currentUser) {
+        await addDocument(
+          {
+            id: auth.currentUser.uid || "",
+            email: auth.currentUser.email || "",
+            isOwner: false,
+            isProfileComplete: false,
+          },
+          "users"
+        );
+      } else {
+        throw new Error("User is not authenticated");
+      }
+
       router.push("/");
     } catch (err) {
       setError(err.message);

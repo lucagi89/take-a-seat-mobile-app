@@ -12,7 +12,6 @@ import {
 import { db } from "../scripts/firebase.config";
 import {geocodeAddress} from "./geolocation";
 import { useUser } from "../contexts/userContext";
-const { user } = useUser();
 import { Restaurant, Dish, Review, Table, User } from "../data/types";
 // import { User } from "firebase/auth";
 
@@ -45,6 +44,18 @@ export async function updateDocument(myCollection: string, id: string, data: any
   }
 }
 
+export async function checkIfDocumentExists(myCollection: string, id: string): Promise<boolean> {
+  try {
+    const docRef = doc(db, myCollection, id);
+    const docSnap = await getDoc(docRef);
+    return docSnap.exists();
+  } catch (error) {
+    console.error('Error checking document:', error);
+    throw error;
+  }
+}
+
+
 
 export async function fetchDocument(myCollection: string, id: string): Promise<any> {
   try {
@@ -61,6 +72,8 @@ export async function fetchDocument(myCollection: string, id: string): Promise<a
     throw error;
   }
 }
+
+
 
 export async function deleteDocument(myCollection: string, id: string): Promise<void> {
   try {

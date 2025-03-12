@@ -10,9 +10,8 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { updateProfile, onAuthStateChanged } from "firebase/auth";
-import { getFirestore, doc, setDoc, getDoc } from "firebase/firestore";
-import { addDocument } from "../services/databaseActions";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { getFirestore, doc, setDoc } from "firebase/firestore";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import * as ImagePicker from "expo-image-picker";
 import { db, storage, auth } from "../scripts/firebase.config";
 import { useRouter } from "expo-router";
@@ -21,7 +20,7 @@ import { useUser } from "../contexts/userContext";
 
 const CompleteProfileScreen = () => {
   const router = useRouter();
-  const { setUserData } = useUser();
+  const { setUserData, userData } = useUser();
 
   const [userInfo, setUserInfo] = useState({
     name: "",
@@ -41,82 +40,45 @@ const CompleteProfileScreen = () => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         setUserId(user.uid);
-
-        try {
-          const userDoc = await getDoc(doc(db, "users", user.uid));
-          if (userDoc.exists()) {
-            const existingUserData = userDoc.data();
-            console.log("Existing user data:", existingUserData);
-            setUserInfo({
-              name: existingUserData.name || "",
-              lastName: existingUserData.lastName || "",
-              streetAddress: existingUserData.streetAddress || "",
-              postcode: existingUserData.postcode || "",
-              country: existingUserData.country || "",
-              city: existingUserData.city || "",
-              phone: existingUserData.phone || "",
-            });
-            // If there's a photoURL in Firestore, set it as the image URI.
-            if (existingUserData.photoURL) {
-              setImageUri(existingUserData.photoURL);
-            } else if (user.photoURL) {
-              // Alternatively, check the Auth user object.
-              setImageUri(user.photoURL);
-            }
-          } else if (user.photoURL) {
-            // If no Firestore document but Auth has a photoURL
-            setImageUri(user.photoURL);
-          }
-        } catch (error) {
-          console.error("Error fetching user data:", error);
-        }
       }
-      setLoading(false);
     });
 
     return () => unsubscribe();
   }, []);
 
-  // Function to open the image library and pick an image
-  const pickImage = async () => {
-    // Ask for permission
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== "granted") {
-      Alert.alert(
-        "Permission needed",
-        "Permission to access media library is required!"
-      );
-      return;
-    }
+  useEffect(() => {
+    if (userData) {
+      setUserInfo({
+        name: userData.name || "",
+        lastName: userData.lastName || "",
+        streetAddress: userData.streetAddress || "",
+        postcode: userData.postcode || "",
+        country: userData.country || "",
+        city: userData.city || "",
+        phone: userData.phone || "",
+      });
 
-    // Launch the image library
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ["images"],
-      quality: 0.7,
-    });
-
-    if (!result.canceled) {
-      if (result.assets && result.assets.length > 0) {
-        setImageUri(result.assets[0].uri);
+      if (userData.photoURL) {
+        setImageUri(userData.photoURL);
       }
     }
-  };
+    setLoading(false);
+  }, [userData]);
 
-  // Function to upload the image to Firebase Storage
-  const uploadImageAsync = async (uri: string) => {
-    // Convert the image URI to a blob
-    const response = await fetch(uri);
-    const blob = await response.blob();
+  const uploadImageAsync = async (uri: string): Promise<string | null> => {
+    try {
+      const response = await fetch(uri);
+      const blob = await response.blob();
+      const filename = `profile_${new Date().getTime()}`;
+      const storageRef = ref(storage, `profilePics/${userId}/${filename}`);
 
-    // Create a unique file name
-    const filename = `profile_${new Date().getTime()}`;
-    const storageRef = ref(storage, `profilePics/${userId}/${filename}`);
-
-    // Upload the image
-    const snapshot = await uploadBytes(storageRef, blob);
-    // Retrieve the image's download URL
-    const downloadURL = await getDownloadURL(snapshot.ref);
-    return downloadURL;
+      const snapshot = await uploadBytes(storageRef, blob);
+      return await getDownloadURL(snapshot.ref);
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      Alert.alert("Upload Failed", "Could not upload image. Try again.");
+      return null;
+    }
   };
 
   const handleSaveProfile = async () => {
@@ -130,34 +92,30 @@ const CompleteProfileScreen = () => {
 
     try {
       let photoURL = null;
-      // If an image is selected, upload it to Firebase Storage
       if (imageUri) {
         photoURL = await uploadImageAsync(imageUri);
       }
 
-      // Update Firebase Auth with displayName and photoURL (if available)
       await updateProfile(auth.currentUser!, {
         displayName: userInfo.name,
         ...(photoURL && { photoURL }),
       });
 
-      // Save user data in Firestore, including the photoURL if the image was uploaded
       await setDoc(
         doc(db, "users", userId),
         {
           ...userInfo,
           isProfileComplete: true,
-          isOwner: false,
+          isOwner: userData?.isOwner || false,
           ...(photoURL && { photoURL }),
         },
         { merge: true }
       );
 
-      // Update the user context with the new data
       setUserData({
         ...userInfo,
         isProfileComplete: true,
-        isOwner: false,
+        isOwner: userData?.isOwner || false,
         ...(photoURL && { photoURL }),
       });
 
@@ -168,6 +126,27 @@ const CompleteProfileScreen = () => {
       Alert.alert("Error", "Could not save profile.");
     } finally {
       setUploading(false);
+    }
+  };
+
+  const pickImage = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (status !== "granted") {
+      Alert.alert(
+        "Permission needed",
+        "Permission to access media library is required!"
+      );
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images"], // ✅ Correct for latest versions
+      quality: 0.7,
+    });
+
+    if (!result.canceled && result.assets.length > 0) {
+      setImageUri(result.assets[0].uri);
     }
   };
 
