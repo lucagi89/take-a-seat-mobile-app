@@ -15,14 +15,14 @@ import * as Location from "expo-location";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "../scripts/firebase.config";
 import { fetchUserData } from "../services/databaseActions";
-import { useUser } from "../contexts/userContext"; // ✅ Import userData
+import { useUser } from "../contexts/userContext";
 import { Ionicons } from "@expo/vector-icons";
 import { Animated } from "react-native";
 import { handleLogout } from "../services/auth";
 import { Restaurant } from "../data/types";
 
 export default function Map() {
-  const { user, userData } = useUser(); // ✅ Use userData from context
+  const { user, userData } = useUser();
   const router = useRouter();
 
   const [location, setLocation] = useState<Location.LocationObject | null>(
@@ -36,6 +36,13 @@ export default function Map() {
   const [showSearchButton, setShowSearchButton] = useState(false);
   const [sidebarVisible, setSidebarVisible] = useState(false);
   const slideAnim = useState(new Animated.Value(-250))[0];
+
+  // Redirect to login if the user is not authenticated
+  // useEffect(() => {
+  //   if (!user) {
+  //     router.push("/login");
+  //   }
+  // }, [user, router]);
 
   // Fetches and sets the user's current location and nearby restaurants on component mount.
   useEffect(() => {
@@ -82,7 +89,7 @@ export default function Map() {
     }, [])
   );
 
-  // fetches restaurants within the current map region
+  // Fetches restaurants within the current map region
   const fetchVisibleRestaurants = async (mapRegion: Region) => {
     if (!mapRegion) return;
 
@@ -156,110 +163,111 @@ export default function Map() {
     }).start(() => setSidebarVisible(!sidebarVisible));
   };
 
-  return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
-        {loading ? (
+  // If loading, show the activity indicator
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.container}>
           <ActivityIndicator
             size="large"
             color="#0000ff"
             style={styles.loader}
           />
-        ) : (
-          region && (
-            <>
-              <MapView
-                style={styles.map}
-                showsUserLocation={true}
-                showsMyLocationButton={true}
-                showsCompass={true}
-                region={region}
-                onRegionChangeComplete={(newRegion) => {
-                  setRegion(newRegion);
-                  setShowSearchButton(true);
-                }}
-              >
-                {visibleRestaurants.map((restaurant) => (
-                  <Marker
-                    key={restaurant.id}
-                    coordinate={{
-                      latitude: restaurant.latitude,
-                      longitude: restaurant.longitude,
-                    }}
-                    pinColor={restaurant.isAvailable ? "green" : "red"}
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // If user is not authenticated, return null (navigation is handled by useEffect)
+  if (!user) {
+    return null; // The useEffect above will handle the redirect
+  }
+
+  // Main render when user is authenticated and loading is complete
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.container}>
+        {region && (
+          <>
+            <MapView
+              style={styles.map}
+              showsUserLocation={true}
+              showsMyLocationButton={true}
+              showsCompass={true}
+              region={region}
+              onRegionChangeComplete={(newRegion) => {
+                setRegion(newRegion);
+                setShowSearchButton(true);
+              }}
+            >
+              {visibleRestaurants.map((restaurant) => (
+                <Marker
+                  key={restaurant.id}
+                  coordinate={{
+                    latitude: restaurant.latitude,
+                    longitude: restaurant.longitude,
+                  }}
+                  pinColor={restaurant.isAvailable ? "green" : "red"}
+                >
+                  <Callout
+                    onPress={() => restaurantSelectionHandler(restaurant.id)}
                   >
-                    <Callout
-                      onPress={() => restaurantSelectionHandler(restaurant.id)}
-                    >
-                      <View>
-                        <Text style={styles.calloutTitle}>
-                          {restaurant.name}
-                        </Text>
-                        <Text>{restaurant.streetAddress}</Text>
-                        <Text>{`${restaurant.cuisine_one}, ${restaurant.cuisine_two}, ${restaurant.cuisine_three}`}</Text>
-                      </View>
-                    </Callout>
-                  </Marker>
-                ))}
-              </MapView>
+                    <View>
+                      <Text style={styles.calloutTitle}>{restaurant.name}</Text>
+                      <Text>{restaurant.streetAddress}</Text>
+                      <Text>{`${restaurant.cuisine_one}, ${restaurant.cuisine_two}, ${restaurant.cuisine_three}`}</Text>
+                    </View>
+                  </Callout>
+                </Marker>
+              ))}
+            </MapView>
 
-              {showSearchButton && (
-                <TouchableOpacity
-                  style={styles.searchButton}
-                  onPress={handleSearchHere}
-                >
-                  <Text style={styles.searchButtonText}>Search Here</Text>
-                </TouchableOpacity>
-              )}
-
+            {showSearchButton && (
               <TouchableOpacity
-                style={styles.menuButton}
-                onPress={toggleSidebar}
+                style={styles.searchButton}
+                onPress={handleSearchHere}
               >
-                <Ionicons name="menu" size={32} color="white" />
+                <Text style={styles.searchButtonText}>Search Here</Text>
               </TouchableOpacity>
+            )}
 
-              {user ? (
-                <Animated.View
-                  style={[
-                    styles.sidebar,
-                    { transform: [{ translateX: slideAnim }] },
-                  ]}
-                >
-                  {/* ✅ Use userData instead of user for updated info */}
-                  {userData?.photoURL ? (
-                    <Image
-                      source={{ uri: userData.photoURL }}
-                      style={styles.profileImage}
-                    />
-                  ) : (
-                    <Ionicons name="person-circle" size={60} color="black" />
-                  )}
-                  <Text style={styles.sidebarText}>
-                    Welcome, {userData?.name || user?.displayName}
-                  </Text>
-                  <Link href="/profile">Profile</Link>
-                  <Link href="/settings">Settings</Link>
-                  <Link href="/complete-profile">
-                    {userData?.isProfileComplete
-                      ? "Edit Profile"
-                      : "Complete Profile"}
-                  </Link>
-                  {userData?.isOwner && (
-                    <Link href="/my-restaurants">My Restaurants</Link>
-                  )}
-                  <Link href="/create-restaurant">Create a Restaurant</Link>
-                  <TouchableOpacity onPress={handleLogout}>
-                    <Text style={{ color: "red", fontWeight: "bold" }}>
-                      Logout
-                    </Text>
-                  </TouchableOpacity>
-                </Animated.View>
+            <TouchableOpacity style={styles.menuButton} onPress={toggleSidebar}>
+              <Ionicons name="menu" size={32} color="white" />
+            </TouchableOpacity>
+
+            <Animated.View
+              style={[
+                styles.sidebar,
+                { transform: [{ translateX: slideAnim }] },
+              ]}
+            >
+              {userData?.photoURL ? (
+                <Image
+                  source={{ uri: userData.photoURL }}
+                  style={styles.profileImage}
+                />
               ) : (
-                router.push("/login")
+                <Ionicons name="person-circle" size={60} color="black" />
               )}
-            </>
-          )
+              <Text style={styles.sidebarText}>
+                Welcome, {userData?.name || user?.displayName}
+              </Text>
+              <Link href="/profile">Profile</Link>
+              <Link href="/settings">Settings</Link>
+              <Link href="/complete-profile">
+                {userData?.isProfileComplete
+                  ? "Edit Profile"
+                  : "Complete Profile"}
+              </Link>
+              {userData?.isOwner && (
+                <Link href="/my-restaurants">My Restaurants</Link>
+              )}
+              <Link href="/create-restaurant">Create a Restaurant</Link>
+              <TouchableOpacity onPress={handleLogout}>
+                <Text style={{ color: "red", fontWeight: "bold" }}>Logout</Text>
+              </TouchableOpacity>
+            </Animated.View>
+          </>
         )}
       </View>
     </SafeAreaView>
