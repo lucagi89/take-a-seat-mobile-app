@@ -8,7 +8,7 @@ import {
   Alert,
 } from "react-native";
 import React, { useEffect, useState } from "react";
-import { useRestaurant } from "./RestaurantContext";
+import { useRestaurant } from "../../../contexts/RestaurantContext";
 import { useUser } from "../../../contexts/userContext";
 import { fetchCollectionData } from "../../../services/databaseActions";
 

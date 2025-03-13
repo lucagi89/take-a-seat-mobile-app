@@ -1,7 +1,7 @@
 import React from "react";
 import { Text, View } from "react-native";
 import RestaurantFloorPlan from "@/components/RestaurantFloorPlan";
-import { useRestaurant } from "./RestaurantContext";
+import { useRestaurant } from "../../../contexts/RestaurantContext";
 
 export default function Floorplan() {
   const { restaurant, restaurantId } = useRestaurant();

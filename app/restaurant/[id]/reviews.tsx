@@ -14,7 +14,7 @@ import {
   getReviews,
   updateReview,
 } from "../../../services/databaseActions";
-import { useRestaurant } from "./RestaurantContext";
+import { useRestaurant } from "../../../contexts/RestaurantContext";
 import { useUser } from "../../../contexts/userContext";
 
 // Define TypeScript types for reviews

@@ -1,12 +1,12 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { useLocalSearchParams } from "expo-router";
-import { getRestaurantById } from "../../../services/databaseActions";
+import { getRestaurantById } from "../services/databaseActions";
 
 interface RestaurantContextType {
   restaurant: any;
   setRestaurant: React.Dispatch<React.SetStateAction<any>>;
   loading: boolean;
-  restaurantId: string | string[];
+  restaurantId: string;
 }
 
 const RestaurantContext = createContext<RestaurantContextType | null>(null);

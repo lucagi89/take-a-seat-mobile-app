@@ -1,5 +1,5 @@
 import { View, Text, Image, StyleSheet } from "react-native";
-import { useRestaurant } from "./RestaurantContext";
+import { useRestaurant } from "../../../contexts/RestaurantContext";
 
 type Restaurant = {
   name: string;

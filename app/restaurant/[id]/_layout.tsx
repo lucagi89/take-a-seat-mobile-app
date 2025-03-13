@@ -1,6 +1,9 @@
 import { Stack, Link, usePathname } from "expo-router";
 import { View, Text, StyleSheet } from "react-native";
-import { RestaurantProvider, useRestaurant } from "./RestaurantContext";
+import {
+  RestaurantProvider,
+  useRestaurant,
+} from "../../../contexts/RestaurantContext";
 
 export default function RestaurantLayout() {
   return (
