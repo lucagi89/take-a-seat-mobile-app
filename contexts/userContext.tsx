@@ -1,7 +1,6 @@
-// contexts/userContext.tsx
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "../scripts/firebase.config"; // Ensure this points to your Firebase setup
+import { auth } from "../scripts/firebase.config";
 import { fetchUserData } from "../services/databaseActions";
 
 type UserData = {
@@ -18,7 +17,6 @@ type UserData = {
   isProfileComplete: boolean;
 };
 
-// Define types for better TypeScript support
 type UserContextType = {
   user: any;
   loading: boolean;
@@ -36,10 +34,12 @@ export const UserContextProvider = ({
 }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [userData, setUserData] = useState<{} | undefined>(undefined);
+  const [userData, setUserData] = useState<Partial<UserData> | undefined>(
+    undefined
+  );
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
         setUser({
           uid: currentUser.uid,
@@ -47,18 +47,18 @@ export const UserContextProvider = ({
           displayName: currentUser.displayName,
         });
 
-        // Fetch user data from Firestore
-        fetchUserData(currentUser.uid).then((data) => {
-          if (data) {
-            setUserData(data);
-          } else {
-            setUserData(undefined);
-          }
-        });
+        try {
+          const data = await fetchUserData(currentUser.uid);
+          setUserData(data || undefined);
+        } catch (error) {
+          console.error("Error fetching user data:", error);
+          setUserData(undefined);
+        }
       } else {
         setUser(null);
+        setUserData(undefined);
       }
-      setLoading(false);
+      setLoading(false); // Set loading to false after all async operations
     });
 
     return () => unsubscribe();
@@ -73,7 +73,6 @@ export const UserContextProvider = ({
   );
 };
 
-// Custom hook to access user context
 export const useUser = () => {
   const context = useContext(UserContext);
   if (!context) {

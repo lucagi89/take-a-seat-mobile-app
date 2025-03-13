@@ -149,13 +149,20 @@ export const deleteAllDocuments = async (myCollection: string) => {
 
 // USER ACTIONS
 
-export async function fetchUserData(userId: string): Promise<Partial<User> | void> {
-  const userDoc = await getDoc(doc(db, "users", userId));
-  if (userDoc.exists()) {
-    const data = userDoc.data();
-    return data;
+export const fetchUserData = async (uid: string) => {
+  try {
+    const userDocRef = doc(db, "users", uid);
+    const userDoc = await getDoc(userDocRef);
+    if (userDoc.exists()) {
+      return userDoc.data();
+    } else {
+      console.log("No user data found for UID:", uid);
+      return null;
+    }
+  } catch (error) {
+    console.error("Error fetching user data:", error);
+    throw error; // Re-throw to be caught in the useEffect
   }
-  return undefined;
 };
 
 
