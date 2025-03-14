@@ -9,6 +9,7 @@ import {
   addDocument,
 } from "../services/databaseActions";
 import { useUser } from "../contexts/userContext";
+import { Timestamp } from "firebase/firestore";
 
 const getTableSize = (capacity: number) => {
   if (capacity <= 4) return { width: 50, height: 50 };
@@ -136,34 +137,44 @@ export default function RestaurantFloorPlan({
     } else if (table.capacity - partySize >= 3) {
       Alert.alert("Table Too Big", "Consider choosing a smaller table.");
     } else {
-      // if user paid booking fee
-      await addDocument(
-        {
-          userId,
-          restaurantId,
-          tableId: table.id,
-          partySize,
-          bookedTime: new Date(), //now
-          limitTime: new Date(new Date().getTime() + 15 * 60 * 1000), //now plus 15 minutes
-          isApproved: true, //to modify later and set to false, restaurant owner will have to approve
-          isFullfilled: true, //to modify later and set to false, user has to actually arrive
-          isExpired: false,
-        },
-        "bookings"
-      );
+      try {
+        // Convert Date objects to Firestore Timestamps
+        const bookedTime = Timestamp.fromDate(new Date());
+        const limitTime = Timestamp.fromDate(
+          new Date(new Date().getTime() + 15 * 60 * 1000)
+        );
 
-      updateTableAvailability(table.id, false);
+        await addDocument(
+          {
+            userId,
+            restaurantId,
+            tableId: table.id,
+            partySize,
+            bookedTime,
+            limitTime,
+            isApproved: true,
+            isFullfilled: true,
+            isExpired: false,
+          },
+          "bookings"
+        );
 
-      setLocalTables((prevTables) =>
-        prevTables.map((t) =>
-          t.id === table.id ? { ...t, isAvailable: false } : t
-        )
-      );
+        await updateTableAvailability(table.id, false);
 
-      Alert.alert(
-        "Booking Confirmed",
-        `Table booked for ${partySize} people. We will notify you once the booking is approved. Once it is approved, you will have 15 minutes to arrive before the booking falls off.`
-      );
+        setLocalTables((prevTables) =>
+          prevTables.map((t) =>
+            t.id === table.id ? { ...t, isAvailable: false } : t
+          )
+        );
+
+        Alert.alert(
+          "Booking Confirmed",
+          `Table booked for ${partySize} people. We will notify you once the booking is approved. Once it is approved, you will have 15 minutes to arrive before the booking falls off.`
+        );
+      } catch (error) {
+        console.error("Error creating booking:", error);
+        Alert.alert("Error", "Could not create booking. Please try again.");
+      }
     }
   };
 
