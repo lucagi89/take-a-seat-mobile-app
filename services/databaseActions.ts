@@ -7,11 +7,11 @@ import {
   doc,
   getDoc,
   query,
-  where
+  where,
+  setDoc,
 } from "firebase/firestore";
 import { db } from "../scripts/firebase.config";
 import {geocodeAddress} from "./geolocation";
-import { useUser } from "../contexts/userContext";
 import { Restaurant, Dish, Review, Table, User } from "../data/types";
 // import { User } from "firebase/auth";
 
@@ -21,19 +21,24 @@ import { Restaurant, Dish, Review, Table, User } from "../data/types";
 
 //GENERAL DATABASE ACTIONS
 
-export async function addDocument(data: any, myCollection: string): Promise<void> {
-if (!user) { return; }
+// Add a document with a random ID
+export const addDocument = async (data: any, collectionName: string, customId: string = "") => {
   try {
-    const docRef = await addDoc(collection(db, myCollection), data);
-    console.log("Document written with ID: ", docRef.id);
+    if (customId) {
+      const docRef = doc(db, collectionName, customId);
+      await setDoc(docRef, data, { merge: true }); // Optional: merge to avoid overwriting existing data
+      return customId;
+    } else {
+      const docRef = await addDoc(collection(db, collectionName), data);
+      return docRef.id;
+    }
   } catch (error) {
-    console.error('Error adding document:', error);
+    console.error(`Error adding document to ${collectionName}:`, error);
     throw error;
   }
-}
+};
 
 export async function updateDocument(myCollection: string, id: string, data: any): Promise<void> {
-  if (!user) { return; }
   try {
     const docRef = doc(db, myCollection, id);
     await updateDoc(docRef, data);
@@ -167,9 +172,7 @@ export const fetchUserData = async (uid: string) => {
 
 
 
-async function deleteUserRestaurants(): Promise<void> {
-  if (!user) { return; }
-  const userId = user.uid;
+async function deleteUserRestaurants(userId: string): Promise<void> {
   const restaurantsRef = collection(db, "restaurants");
   const q = query(restaurantsRef, where("ownerId", "==", userId));
   const querySnapshot = await getDocs(q);

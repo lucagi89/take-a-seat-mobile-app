@@ -3,10 +3,10 @@ import { useState, useEffect, useRef } from "react";
 import Draggable from "react-native-draggable";
 import {
   updateTablePosition,
-  deleteTable,
+  deleteDocument,
   updateTableAvailability,
   findRestaurantTables,
-  createElement,
+  addDocument,
 } from "../services/databaseActions";
 import { useUser } from "../contexts/userContext";
 
@@ -102,7 +102,7 @@ export default function RestaurantFloorPlan({
 
   const removeTable = async (tableId: string) => {
     try {
-      await deleteTable(tableId);
+      await deleteDocument("tables", tableId);
       setLocalTables((prevTables) =>
         prevTables.filter((table) => table.id !== tableId)
       );
@@ -137,17 +137,20 @@ export default function RestaurantFloorPlan({
       Alert.alert("Table Too Big", "Consider choosing a smaller table.");
     } else {
       // if user paid booking fee
-      await createElement("bookings", {
-        userId,
-        restaurantId,
-        tableId: table.id,
-        partySize,
-        bookedTime: new Date(), //now
-        limitTime: new Date(new Date().getTime() + 15 * 60 * 1000), //now plus 15 minutes
-        isApproved: true, //to modify later and set to false, restaurant owner will have to approve
-        isFullfilled: true, //to modify later and set to false, user has to actually arrive
-        isExpired: false,
-      });
+      await addDocument(
+        {
+          userId,
+          restaurantId,
+          tableId: table.id,
+          partySize,
+          bookedTime: new Date(), //now
+          limitTime: new Date(new Date().getTime() + 15 * 60 * 1000), //now plus 15 minutes
+          isApproved: true, //to modify later and set to false, restaurant owner will have to approve
+          isFullfilled: true, //to modify later and set to false, user has to actually arrive
+          isExpired: false,
+        },
+        "bookings"
+      );
 
       updateTableAvailability(table.id, false);
 

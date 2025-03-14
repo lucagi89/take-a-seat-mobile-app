@@ -10,7 +10,7 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
-import { createElement } from "../../../../services/databaseActions";
+import { addDocument } from "../../../../services/databaseActions";
 import { useUser } from "../../../../contexts/userContext";
 
 const FLOOR_WIDTH = 300;
@@ -22,7 +22,6 @@ const getTableSize = (capacity: number) => {
   return { width: 90, height: 50 };
 };
 
-// Generate random position within floor bounds
 const getRandomPosition = (width: number, height: number) => {
   const x = Math.floor(Math.random() * (FLOOR_WIDTH - width));
   const y = Math.floor(Math.random() * (FLOOR_HEIGHT - height));
@@ -43,7 +42,7 @@ export default function CreateRestaurantTables() {
   } else if (ownerId !== user.uid) {
     Alert.alert("Error", "You do not have permission to view this page.");
     router.push("/");
-    return;
+    return null;
   }
 
   const [loading, setLoading] = useState(false);
@@ -55,7 +54,6 @@ export default function CreateRestaurantTables() {
     }[]
   >([{ capacity: "", count: "" }]);
 
-  // Handle input changes
   const handleInputChange = (
     index: number,
     field: keyof (typeof tables)[0],
@@ -66,14 +64,12 @@ export default function CreateRestaurantTables() {
     setTables(updatedTables);
   };
 
-  // Add another table type
   const addTableType = () => {
     if (!loading) {
       setTables([...tables, { capacity: "", count: "" }]);
     }
   };
 
-  // Remove a table type
   const removeTableType = (index: number) => {
     if (!loading) {
       const updatedTables = tables.filter((_, i) => i !== index);
@@ -81,7 +77,6 @@ export default function CreateRestaurantTables() {
     }
   };
 
-  // Handle form submission
   const handleSubmit = async () => {
     if (tables.some((table) => !table.capacity || !table.count)) {
       Alert.alert("Error", "Please fill in all fields before submitting.");
@@ -93,7 +88,6 @@ export default function CreateRestaurantTables() {
       const tableEntries = tables.flatMap((table) => {
         const size = getTableSize(Number(table.capacity));
 
-        // Generate random positions for each new table
         const positions = Array.from({ length: Number(table.count) }, () =>
           getRandomPosition(size.width, size.height)
         );
@@ -108,12 +102,12 @@ export default function CreateRestaurantTables() {
           width: size.width,
           height: size.height,
           createdBy: user?.uid,
+          userId: user?.uid, // Added to match the security rule
         }));
       });
 
-      // Insert tables into the database
       const promises = tableEntries.map(async (table) =>
-        createElement("restaurantTables", table)
+        addDocument(table, "restaurantTables")
       );
 
       await Promise.all(promises);
@@ -124,8 +118,7 @@ export default function CreateRestaurantTables() {
       );
 
       router.push(`/my-restaurants/${restaurantId}`);
-      // ✅ And update only the new tables
-      setTables([{ capacity: "", count: "" }]); // Reset the form
+      setTables([{ capacity: "", count: "" }]);
     } catch (error) {
       console.error("Error adding tables:", error);
       Alert.alert("Error", "Could not add tables. Please try again.");

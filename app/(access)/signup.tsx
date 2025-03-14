@@ -28,14 +28,17 @@ export default function SignUpScreen() {
     try {
       await signUp(email, password);
       if (auth.currentUser) {
+        const userId = auth.currentUser.uid;
         await addDocument(
           {
-            id: auth.currentUser.uid || "",
+            id: userId,
             email: auth.currentUser.email || "",
             isOwner: false,
             isProfileComplete: false,
+            userId: userId,
           },
-          "users"
+          "users",
+          userId
         );
       } else {
         throw new Error("User is not authenticated");
@@ -76,7 +79,7 @@ export default function SignUpScreen() {
       <Button title="Sign Up" onPress={handleSignUp} />
 
       <TouchableOpacity
-        onPress={() => navigation.navigate("login")}
+        onPress={() => router.push("/login")} // Fixed: Use router.push instead of navigation.navigate
         style={styles.signInLink}
       >
         <Text style={styles.signInText}>Already have an account? Sign In</Text>

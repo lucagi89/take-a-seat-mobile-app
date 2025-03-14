@@ -34,24 +34,24 @@ export async function handleUser(email: string, password: string): Promise<Acces
 }
 
 
-export async function signInWithGoogle(): Promise<AccessResponse> {
-  const [request, response, promptAsync] = Google.useAuthRequest({
-    expoClientId: process.env.EXPO_PUBLIC_GOOGLE_EXPO_CLIENT_ID,
-    iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
-    androidClientId: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID,
-    webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
-  });
+// export async function signInWithGoogle(): Promise<AccessResponse> {
+//   const [request, response, promptAsync] = Google.useAuthRequest({
+//     expoClientId: process.env.EXPO_PUBLIC_GOOGLE_EXPO_CLIENT_ID,
+//     iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
+//     androidClientId: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID,
+//     webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+//   });
 
-  if (response?.type === 'success') {
-    const { id_token } = response.params;
-    const credential = GoogleAuthProvider.credential(id_token);
-    const auth = getAuth();
-    const userCredential = await signInWithCredential(auth, credential);
-    return { user: userCredential.user };
-  } else {
-    throw new Error('Google sign-in failed');
-  }
-}
+//   if (response?.type === 'success') {
+//     const { id_token } = response.params;
+//     const credential = GoogleAuthProvider.credential(id_token);
+//     const auth = getAuth();
+//     const userCredential = await signInWithCredential(auth, credential);
+//     return { user: userCredential.user };
+//   } else {
+//     throw new Error('Google sign-in failed');
+//   }
+// }
 
 
 

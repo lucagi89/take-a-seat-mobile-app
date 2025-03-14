@@ -59,7 +59,7 @@ export default function MyRestaurantPage() {
   }
 
   return (
-    <View key={restaurantId}>
+    <View key={restaurantId} style={{ backgroundColor: "white" }}>
       <Text>My Restaurant</Text>
       <Text>{restaurant.name}</Text>
       <Text>{restaurant.description}</Text>
