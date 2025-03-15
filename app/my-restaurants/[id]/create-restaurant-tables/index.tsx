@@ -102,7 +102,7 @@ export default function CreateRestaurantTables() {
           width: size.width,
           height: size.height,
           createdBy: user?.uid,
-          userId: user?.uid,
+          ownerId: user?.uid,
         }));
       });
 

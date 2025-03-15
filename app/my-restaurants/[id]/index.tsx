@@ -182,7 +182,7 @@ export default function MyRestaurantPage() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 15, // Reduced padding to save space
+    padding: 15,
     backgroundColor: "#F5F5F5", // Light gray background
   },
   loader: {
@@ -191,73 +191,75 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   title: {
-    fontSize: 24, // Reduced font size to save space
+    fontSize: 24,
     fontWeight: "bold",
     color: "#2E7D32", // Deep green for restaurant theme
     textAlign: "center",
-    marginBottom: 10, // Reduced margin
+    marginBottom: 10,
     textTransform: "uppercase",
     letterSpacing: 1,
   },
   cardContainer: {
     backgroundColor: "#FFFFFF", // White card for details
     borderRadius: 15,
-    padding: 12, // Reduced padding
+    padding: 12,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 5,
-    marginBottom: 10, // Reduced margin
+    marginBottom: 10,
     flex: 0,
-    minHeight: 80, // Reduced height
-    maxHeight: 100, // Limit height to fit screen
+    minHeight: 80,
+    maxHeight: 100,
   },
   detailRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 6, // Reduced margin
+    marginBottom: 6,
   },
   detailIcon: {
     marginRight: 8,
   },
   description: {
-    fontSize: 14, // Reduced font size
+    fontSize: 14,
     color: "#333",
     flex: 1,
   },
   address: {
-    fontSize: 14, // Reduced font size
+    fontSize: 14,
     color: "#333",
     flex: 1,
   },
   floorPlanContainer: {
-    flex: 1, // Take remaining space
-    marginBottom: 10, // Reduced margin
-    minHeight: 200, // Reduced minimum height
-    maxHeight: 250, // Reduced maximum height to leave space for buttons
+    flex: 1,
+    marginBottom: 70, // Increased margin to ensure space for the absolutely positioned buttons
+    minHeight: 200,
+    maxHeight: 250,
   },
   sectionTitle: {
-    fontSize: 18, // Reduced font size
+    fontSize: 18,
     fontWeight: "600",
     color: "#2E7D32",
-    marginBottom: 8, // Reduced margin
+    marginBottom: 8,
     textTransform: "uppercase",
   },
   buttonContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginTop: 5, // Reduced margin
-    flex: 0,
-    height: 50, // Fixed height to ensure buttons fit
+    position: "absolute", // Stick to the bottom
+    bottom: 15, // Align at the bottom with padding
+    left: 15,
+    right: 15,
+    height: 50,
   },
   createButton: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#FFCA28", // Gold for create action
-    paddingVertical: 10, // Reduced padding
-    paddingHorizontal: 12, // Reduced padding
-    borderRadius: 8, // Reduced border radius
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 8,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -268,7 +270,7 @@ const styles = StyleSheet.create({
   },
   createButtonText: {
     color: "#FFFFFF",
-    fontSize: 12, // Reduced font size
+    fontSize: 12,
     fontWeight: "600",
     textTransform: "uppercase",
     textAlign: "center",
@@ -277,9 +279,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#2E7D32", // Deep green for back button
-    paddingVertical: 10, // Reduced padding
-    paddingHorizontal: 12, // Reduced padding
-    borderRadius: 8, // Reduced border radius
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 8,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -289,16 +291,16 @@ const styles = StyleSheet.create({
   },
   backButtonText: {
     color: "#FFFFFF",
-    fontSize: 12, // Reduced font size
+    fontSize: 12,
     fontWeight: "600",
     textTransform: "uppercase",
     textAlign: "center",
   },
   buttonIcon: {
-    marginRight: 4, // Reduced margin
+    marginRight: 4,
   },
   backIcon: {
-    marginRight: 4, // Reduced margin
+    marginRight: 4,
   },
   errorContainer: {
     flex: 1,
