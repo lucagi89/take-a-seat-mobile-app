@@ -5,7 +5,7 @@ import {
   View,
   StyleSheet,
   TouchableOpacity,
-  Button,
+  ActivityIndicator,
 } from "react-native";
 import { useUser } from "../../contexts/userContext";
 import {
@@ -15,6 +15,7 @@ import {
 import RestaurantCard from "../../components/RestaurantCard";
 import { Redirect, useRouter } from "expo-router";
 import { Restaurant } from "../../data/types";
+import { Ionicons } from "@expo/vector-icons"; // For icons in buttons
 
 export default function MyRestaurants() {
   const router = useRouter();
@@ -37,7 +38,7 @@ export default function MyRestaurants() {
   if (loading) {
     return (
       <View style={styles.container}>
-        <Text>Loading...</Text>
+        <ActivityIndicator size="large" color="#FFCA28" style={styles.loader} />
       </View>
     );
   }
@@ -60,37 +61,66 @@ export default function MyRestaurants() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>My Restaurants</Text>
-      {error && <Text style={styles.error}>{error}</Text>}
-      {userRestaurants.length === 0 && (
-        <Text style={styles.empty}>No restaurants found</Text>
+      {error && (
+        <View style={styles.errorContainer}>
+          <Ionicons
+            name="alert-circle-outline"
+            size={20}
+            color="#D32F2F"
+            style={styles.errorIcon}
+          />
+          <Text style={styles.error}>{error}</Text>
+        </View>
       )}
-      <ScrollView>
+      {userRestaurants.length === 0 && !error && (
+        <View style={styles.emptyContainer}>
+          <Ionicons name="restaurant-outline" size={40} color="#666" />
+          <Text style={styles.empty}>No restaurants found</Text>
+          <TouchableOpacity
+            style={styles.createButton}
+            onPress={() => router.push("/create-restaurant")}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.createButtonText}>Create a Restaurant</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
         {userRestaurants.map((restaurant) => (
-          <View key={restaurant.id}>
+          <View key={restaurant.id} style={styles.cardContainer}>
             <TouchableOpacity
-              key={restaurant.id}
               onPress={() =>
                 router.push({
                   pathname: `/my-restaurants/${restaurant.id}`,
-                  params: { ownerId: restaurant.userId }, // Passing only ownerId
+                  params: { ownerId: restaurant.userId },
                 })
               }
+              activeOpacity={0.8}
             >
-              <RestaurantCard key={restaurant.id} restaurant={restaurant} />
+              <RestaurantCard restaurant={restaurant} />
             </TouchableOpacity>
-            <Button
-              title="Xoooooo"
+            <TouchableOpacity
               style={styles.deleteButton}
               onPress={() => handleDelete(restaurant.id)}
-            />
+              activeOpacity={0.7}
+            >
+              <Ionicons name="trash-outline" size={20} color="#FFFFFF" />
+            </TouchableOpacity>
           </View>
         ))}
       </ScrollView>
       <TouchableOpacity
         style={styles.backButton}
         onPress={() => router.push("/")}
+        activeOpacity={0.7}
       >
-        <Text style={styles.link}>Go to Mainpage</Text>
+        <Ionicons
+          name="arrow-back-outline"
+          size={20}
+          color="#FFFFFF"
+          style={styles.backIcon}
+        />
+        <Text style={styles.backButtonText}>Go to Main Page</Text>
       </TouchableOpacity>
     </View>
   );
@@ -99,34 +129,118 @@ export default function MyRestaurants() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "#F5F5F5", // Light gray background for consistency
     padding: 20,
-    backgroundColor: "#fff",
+  },
+  scrollContainer: {
+    paddingBottom: 20,
+  },
+  loader: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
   title: {
-    fontSize: 24,
-    fontWeight: "700",
+    fontSize: 28,
+    fontWeight: "bold",
+    color: "#2E7D32", // Deep green for restaurant theme
+    textAlign: "center",
     marginBottom: 20,
+    textTransform: "uppercase",
+    letterSpacing: 1,
+  },
+  errorContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(211, 47, 47, 0.1)", // Light red background for error
+    padding: 10,
+    borderRadius: 8,
+    marginBottom: 20,
+  },
+  errorIcon: {
+    marginRight: 10,
   },
   error: {
-    color: "red",
-    marginBottom: 20,
+    color: "#D32F2F", // Red for error text
+    fontSize: 16,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 50,
   },
   empty: {
-    marginBottom: 20,
+    fontSize: 18,
+    color: "#666",
+    marginVertical: 15,
+    textAlign: "center",
   },
-  link: {
-    marginTop: 20,
+  createButton: {
+    backgroundColor: "#FFCA28", // Gold for a warm accent
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
   },
-  backButton: {
-    marginTop: 20,
-    alignSelf: "center",
+  createButtonText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "600",
+    textTransform: "uppercase",
+  },
+  cardContainer: {
+    position: "relative",
+    marginBottom: 15,
+    backgroundColor: "#FFFFFF", // White card background
+    borderRadius: 15,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 5,
   },
   deleteButton: {
-    marginTop: 10,
-    backgroundColor: "red",
-    color: "white",
-    borderRadius: 5,
-    width: 30,
-    height: 30,
+    position: "absolute",
+    top: 10,
+    right: 10,
+    backgroundColor: "#D32F2F", // Red for delete action
+    padding: 8,
+    borderRadius: 8,
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 3,
+  },
+  backButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#2E7D32", // Deep green for back button
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    alignSelf: "center",
+    marginTop: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
+  },
+  backIcon: {
+    marginRight: 8,
+  },
+  backButtonText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "600",
+    textTransform: "uppercase",
   },
 });

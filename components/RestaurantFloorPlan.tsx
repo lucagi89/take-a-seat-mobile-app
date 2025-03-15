@@ -1,5 +1,13 @@
-import { View, Text, TouchableOpacity, Alert, Platform } from "react-native";
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Alert,
+  Platform,
+  StyleSheet,
+  Animated,
+} from "react-native";
 import Draggable from "react-native-draggable";
 import {
   updateTablePosition,
@@ -10,12 +18,13 @@ import {
 } from "../services/databaseActions";
 import { useUser } from "../contexts/userContext";
 import { Timestamp } from "firebase/firestore";
+import { Ionicons } from "@expo/vector-icons"; // For legend icons
 
 const getTableSize = (capacity: number) => {
   if (capacity <= 4) return { width: 50, height: 50 };
-  if (capacity <= 6) return { width: 100, height: 50 };
-  if (capacity <= 8) return { width: 150, height: 50 };
-  return { width: 200, height: 50 };
+  if (capacity <= 6) return { width: 80, height: 50 };
+  if (capacity <= 8) return { width: 110, height: 50 };
+  return { width: 140, height: 50 };
 };
 
 interface Table {
@@ -41,6 +50,23 @@ export default function RestaurantFloorPlan({
   const isOwner = userId === ownerId;
   const [localTables, setLocalTables] = useState<Table[]>([]);
   const positionsRef = useRef<Record<string, { x: number; y: number }>>({});
+  const scaleAnims = useRef<Record<string, Animated.Value>>({}).current;
+
+  // Initialize scale animations for all tables when localTables changes
+  useEffect(() => {
+    localTables.forEach((table) => {
+      if (!scaleAnims[table.id]) {
+        scaleAnims[table.id] = new Animated.Value(1);
+      }
+    });
+
+    // Clean up unused animations
+    Object.keys(scaleAnims).forEach((id) => {
+      if (!localTables.find((table) => table.id === id)) {
+        delete scaleAnims[id];
+      }
+    });
+  }, [localTables]);
 
   // Fetch tables once on mount
   useEffect(() => {
@@ -67,6 +93,25 @@ export default function RestaurantFloorPlan({
   }, [restaurantId]);
 
   const handleTablePress = (table: Table) => {
+    // Ensure animation exists before triggering
+    if (!scaleAnims[table.id]) {
+      scaleAnims[table.id] = new Animated.Value(1);
+    }
+
+    // Animate on press
+    Animated.sequence([
+      Animated.timing(scaleAnims[table.id], {
+        toValue: 0.95,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+      Animated.timing(scaleAnims[table.id], {
+        toValue: 1,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+    ]).start();
+
     if (isOwner) {
       Alert.alert("Manage Table", "Choose an action", [
         {
@@ -108,6 +153,7 @@ export default function RestaurantFloorPlan({
         prevTables.filter((table) => table.id !== tableId)
       );
       delete positionsRef.current[tableId];
+      delete scaleAnims[tableId];
     } catch (error) {
       console.error("Error removing table:", error);
     }
@@ -138,7 +184,6 @@ export default function RestaurantFloorPlan({
       Alert.alert("Table Too Big", "Consider choosing a smaller table.");
     } else {
       try {
-        // Convert Date objects to Firestore Timestamps
         const bookedTime = Timestamp.fromDate(new Date());
         const limitTime = Timestamp.fromDate(
           new Date(new Date().getTime() + 15 * 60 * 1000)
@@ -179,99 +224,186 @@ export default function RestaurantFloorPlan({
   };
 
   return (
-    <View
-      style={{
-        width: "100%",
-        height: 400,
-        backgroundColor: "#f0f0f0",
-        position: "relative",
-        marginTop: 20,
-        borderWidth: 1,
-        borderColor: "black",
-      }}
-    >
-      {localTables.map((table) => {
-        const { width, height } = getTableSize(table.capacity);
-        const { x, y } = positionsRef.current[table.id] || {
-          x: table.x,
-          y: table.y,
-        };
+    <View style={styles.floorPlanWrapper}>
+      <View style={styles.legendContainer}>
+        <View style={styles.legendItem}>
+          <View style={[styles.legendColor, { backgroundColor: "#2E7D32" }]} />
+          <Text style={styles.legendText}>Available</Text>
+        </View>
+        <View style={styles.legendItem}>
+          <View style={[styles.legendColor, { backgroundColor: "#D32F2F" }]} />
+          <Text style={styles.legendText}>Unavailable</Text>
+        </View>
+      </View>
+      <View style={styles.floorPlanContainer}>
+        {localTables.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <Ionicons name="restaurant-outline" size={40} color="#666" />
+            <Text style={styles.emptyText}>No tables available</Text>
+          </View>
+        ) : (
+          localTables.map((table) => {
+            const { width, height } = getTableSize(table.capacity);
+            const { x, y } = positionsRef.current[table.id] || {
+              x: table.x,
+              y: table.y,
+            };
 
-        return (
-          <Draggable
-            key={table.id}
-            x={positionsRef.current[table.id]?.x ?? table.x}
-            y={positionsRef.current[table.id]?.y ?? table.y}
-            disabled={!isOwner}
-            onDrag={(event, gestureState) => {
-              // ✅ Update the ref live as the user drags
-              const newX =
-                (positionsRef.current[table.id]?.x ?? table.x) +
-                gestureState.dx;
-              const newY =
-                (positionsRef.current[table.id]?.y ?? table.y) +
-                gestureState.dy;
+            // Ensure animation exists
+            if (!scaleAnims[table.id]) {
+              scaleAnims[table.id] = new Animated.Value(1);
+            }
 
-              positionsRef.current[table.id] = { x: newX, y: newY };
+            return (
+              <Draggable
+                key={table.id}
+                x={positionsRef.current[table.id]?.x ?? table.x}
+                y={positionsRef.current[table.id]?.y ?? table.y}
+                disabled={!isOwner}
+                onDrag={(event, gestureState) => {
+                  const newX =
+                    (positionsRef.current[table.id]?.x ?? table.x) +
+                    gestureState.dx;
+                  const newY =
+                    (positionsRef.current[table.id]?.y ?? table.y) +
+                    gestureState.dy;
 
-              setLocalTables((prev) =>
-                prev.map((t) =>
-                  t.id === table.id ? { ...t, x: newX, y: newY } : t
-                )
-              );
-            }}
-            onDragRelease={async (event, gestureState) => {
-              if (!isOwner) return;
+                  positionsRef.current[table.id] = { x: newX, y: newY };
 
-              const finalX = positionsRef.current[table.id]?.x ?? table.x;
-              const finalY = positionsRef.current[table.id]?.y ?? table.y;
+                  setLocalTables((prev) =>
+                    prev.map((t) =>
+                      t.id === table.id ? { ...t, x: newX, y: newY } : t
+                    )
+                  );
+                }}
+                onDragRelease={async (event, gestureState) => {
+                  if (!isOwner) return;
 
-              // console.log(`Final table position: X:${finalX}, Y:${finalY}`);
+                  const finalX = positionsRef.current[table.id]?.x ?? table.x;
+                  const finalY = positionsRef.current[table.id]?.y ?? table.y;
 
-              try {
-                // ✅ Save final position to DB
-                const updateResult = await updateTablePosition(
-                  table.id,
-                  finalX,
-                  finalY
-                );
+                  try {
+                    const updateResult = await updateTablePosition(
+                      table.id,
+                      finalX,
+                      finalY
+                    );
 
-                if (updateResult?.success) {
-                  console.log("Database update successful", updateResult);
-                } else {
-                  console.error("Database update failed", updateResult);
-                  Alert.alert("Error", "Failed to update table position.");
-                }
-              } catch (error) {
-                console.error("Error during table position update:", error);
-                Alert.alert(
-                  "Error",
-                  "An error occurred while updating table position."
-                );
-              }
-            }}
-          >
-            <TouchableOpacity onPress={() => handleTablePress(table)}>
-              <View
-                style={{
-                  width: getTableSize(table.capacity).width,
-                  height: getTableSize(table.capacity).height,
-                  backgroundColor: table.isAvailable ? "green" : "red",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  borderRadius: 5,
-                  borderWidth: 1,
-                  borderColor: "black",
+                    if (updateResult?.success) {
+                      console.log("Database update successful", updateResult);
+                    } else {
+                      console.error("Database update failed", updateResult);
+                      Alert.alert("Error", "Failed to update table position.");
+                    }
+                  } catch (error) {
+                    console.error("Error during table position update:", error);
+                    Alert.alert(
+                      "Error",
+                      "An error occurred while updating table position."
+                    );
+                  }
                 }}
               >
-                <Text style={{ color: "white", fontWeight: "bold" }}>
-                  {table.capacity}
-                </Text>
-              </View>
-            </TouchableOpacity>
-          </Draggable>
-        );
-      })}
+                <TouchableOpacity onPress={() => handleTablePress(table)}>
+                  <Animated.View
+                    style={[
+                      styles.table,
+                      {
+                        width,
+                        height,
+                        backgroundColor: table.isAvailable
+                          ? "#2E7D32"
+                          : "#D32F2F",
+                        transform: [{ scale: scaleAnims[table.id] }],
+                      },
+                    ]}
+                  >
+                    <Text style={styles.tableText}>{table.capacity}</Text>
+                    <Text style={styles.tableLabel}>Seats</Text>
+                  </Animated.View>
+                </TouchableOpacity>
+              </Draggable>
+            );
+          })
+        )}
+      </View>
     </View>
   );
 }
+
+// In RestaurantFloorPlan.js
+const styles = StyleSheet.create({
+  floorPlanWrapper: {
+    marginTop: 5, // Reduced margin
+  },
+  legendContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginBottom: 5, // Reduced margin
+  },
+  legendItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginHorizontal: 12, // Reduced margin
+  },
+  legendColor: {
+    width: 16, // Reduced size
+    height: 16, // Reduced size
+    borderRadius: 4,
+    marginRight: 6,
+  },
+  legendText: {
+    fontSize: 12, // Reduced font size
+    color: "#333",
+    fontWeight: "500",
+  },
+  floorPlanContainer: {
+    width: "100%",
+    height: 400, // Reduced height to fit within parent container
+    backgroundColor: "#FFFFFF",
+    borderRadius: 12, // Reduced border radius
+    borderWidth: 1,
+    borderColor: "#E0E0E0",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 5,
+    position: "relative",
+    overflow: "hidden",
+  },
+  table: {
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 6, // Reduced border radius
+    borderWidth: 2,
+    borderColor: "#FFFFFF",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 4,
+  },
+  tableText: {
+    color: "#FFFFFF",
+    fontSize: 14, // Reduced font size
+    fontWeight: "bold",
+  },
+  tableLabel: {
+    color: "#FFFFFF",
+    fontSize: 10, // Reduced font size
+    fontWeight: "500",
+    opacity: 0.8,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  emptyText: {
+    fontSize: 14, // Reduced font size
+    color: "#666",
+    marginTop: 8,
+    textAlign: "center",
+  },
+});

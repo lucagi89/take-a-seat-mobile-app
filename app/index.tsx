@@ -20,29 +20,20 @@ import { Ionicons } from "@expo/vector-icons";
 import { Animated } from "react-native";
 import { handleLogout } from "../services/auth";
 import { Restaurant } from "../data/types";
+import { LinearGradient } from "expo-linear-gradient";
 
 export default function Map() {
   const { user, userData } = useUser();
   const router = useRouter();
 
-  const [location, setLocation] = useState<Location.LocationObject | null>(
-    null
-  );
-  const [visibleRestaurants, setVisibleRestaurants] = useState<Restaurant[]>(
-    []
-  );
+  const [location, setLocation] = useState<Location.LocationObject | null>(null);
+  const [visibleRestaurants, setVisibleRestaurants] = useState<Restaurant[]>([]);
   const [loading, setLoading] = useState(true);
   const [region, setRegion] = useState<Region | null>(null);
   const [showSearchButton, setShowSearchButton] = useState(false);
   const [sidebarVisible, setSidebarVisible] = useState(false);
   const slideAnim = useState(new Animated.Value(-250))[0];
-
-  // Redirect to login if the user is not authenticated
-  // useEffect(() => {
-  //   if (!user) {
-  //     router.push("/login");
-  //   }
-  // }, [user, router]);
+  const imageScaleAnim = useState(new Animated.Value(0))[0];
 
   // Fetches and sets the user's current location and nearby restaurants on component mount.
   useEffect(() => {
@@ -88,6 +79,19 @@ export default function Map() {
       };
     }, [])
   );
+
+  // Animates the profile image when the sidebar opens
+  useEffect(() => {
+    if (sidebarVisible) {
+      Animated.spring(imageScaleAnim, {
+        toValue: 1,
+        friction: 8,
+        useNativeDriver: true,
+      }).start();
+    } else {
+      imageScaleAnim.setValue(0);
+    }
+  }, [sidebarVisible]);
 
   // Fetches restaurants within the current map region
   const fetchVisibleRestaurants = async (mapRegion: Region) => {
@@ -170,7 +174,7 @@ export default function Map() {
         <View style={styles.container}>
           <ActivityIndicator
             size="large"
-            color="#0000ff"
+            color="#FFCA28"
             style={styles.loader}
           />
         </View>
@@ -180,7 +184,7 @@ export default function Map() {
 
   // If user is not authenticated, return null (navigation is handled by useEffect)
   if (!user) {
-    return null; // The useEffect above will handle the redirect
+    return null;
   }
 
   // Main render when user is authenticated and loading is complete
@@ -227,7 +231,9 @@ export default function Map() {
                 style={styles.searchButton}
                 onPress={handleSearchHere}
               >
-                <Text style={styles.searchButtonText}>Search Here</Text>
+                <Text style={styles.searchButtonText} selectable={false}>
+                  Search Here
+                </Text>
               </TouchableOpacity>
             )}
 
@@ -235,37 +241,105 @@ export default function Map() {
               <Ionicons name="menu" size={32} color="white" />
             </TouchableOpacity>
 
+            {/* Overlay to close sidebar when tapping outside */}
+            {sidebarVisible && (
+              <TouchableOpacity
+                style={styles.overlay}
+                onPress={toggleSidebar}
+                activeOpacity={1}
+              />
+            )}
+
             <Animated.View
-              style={[
-                styles.sidebar,
-                { transform: [{ translateX: slideAnim }] },
-              ]}
+              style={[styles.sidebar, { transform: [{ translateX: slideAnim }] }]}
             >
-              {userData?.photoURL ? (
-                <Image
-                  source={{ uri: userData.photoURL }}
-                  style={styles.profileImage}
-                />
-              ) : (
-                <Ionicons name="person-circle" size={60} color="black" />
-              )}
-              <Text style={styles.sidebarText}>
-                Welcome, {userData?.name || user?.displayName}
-              </Text>
-              <Link href="/profile">Profile</Link>
-              <Link href="/settings">Settings</Link>
-              <Link href="/complete-profile">
-                {userData?.isProfileComplete
-                  ? "Edit Profile"
-                  : "Complete Profile"}
-              </Link>
-              {userData?.isOwner && (
-                <Link href="/my-restaurants">My Restaurants</Link>
-              )}
-              <Link href="/create-restaurant">Create a Restaurant</Link>
-              <TouchableOpacity onPress={handleLogout}>
-                <Text style={{ color: "red", fontWeight: "bold" }}>Logout</Text>
-              </TouchableOpacity>
+              <LinearGradient
+                colors={["#2E7D32", "#4CAF50"]} // Gradient from deep green to lighter green
+                style={styles.sidebarGradient}
+              >
+                {/* Header Section */}
+                <View style={styles.sidebarHeader}>
+                  <Animated.View style={{ transform: [{ scale: imageScaleAnim }] }}>
+                    {userData?.photoURL ? (
+                      <Image
+                        source={{ uri: userData.photoURL }}
+                        style={styles.profileImage}
+                      />
+                    ) : (
+                      <Ionicons name="person-circle" size={70} color="#FFCA28" />
+                    )}
+                  </Animated.View>
+                  <Text style={styles.sidebarText}>
+                    Welcome, {userData?.name || user?.displayName || "Guest"}
+                  </Text>
+                </View>
+              </LinearGradient>
+
+              {/* Navigation Links */}
+              <View style={styles.sidebarLinks}>
+                <TouchableOpacity style={styles.sidebarButton} activeOpacity={0.7}>
+                  <Ionicons name="person-outline" size={20} color="#2E7D32" style={styles.icon} />
+                  <Link href="/profile" style={styles.sidebarLinkText}>
+                    <Text style={styles.sidebarLinkText} selectable={false}>
+                      Profile
+                    </Text>
+                  </Link>
+                </TouchableOpacity>
+                <View style={styles.divider} />
+                <TouchableOpacity style={styles.sidebarButton} activeOpacity={0.7}>
+                  <Ionicons name="settings-outline" size={20} color="#2E7D32" style={styles.icon} />
+                  <Link href="/settings" style={styles.sidebarLinkText}>
+                    <Text style={styles.sidebarLinkText} selectable={false}>
+                      Settings
+                    </Text>
+                  </Link>
+                </TouchableOpacity>
+                <View style={styles.divider} />
+                <TouchableOpacity style={styles.sidebarButton} activeOpacity={0.7}>
+                  <Ionicons name="create-outline" size={20} color="#2E7D32" style={styles.icon} />
+                  <Link href="/complete-profile" style={styles.sidebarLinkText}>
+                    <Text style={styles.sidebarLinkText} selectable={false}>
+                      {userData?.isProfileComplete ? "Edit Profile" : "Complete Profile"}
+                    </Text>
+                  </Link>
+                </TouchableOpacity>
+                {userData?.isOwner && (
+                  <>
+                    <View style={styles.divider} />
+                    <TouchableOpacity style={styles.sidebarButton} activeOpacity={0.7}>
+                      <Ionicons name="restaurant-outline" size={20} color="#2E7D32" style={styles.icon} />
+                      <Link href="/my-restaurants" style={styles.sidebarLinkText}>
+                        <Text style={styles.sidebarLinkText} selectable={false}>
+                          My Restaurants
+                        </Text>
+                      </Link>
+                    </TouchableOpacity>
+                  </>
+                )}
+                <View style={styles.divider} />
+                <TouchableOpacity style={styles.sidebarButton} activeOpacity={0.7}>
+                  <Ionicons name="add-circle-outline" size={20} color="#2E7D32" style={styles.icon} />
+                  <Link href="/create-restaurant" style={styles.sidebarLinkText}>
+                    <Text style={styles.sidebarLinkText} selectable={false}>
+                      Create a Restaurant
+                    </Text>
+                  </Link>
+                </TouchableOpacity>
+              </View>
+
+              {/* Footer Section (Logout) */}
+              <View style={styles.sidebarFooter}>
+                <TouchableOpacity
+                  style={styles.logoutButton}
+                  onPress={handleLogout}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons name="log-out-outline" size={20} color="#FFFFFF" style={styles.icon} />
+                  <Text style={styles.logoutText} selectable={false}>
+                    Logout
+                  </Text>
+                </TouchableOpacity>
+              </View>
             </Animated.View>
           </>
         )}
@@ -275,17 +349,29 @@ export default function Map() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, paddingTop: 40 },
-  container: { flex: 1 },
-  map: { flex: 1 },
-  loader: { flex: 1, justifyContent: "center", alignItems: "center" },
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#F5F5F5", // Light gray background
+  },
+  container: {
+    flex: 1,
+  },
+  map: {
+    flex: 1,
+  },
+  loader: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.1)", // Light overlay for loading
+  },
   searchButton: {
     position: "absolute",
-    bottom: 80,
+    bottom: 90,
     alignSelf: "center",
-    backgroundColor: "rgba(23, 9, 175, 0.5)",
-    paddingVertical: 10,
-    paddingHorizontal: 20,
+    backgroundColor: "#2E7D32", // Deep green for restaurant theme
+    paddingVertical: 12,
+    paddingHorizontal: 24,
     borderRadius: 25,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
@@ -293,13 +379,23 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
     elevation: 5,
   },
-  searchButtonText: { color: "white", fontWeight: "bold", fontSize: 16 },
-  calloutTitle: { fontWeight: "bold", fontSize: 16, marginBottom: 4 },
+  searchButtonText: {
+    color: "#FFFFFF",
+    fontWeight: "600",
+    fontSize: 16,
+    textTransform: "uppercase",
+  },
+  calloutTitle: {
+    fontWeight: "bold",
+    fontSize: 16,
+    color: "#2E7D32", // Deep green for restaurant name
+    marginBottom: 4,
+  },
   menuButton: {
     position: "absolute",
     bottom: 20,
     right: 20,
-    backgroundColor: "#1E90FF",
+    backgroundColor: "#FFCA28", // Gold for a warm accent
     padding: 12,
     borderRadius: 50,
     shadowColor: "#000",
@@ -308,20 +404,96 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
     elevation: 5,
   },
+  overlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0, 0, 0, 0.4)", // Semi-transparent black overlay
+  },
   sidebar: {
     position: "absolute",
     top: 0,
     left: 0,
     width: 250,
     height: "100%",
-    backgroundColor: "#fff",
-    padding: 20,
+    backgroundColor: "#FFFFFF",
     shadowColor: "#000",
     shadowOffset: { width: 2, height: 0 },
     shadowOpacity: 0.5,
     shadowRadius: 5,
     elevation: 10,
   },
-  sidebarText: { fontSize: 18, fontWeight: "bold", marginBottom: 20 },
-  profileImage: { width: 60, height: 60, borderRadius: 30, marginBottom: 20 },
+  sidebarGradient: {
+    padding: 20,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+  },
+  sidebarHeader: {
+    alignItems: "center",
+  },
+  profileImage: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    borderWidth: 3,
+    borderColor: "#FFCA28", // Gold border for profile image
+    marginBottom: 15,
+  },
+  sidebarText: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#FFFFFF", // White text for contrast on gradient
+    textAlign: "center",
+    textTransform: "uppercase",
+    letterSpacing: 1,
+  },
+  sidebarLinks: {
+    flex: 1,
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+  },
+  sidebarButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 15,
+    borderRadius: 10,
+    backgroundColor: "#F5F5F5", // Light gray for buttons
+    marginVertical: 5,
+  },
+  sidebarLinkText: {
+    fontSize: 16,
+    color: "#333",
+    fontWeight: "500",
+    textDecorationLine: "none", // Remove default link underline
+  },
+  icon: {
+    marginRight: 10,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: "#E0E0E0",
+    marginVertical: 5,
+  },
+  sidebarFooter: {
+    padding: 15,
+    borderTopWidth: 1,
+    borderTopColor: "#E0E0E0",
+  },
+  logoutButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#D32F2F", // Red for logout button
+    paddingVertical: 12,
+    paddingHorizontal: 15,
+    borderRadius: 10,
+    justifyContent: "center",
+  },
+  logoutText: {
+    fontSize: 16,
+    color: "#FFFFFF",
+    fontWeight: "600",
+  },
 });
