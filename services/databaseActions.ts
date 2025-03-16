@@ -240,7 +240,7 @@ async function deleteRestaurantReviews(restaurantId: string): Promise<void> {
 export async function findRestaurantTables(restaurantId: string): Promise<Partial<Table[]>> {
   try {
     const q = query(
-      collection(db, "restaurantTables"),
+      collection(db, "tables"),
       where("restaurantId", "==", String(restaurantId)) // 🔥 Ensure it's a string
     );
     const querySnapshot = await getDocs(q);
@@ -342,7 +342,7 @@ export const getRestaurantById = async (restaurantId: string) => {
 export const updateTablePosition = async (tableId: string, x: number, y: number) => {
   try {
 
-    const tableRef = doc(db, "restaurantTables", tableId); // ✅ Verify collection name
+    const tableRef = doc(db, "tables", tableId); // ✅ Verify collection name
 
     await updateDoc(tableRef, {
       x: x,
@@ -360,7 +360,7 @@ export const updateTablePosition = async (tableId: string, x: number, y: number)
 
 export const updateTableAvailability = async (tableId: string, isAvailable: boolean) => {
   try {
-    const tableRef = doc(db, "restaurantTables", tableId);
+    const tableRef = doc(db, "tables", tableId);
     await updateDoc(tableRef, { isAvailable });
     console.log("Table availability updated:", { isAvailable });
   } catch (error) {
@@ -370,7 +370,7 @@ export const updateTableAvailability = async (tableId: string, isAvailable: bool
 
 export const updateTableCapacity = async (tableId: string, capacity: number) => {
   try {
-    const tableRef = doc(db, "restaurantTables", tableId);
+    const tableRef = doc(db, "tables", tableId);
     await updateDoc(tableRef, { capacity });
     console.log("Table capacity updated:", { capacity });
   } catch (error) {
@@ -380,7 +380,7 @@ export const updateTableCapacity = async (tableId: string, capacity: number) => 
 
 export const updateTableSeatsTaken = async (tableId: string, seatsTaken: number) => {
   try {
-    const tableRef = doc(db, "restaurantTables", tableId);
+    const tableRef = doc(db, "tables", tableId);
     await updateDoc(tableRef, { seatsTaken });
     console.log("Table seats taken updated:", { seatsTaken });
   } catch (error) {

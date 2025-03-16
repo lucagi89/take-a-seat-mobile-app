@@ -65,7 +65,7 @@ export default function Profile() {
         </TouchableOpacity>
         <TouchableOpacity style={styles.linkButton} onPress={() => {}}>
           <Link href="/complete-profile" style={styles.linkText}>
-            Complete Profile
+            {userData?.isProfileComplete ? "Edit Profile" : "Complete Profile"}
           </Link>
         </TouchableOpacity>
         {userRestaurants && userRestaurants.length > 0 && (

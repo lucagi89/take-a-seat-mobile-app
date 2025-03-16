@@ -101,13 +101,13 @@ export default function CreateRestaurantTables() {
           y,
           width: size.width,
           height: size.height,
-          createdBy: user?.uid,
           ownerId: user?.uid,
+          userId: user?.uid,
         }));
       });
 
       const promises = tableEntries.map(async (table) =>
-        addDocument(table, "restaurantTables")
+        addDocument(table, "tables")
       );
 
       await Promise.all(promises);

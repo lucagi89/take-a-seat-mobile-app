@@ -90,7 +90,7 @@ export default function RestaurantFloorPlan({
     };
 
     fetchTables();
-  }, [restaurantId]);
+  }, [restaurantId, localTables.length]);
 
   const handleTablePress = (table: Table) => {
     // Ensure animation exists before triggering
