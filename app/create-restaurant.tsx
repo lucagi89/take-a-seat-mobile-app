@@ -3,7 +3,6 @@ import {
   Text,
   View,
   TextInput,
-  Button,
   StyleSheet,
   ActivityIndicator,
   ScrollView,
@@ -12,6 +11,7 @@ import {
   Switch,
   TouchableOpacity,
   Platform,
+  ImageBackground,
 } from "react-native";
 import { useRouter } from "expo-router";
 import {
@@ -31,15 +31,10 @@ import { tamplateRestaurant } from "../data/variables";
 export default function CreateRestaurant() {
   const [restaurant, setRestaurant] =
     useState<Omit<Restaurant, "id">>(tamplateRestaurant);
-
-  // Use an array to store multiple image URIs
   const [imageUris, setImageUris] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-
   const { user, userData, setUserData } = useUser();
-  console.log(userData);
-
   const router = useRouter();
 
   if (!user) {
@@ -58,7 +53,6 @@ export default function CreateRestaurant() {
     secondOpeningHours: false,
     secondClosingHours: false,
   });
-
   const [times, setTimes] = useState({
     openingHours: new Date(),
     closingHours: new Date(),
@@ -78,12 +72,10 @@ export default function CreateRestaurant() {
     keywords,
   } = restaurant;
 
-  // Function to show picker for a specific time field
   const showTimePicker = (field: keyof typeof times) => {
-    setShowPicker((prev) => ({ ...prev, [field]: !prev[field] })); // Toggle value
+    setShowPicker((prev) => ({ ...prev, [field]: !prev[field] }));
   };
 
-  // Function to handle time selection
   const handleTimeChange = (
     event: any,
     selectedTime: Date | undefined,
@@ -95,18 +87,10 @@ export default function CreateRestaurant() {
     }));
     if (selectedTime) {
       setTimes((prev) => ({ ...prev, [field]: selectedTime }));
-      setRestaurant((prev) => ({
-        ...prev,
-        // [field]: selectedTime.toLocaleTimeString([], {
-        //   hour: "2-digit",
-        //   minute: "2-digit",
-        // }),
-        [field]: selectedTime,
-      }));
+      setRestaurant((prev) => ({ ...prev, [field]: selectedTime }));
     }
   };
 
-  // Open the image library to pick one or more images
   const pickImages = async () => {
     const permissionResult =
       await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -117,16 +101,12 @@ export default function CreateRestaurant() {
       );
       return;
     }
-
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       quality: 0.7,
-      // enables multiple image selection on supported platforms
       allowsMultipleSelection: true,
     });
-
     if (!result.canceled && result.assets && result.assets.length > 0) {
-      // Append newly selected images to the list
       setImageUris((prev) => [
         ...prev,
         ...result.assets.map((asset) => asset.uri),
@@ -134,34 +114,29 @@ export default function CreateRestaurant() {
     }
   };
 
-  // Upload a single image to Firebase Storage and return its download URL
   const uploadImageAsync = async (uri: string) => {
     const response = await fetch(uri);
     const blob = await response.blob();
-
-    // Generate a unique filename
     const filename = `restaurant_${new Date().getTime()}_${Math.random()
       .toString(36)
       .substring(7)}`;
     const storageRef = ref(storage, `restaurants/${filename}`);
-
     await uploadBytes(storageRef, blob);
-    const downloadURL = await getDownloadURL(storageRef);
-    return downloadURL;
+    return await getDownloadURL(storageRef);
   };
 
   const handleSubmit = async () => {
     if (
-      !restaurant.name ||
-      !restaurant.description ||
-      !restaurant.streetAddress ||
+      !name ||
+      !description ||
+      !streetAddress ||
       imageUris.length === 0 ||
-      !restaurant.city ||
-      !restaurant.postcode ||
+      !city ||
+      !postcode ||
       keywords.length === 0 ||
-      !restaurant.phone ||
-      !restaurant.email ||
-      !restaurant.website ||
+      !phone ||
+      !email ||
+      !website ||
       !restaurant.openingHours ||
       !restaurant.closingHours ||
       (!isContinuousOpening &&
@@ -170,27 +145,18 @@ export default function CreateRestaurant() {
       setError("Please fill out all required fields.");
       return;
     }
-
     setLoading(true);
     setError("");
-
     try {
       const imageUrls = await Promise.all(
         imageUris.map((uri) => uploadImageAsync(uri))
       );
-
       await createNewRestaurant(
         { ...restaurant, userId: user.uid, isAvailable: true, imageUrls },
         "restaurants"
       );
-
       await updateDocument("users", user.uid, { isOwner: true });
-
-      if (user) {
-        setUserData({ ...user, isOwner: true });
-      }
-
-      // ✅ Redirect only if all steps are successful
+      if (user) setUserData({ ...user, isOwner: true });
       router.push("/profile");
     } catch (err) {
       console.error("Error creating restaurant:", err);
@@ -219,376 +185,496 @@ export default function CreateRestaurant() {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Create a Restaurant</Text>
-      <Text style={styles.text}>
-        Fill out the form to create a new restaurant.
-      </Text>
+    <ImageBackground
+      source={require("../assets/images/background.png")} // Adjust path as needed
+      style={styles.background}
+      resizeMode="cover"
+    >
+      <ScrollView contentContainerStyle={styles.container}>
+        <View style={styles.card}>
+          <Text style={styles.title}>Create a Restaurant</Text>
+          <Text style={styles.subtitle}>
+            Fill out the form to add your restaurant
+          </Text>
 
-      <Text style={styles.label}>Name:</Text>
-      <TextInput
-        style={styles.input}
-        value={name}
-        onChangeText={(text) => setRestaurant({ ...restaurant, name: text })}
-        placeholder="Restaurant Name"
-      />
-
-      <Text style={styles.label}>Street Address:</Text>
-      <TextInput
-        style={styles.input}
-        value={streetAddress}
-        onChangeText={(text) =>
-          setRestaurant({ ...restaurant, streetAddress: text })
-        }
-        placeholder="Street Address"
-      />
-
-      <Text style={styles.label}>City:</Text>
-      <TextInput
-        style={styles.input}
-        value={city}
-        onChangeText={(text) => setRestaurant({ ...restaurant, city: text })}
-        placeholder="City"
-      />
-
-      <Text style={styles.label}>Postcode:</Text>
-      <TextInput
-        style={styles.input}
-        value={postcode}
-        onChangeText={(text) =>
-          setRestaurant({ ...restaurant, postcode: text })
-        }
-        placeholder="Postcode"
-      />
-
-      <Text style={styles.label}>Country:</Text>
-      <TextInput
-        style={styles.input}
-        value={restaurant.country}
-        onChangeText={(text) => setRestaurant({ ...restaurant, country: text })}
-        placeholder="Country"
-      />
-
-      <Text style={styles.label}>Phone:</Text>
-      <TextInput
-        style={styles.input}
-        value={phone}
-        onChangeText={(text) => setRestaurant({ ...restaurant, phone: text })}
-        placeholder="Phone Number"
-      />
-
-      <Text style={styles.label}>Email:</Text>
-      <TextInput
-        style={styles.input}
-        value={email}
-        onChangeText={(text) => setRestaurant({ ...restaurant, email: text })}
-        placeholder="Email Address"
-      />
-
-      <Text style={styles.label}>Website:</Text>
-      <TextInput
-        style={styles.input}
-        value={website}
-        onChangeText={(text) => setRestaurant({ ...restaurant, website: text })}
-        placeholder="Website"
-      />
-
-      <View style={styles.switchContainer}>
-        <Text style={styles.label}>Continuous Opening?</Text>
-        <Switch
-          value={isContinuousOpening}
-          onValueChange={(value) => {
-            setIsContinuousOpening(value);
-            if (value) {
-              setRestaurant({
-                ...restaurant,
-                secondOpeningHours: "",
-                secondClosingHours: "",
-              });
+          <Text style={styles.label}>Name:</Text>
+          <TextInput
+            style={styles.input}
+            value={name}
+            onChangeText={(text) =>
+              setRestaurant({ ...restaurant, name: text })
             }
-          }}
-        />
-      </View>
+            placeholder="Restaurant Name"
+            placeholderTextColor="#666"
+          />
 
-      {/* Opening Hours */}
-      <Text style={styles.label}>Opening Hours:</Text>
-      <TouchableOpacity
-        onPress={() => showTimePicker("openingHours")}
-        style={styles.timePicker}
-      >
-        <Text>
-          {restaurant.openingHours
-            ? new Date(restaurant.openingHours).toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-              })
-            : "Select Time"}
-        </Text>
-      </TouchableOpacity>
+          <Text style={styles.label}>Street Address:</Text>
+          <TextInput
+            style={styles.input}
+            value={streetAddress}
+            onChangeText={(text) =>
+              setRestaurant({ ...restaurant, streetAddress: text })
+            }
+            placeholder="Street Address"
+            placeholderTextColor="#666"
+          />
 
-      {showPicker.openingHours && (
-        <DateTimePicker
-          value={times.openingHours}
-          mode="time"
-          style={styles.wheelTimePicker}
-          display={Platform.OS === "ios" ? "spinner" : "default"}
-          textColor="black"
-          onChange={(event, time) =>
-            handleTimeChange(event, time, "openingHours")
-          }
-        />
-      )}
+          <Text style={styles.label}>City:</Text>
+          <TextInput
+            style={styles.input}
+            value={city}
+            onChangeText={(text) =>
+              setRestaurant({ ...restaurant, city: text })
+            }
+            placeholder="City"
+            placeholderTextColor="#666"
+          />
 
-      {/* Closing Hours */}
-      <Text style={styles.label}>Closing Hours:</Text>
-      <TouchableOpacity
-        onPress={() => showTimePicker("closingHours")}
-        style={styles.timePicker}
-      >
-        <Text>
-          {restaurant.closingHours
-            ? new Date(restaurant.closingHours).toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-              })
-            : "Select Time"}
-        </Text>
-      </TouchableOpacity>
-      {showPicker.closingHours && (
-        <DateTimePicker
-          value={times.closingHours}
-          mode="time"
-          display={Platform.OS === "ios" ? "spinner" : "default"}
-          textColor="black"
-          onChange={(event, time) =>
-            handleTimeChange(event, time, "closingHours")
-          }
-        />
-      )}
+          <Text style={styles.label}>Postcode:</Text>
+          <TextInput
+            style={styles.input}
+            value={postcode}
+            onChangeText={(text) =>
+              setRestaurant({ ...restaurant, postcode: text })
+            }
+            placeholder="Postcode"
+            placeholderTextColor="#666"
+          />
 
-      {/* Second Opening & Closing Hours - Only if NOT Continuous */}
-      {!isContinuousOpening && (
-        <>
-          <Text style={styles.label}>Second Opening Hours:</Text>
-          <TouchableOpacity
-            onPress={() => showTimePicker("secondOpeningHours")}
-            style={styles.timePicker}
-          >
-            <Text>
-              {restaurant.openingHours
-                ? new Date(restaurant.secondOpeningHours).toLocaleTimeString(
-                    [],
-                    {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    }
-                  )
-                : "Select Time"}
-            </Text>
-          </TouchableOpacity>
-          {showPicker.secondOpeningHours && (
-            <DateTimePicker
-              value={times.secondOpeningHours}
-              mode="time"
-              style={styles.wheelTimePicker}
-              display={Platform.OS === "ios" ? "spinner" : "default"}
-              textColor="black"
-              onChange={(event, time) =>
-                handleTimeChange(event, time, "secondOpeningHours")
-              }
+          <Text style={styles.label}>Country:</Text>
+          <TextInput
+            style={styles.input}
+            value={restaurant.country}
+            onChangeText={(text) =>
+              setRestaurant({ ...restaurant, country: text })
+            }
+            placeholder="Country"
+            placeholderTextColor="#666"
+          />
+
+          <Text style={styles.label}>Phone:</Text>
+          <TextInput
+            style={styles.input}
+            value={phone}
+            onChangeText={(text) =>
+              setRestaurant({ ...restaurant, phone: text })
+            }
+            placeholder="Phone Number"
+            placeholderTextColor="#666"
+            keyboardType="phone-pad"
+          />
+
+          <Text style={styles.label}>Email:</Text>
+          <TextInput
+            style={styles.input}
+            value={email}
+            onChangeText={(text) =>
+              setRestaurant({ ...restaurant, email: text })
+            }
+            placeholder="Email Address"
+            placeholderTextColor="#666"
+            keyboardType="email-address"
+          />
+
+          <Text style={styles.label}>Website:</Text>
+          <TextInput
+            style={styles.input}
+            value={website}
+            onChangeText={(text) =>
+              setRestaurant({ ...restaurant, website: text })
+            }
+            placeholder="Website"
+            placeholderTextColor="#666"
+            keyboardType="url"
+          />
+
+          <View style={styles.switchContainer}>
+            <Text style={styles.label}>Continuous Opening?</Text>
+            <Switch
+              value={isContinuousOpening}
+              onValueChange={(value) => {
+                setIsContinuousOpening(value);
+                if (value)
+                  setRestaurant({
+                    ...restaurant,
+                    secondOpeningHours: "",
+                    secondClosingHours: "",
+                  });
+              }}
+              trackColor={{ false: "#767577", true: "#C8E6C9" }}
+              thumbColor={isContinuousOpening ? "#2E7D32" : "#f4f3f4"}
             />
-          )}
+          </View>
 
-          <Text style={styles.label}>Second Closing Hours:</Text>
+          <Text style={styles.label}>Opening Hours:</Text>
           <TouchableOpacity
             onPress={() => showTimePicker("openingHours")}
             style={styles.timePicker}
           >
-            <Text>
-              {restaurant.secondClosingHours
-                ? new Date(restaurant.secondClosingHours).toLocaleTimeString(
-                    [],
-                    {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    }
-                  )
+            <Text style={styles.timeText}>
+              {restaurant.openingHours
+                ? new Date(restaurant.openingHours).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })
                 : "Select Time"}
             </Text>
           </TouchableOpacity>
-
-          {showPicker.secondClosingHours && (
+          {showPicker.openingHours && (
             <DateTimePicker
-              value={times.secondClosingHours}
+              value={times.openingHours}
               mode="time"
               display={Platform.OS === "ios" ? "spinner" : "default"}
               textColor="black"
-              onChange={(event, time) =>
-                handleTimeChange(event, time, "secondClosingHours")
-              }
+              onChange={(e, t) => handleTimeChange(e, t, "openingHours")}
             />
           )}
-        </>
-      )}
 
-      <View style={styles.checksContainer}>
-        <Text style={styles.checkTitle}>Keywords:</Text>
-        <View style={styles.keywordsContainer}>
-          {availableKeywords.map((keyword) => {
-            const isSelected = keywords.includes(keyword);
-            return (
-              <View key={keyword} style={styles.checkboxContainer}>
-                <Checkbox
-                  value={isSelected}
-                  // If not selected and we already have 3, disable this checkbox
-                  disabled={!isSelected && keywords.length >= 3}
-                  onValueChange={(newValue) =>
-                    handleKeywordChange(keyword, newValue)
+          <Text style={styles.label}>Closing Hours:</Text>
+          <TouchableOpacity
+            onPress={() => showTimePicker("closingHours")}
+            style={styles.timePicker}
+          >
+            <Text style={styles.timeText}>
+              {restaurant.closingHours
+                ? new Date(restaurant.closingHours).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })
+                : "Select Time"}
+            </Text>
+          </TouchableOpacity>
+          {showPicker.closingHours && (
+            <DateTimePicker
+              value={times.closingHours}
+              mode="time"
+              display={Platform.OS === "ios" ? "spinner" : "default"}
+              textColor="black"
+              onChange={(e, t) => handleTimeChange(e, t, "closingHours")}
+            />
+          )}
+
+          {!isContinuousOpening && (
+            <>
+              <Text style={styles.label}>Second Opening Hours:</Text>
+              <TouchableOpacity
+                onPress={() => showTimePicker("secondOpeningHours")}
+                style={styles.timePicker}
+              >
+                <Text style={styles.timeText}>
+                  {restaurant.secondOpeningHours
+                    ? new Date(
+                        restaurant.secondOpeningHours
+                      ).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })
+                    : "Select Time"}
+                </Text>
+              </TouchableOpacity>
+              {showPicker.secondOpeningHours && (
+                <DateTimePicker
+                  value={times.secondOpeningHours}
+                  mode="time"
+                  display={Platform.OS === "ios" ? "spinner" : "default"}
+                  textColor="black"
+                  onChange={(e, t) =>
+                    handleTimeChange(e, t, "secondOpeningHours")
                   }
-                  // Optional: color the checkbox when checked
-                  color={isSelected ? "#4630EB" : undefined}
                 />
-                <Text style={styles.checkboxLabel}>{keyword}</Text>
-              </View>
-            );
-          })}
+              )}
+
+              <Text style={styles.label}>Second Closing Hours:</Text>
+              <TouchableOpacity
+                onPress={() => showTimePicker("secondClosingHours")}
+                style={styles.timePicker}
+              >
+                <Text style={styles.timeText}>
+                  {restaurant.secondClosingHours
+                    ? new Date(
+                        restaurant.secondClosingHours
+                      ).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })
+                    : "Select Time"}
+                </Text>
+              </TouchableOpacity>
+              {showPicker.secondClosingHours && (
+                <DateTimePicker
+                  value={times.secondClosingHours}
+                  mode="time"
+                  display={Platform.OS === "ios" ? "spinner" : "default"}
+                  textColor="black"
+                  onChange={(e, t) =>
+                    handleTimeChange(e, t, "secondClosingHours")
+                  }
+                />
+              )}
+            </>
+          )}
+
+          <View style={styles.checksContainer}>
+            <Text style={styles.checkTitle}>Keywords (Select up to 3):</Text>
+            <View style={styles.keywordsContainer}>
+              {availableKeywords.map((keyword) => {
+                const isSelected = keywords.includes(keyword);
+                return (
+                  <View key={keyword} style={styles.checkboxContainer}>
+                    <Checkbox
+                      value={isSelected}
+                      disabled={!isSelected && keywords.length >= 3}
+                      onValueChange={(newValue) =>
+                        handleKeywordChange(keyword, newValue)
+                      }
+                      color={isSelected ? "#2E7D32" : undefined}
+                    />
+                    <Text style={styles.checkboxLabel}>{keyword}</Text>
+                  </View>
+                );
+              })}
+            </View>
+            <Text style={styles.selectedText}>
+              Selected: {keywords.join(", ")}
+            </Text>
+          </View>
+
+          <Text style={styles.label}>Description:</Text>
+          <TextInput
+            style={[styles.input, styles.multilineInput]}
+            value={description}
+            onChangeText={(text) =>
+              setRestaurant({ ...restaurant, description: text })
+            }
+            placeholder="Restaurant Description"
+            placeholderTextColor="#666"
+            multiline
+            numberOfLines={4}
+          />
+
+          <Text style={styles.label}>Restaurant Images:</Text>
+          <View style={styles.imagesContainer}>
+            {imageUris.map((uri, index) => (
+              <Image key={index} source={{ uri }} style={styles.imagePreview} />
+            ))}
+          </View>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={pickImages}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.buttonText}>Select Images</Text>
+          </TouchableOpacity>
+
+          {error && <Text style={styles.errorText}>{error}</Text>}
+
+          {loading ? (
+            <ActivityIndicator
+              size="large"
+              color="#2E7D32"
+              style={styles.loader}
+            />
+          ) : (
+            <TouchableOpacity
+              style={styles.button}
+              onPress={handleSubmit}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.buttonText}>Create Restaurant</Text>
+            </TouchableOpacity>
+          )}
+
+          <TouchableOpacity
+            style={styles.cancelButton}
+            onPress={() => router.push("/profile")}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.cancelButtonText}>Cancel</Text>
+          </TouchableOpacity>
         </View>
-        <Text style={styles.selectedText}>
-          Selected Keywords: {keywords.join(", ")}
-        </Text>
-      </View>
-
-      <Text style={styles.label}>Description:</Text>
-      <TextInput
-        style={[styles.input, styles.multilineInput]}
-        value={description}
-        onChangeText={(text) =>
-          setRestaurant({ ...restaurant, description: text })
-        }
-        placeholder="Restaurant Description"
-        multiline
-        numberOfLines={4}
-      />
-
-      <Text style={styles.label}>Restaurant Images:</Text>
-      <View style={styles.imagesContainer}>
-        {imageUris.map((uri, index) => (
-          <Image key={index} source={{ uri }} style={styles.imagePreview} />
-        ))}
-      </View>
-      <Button title="Select Images" onPress={pickImages} />
-
-      {error ? <Text style={styles.error}>{error}</Text> : null}
-
-      {loading ? (
-        <ActivityIndicator size="large" color="#0000ff" />
-      ) : (
-        <Button title="Create Restaurant" onPress={handleSubmit} />
-      )}
-
-      <Button title="Cancel" onPress={() => router.push("/profile")} />
-    </ScrollView>
+      </ScrollView>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
+  background: {
+    flex: 1,
+    width: "100%",
+    height: "100%",
+  },
   container: {
-    padding: 20,
     flexGrow: 1,
-    justifyContent: "center",
-    backgroundColor: "#fff",
+    padding: 20,
+    backgroundColor: "rgba(240, 236, 227, 0.7)", // Light overlay for wood texture
+  },
+  card: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 15,
+    padding: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 5,
+    alignItems: "center",
   },
   title: {
-    fontSize: 24,
-    marginBottom: 16,
+    fontSize: 28,
+    fontWeight: "bold",
+    color: "#2E7D32",
     textAlign: "center",
+    marginBottom: 10,
+    textTransform: "uppercase",
+    letterSpacing: 1,
   },
-  text: {
-    marginBottom: 16,
+  subtitle: {
+    fontSize: 16,
+    color: "#666",
     textAlign: "center",
+    marginBottom: 20,
+    fontStyle: "italic",
   },
   label: {
-    marginTop: 8,
-    marginBottom: 4,
-    fontWeight: "bold",
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#333",
+    marginTop: 10,
+    marginBottom: 5,
+    alignSelf: "flex-start",
   },
   input: {
+    width: "100%",
     borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 5,
-    padding: 10,
-    marginBottom: 12,
+    borderColor: "#C8E6C9",
+    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 15,
+    marginBottom: 15,
+    backgroundColor: "#FFFFFF",
+    fontSize: 16,
+    color: "#333",
   },
   multilineInput: {
     height: 100,
     textAlignVertical: "top",
   },
-  error: {
-    color: "red",
-    marginBottom: 16,
+  errorText: {
+    color: "#D32F2F",
+    fontSize: 14,
+    marginBottom: 15,
     textAlign: "center",
   },
   imagesContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
-    marginBottom: 10,
+    justifyContent: "center",
+    marginBottom: 15,
   },
   imagePreview: {
     width: 100,
     height: 100,
-    marginRight: 8,
-    marginBottom: 8,
+    borderRadius: 8,
+    marginRight: 10,
+    marginBottom: 10,
   },
   checksContainer: {
-    margin: 16,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 5,
+    width: "100%",
+    padding: 15,
+    borderRadius: 10,
+    backgroundColor: "#E8F5E9",
+    marginVertical: 10,
   },
   checkTitle: {
     fontSize: 18,
-    marginBottom: 8,
-    fontWeight: "bold",
+    fontWeight: "600",
+    color: "#2E7D32",
+    marginBottom: 10,
   },
   keywordsContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
+    justifyContent: "space-between",
+  },
+  checkboxContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    width: "48%",
+    marginBottom: 10,
+  },
+  checkboxLabel: {
+    marginLeft: 8,
+    fontSize: 14,
+    color: "#333",
+  },
+  selectedText: {
+    fontSize: 14,
+    color: "#666",
+    marginTop: 10,
+    fontStyle: "italic",
   },
   switchContainer: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+    width: "100%",
     marginVertical: 10,
   },
   timePicker: {
     width: "100%",
     borderWidth: 1,
-    borderColor: "black",
+    borderColor: "#C8E6C9",
+    borderRadius: 8,
     padding: 12,
-    borderRadius: 5,
+    backgroundColor: "#FFFFFF",
     alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 12,
-    backgroundColor: "#f8f8f8",
+    marginBottom: 15,
   },
-  wheelTimePicker: {
-    width: "100%",
-    alignSelf: "center",
-    backgroundColor: "white",
+  timeText: {
+    fontSize: 16,
+    color: "#333",
   },
-  checkboxContainer: {
-    flexDirection: "row",
+  button: {
+    backgroundColor: "#FFCA28",
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    marginVertical: 10,
+    width: "80%",
     alignItems: "center",
-    width: "40%",
-    marginRight: 16,
-    marginBottom: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
   },
-  checkboxLabel: {
-    marginLeft: 8,
+  buttonText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "600",
+    textTransform: "uppercase",
   },
-  selectedText: {
-    marginTop: 16,
-    fontStyle: "italic",
+  cancelButton: {
+    backgroundColor: "#D32F2F",
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    marginVertical: 10,
+    width: "80%",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
+  },
+  cancelButtonText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "600",
+    textTransform: "uppercase",
+  },
+  loader: {
+    marginVertical: 20,
   },
 });

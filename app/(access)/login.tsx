@@ -1,9 +1,14 @@
 import React, { useState } from "react";
-import { View, TextInput, Button, StyleSheet, Text } from "react-native";
+import {
+  View,
+  TextInput,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  ImageBackground,
+} from "react-native";
 import { handleUser, signInWithGoogle } from "../../services/auth";
-import { useRouter } from "expo-router";
-
-// import { NavigationProp } from "@react-navigation/native";
+import { useRouter, Link } from "expo-router";
 
 const Login = () => {
   const router = useRouter();
@@ -18,60 +23,165 @@ const Login = () => {
       router.push("/");
     } catch (error) {
       console.error(error);
-      setErrorMessage((error as any).message);
+      setErrorMessage(error.message);
     }
   };
 
   return (
-    <View style={styles.container}>
-      <TextInput
-        style={styles.input}
-        value={email}
-        onChangeText={setEmail}
-        placeholder="Email"
-        keyboardType="email-address"
-        autoCapitalize="none"
-        autoComplete="off"
-        importantForAutofill="no"
-      />
-      <TextInput
-        style={styles.input}
-        value={password}
-        onChangeText={setPassword}
-        placeholder="Password"
-        secureTextEntry
-        autoCapitalize="none"
-        textContentType="none" // Prevents auto-fill suggestions
-        autoComplete="off" // Disables auto-complete
-        importantForAutofill="no"
-      />
-      {errorMessage && <Text style={styles.errorText}>{errorMessage}</Text>}
-      <Button title="Login" onPress={handleLogin} />
-      <Button title="Login with Google" onPress={signInWithGoogle} />
-      <Button
-        title="Don't have an account? Sign Up"
-        onPress={() => router.push("/signup")}
-      />
-    </View>
+    <ImageBackground
+      source={require("../../assets/images/background.png")} // Verify this path
+      style={styles.background}
+      resizeMode="cover"
+    >
+      <View style={styles.container}>
+        <View style={styles.card}>
+          <Text style={styles.title}>Welcome Back</Text>
+          <Text style={styles.subtitle}>Log in to your account</Text>
+
+          <TextInput
+            style={styles.input}
+            value={email}
+            onChangeText={setEmail}
+            placeholder="Email"
+            placeholderTextColor="#666"
+            keyboardType="email-address"
+            autoCapitalize="none"
+            autoComplete="off"
+            importantForAutofill="no"
+          />
+          <TextInput
+            style={styles.input}
+            value={password}
+            onChangeText={setPassword}
+            placeholder="Password"
+            placeholderTextColor="#666"
+            secureTextEntry
+            autoCapitalize="none"
+            textContentType="none"
+            autoComplete="off"
+            importantForAutofill="no"
+          />
+          {errorMessage && <Text style={styles.errorText}>{errorMessage}</Text>}
+
+          <TouchableOpacity
+            style={styles.button}
+            onPress={handleLogin}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.buttonText}>Login</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.button}
+            onPress={signInWithGoogle}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.buttonText}>Login with Google</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.linkButton}
+            onPress={() => {}}
+            activeOpacity={0.7}
+          >
+            <Link href="/signup" style={styles.linkText}>
+              Don’t have an account? Sign Up
+            </Link>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </ImageBackground>
   );
 };
 
 const styles = StyleSheet.create({
+  background: {
+    flex: 1,
+    width: "100%",
+    height: "100%",
+  },
   container: {
     flex: 1,
     justifyContent: "center",
+    alignItems: "center",
     padding: 20,
+    backgroundColor: "rgba(245, 245, 245, 0.7)", // Semi-transparent overlay
+  },
+  card: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 15,
+    padding: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 5,
+    width: "90%",
+    maxWidth: 400,
+    alignItems: "center",
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: "bold",
+    color: "#2E7D32",
+    textAlign: "center",
+    marginBottom: 10,
+    textTransform: "uppercase",
+    letterSpacing: 1,
+  },
+  subtitle: {
+    fontSize: 16,
+    color: "#666",
+    textAlign: "center",
+    marginBottom: 20,
+    fontStyle: "italic",
   },
   input: {
-    height: 40,
-    borderColor: "gray",
+    width: "100%",
     borderWidth: 1,
-    marginBottom: 10,
-    paddingHorizontal: 10,
+    borderColor: "#C8E6C9",
+    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 15,
+    marginBottom: 15,
+    backgroundColor: "#FFFFFF",
+    fontSize: 16,
+    color: "#333",
   },
   errorText: {
-    color: "red",
-    marginBottom: 10,
+    color: "#D32F2F",
+    fontSize: 14,
+    marginBottom: 15,
+    textAlign: "center",
+  },
+  button: {
+    backgroundColor: "#FFCA28",
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    marginVertical: 10,
+    width: "80%",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
+  },
+  buttonText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "600",
+    textTransform: "uppercase",
+  },
+  linkButton: {
+    marginVertical: 10,
+  },
+  linkText: {
+    color: "#2E7D32",
+    fontSize: 14,
+    fontWeight: "500",
+    textDecorationLine: "underline",
   },
 });
 

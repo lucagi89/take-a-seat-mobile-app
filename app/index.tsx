@@ -26,8 +26,12 @@ export default function Map() {
   const { user, userData } = useUser();
   const router = useRouter();
 
-  const [location, setLocation] = useState<Location.LocationObject | null>(null);
-  const [visibleRestaurants, setVisibleRestaurants] = useState<Restaurant[]>([]);
+  const [location, setLocation] = useState<Location.LocationObject | null>(
+    null
+  );
+  const [visibleRestaurants, setVisibleRestaurants] = useState<Restaurant[]>(
+    []
+  );
   const [loading, setLoading] = useState(true);
   const [region, setRegion] = useState<Region | null>(null);
   const [showSearchButton, setShowSearchButton] = useState(false);
@@ -96,6 +100,7 @@ export default function Map() {
   // Fetches restaurants within the current map region
   const fetchVisibleRestaurants = async (mapRegion: Region) => {
     if (!mapRegion) return;
+    if (!user) return;
 
     const { latitude, longitude, latitudeDelta, longitudeDelta } = mapRegion;
     const latMin = latitude - latitudeDelta / 2;
@@ -251,7 +256,10 @@ export default function Map() {
             )}
 
             <Animated.View
-              style={[styles.sidebar, { transform: [{ translateX: slideAnim }] }]}
+              style={[
+                styles.sidebar,
+                { transform: [{ translateX: slideAnim }] },
+              ]}
             >
               <LinearGradient
                 colors={["#2E7D32", "#4CAF50"]} // Gradient from deep green to lighter green
@@ -259,14 +267,20 @@ export default function Map() {
               >
                 {/* Header Section */}
                 <View style={styles.sidebarHeader}>
-                  <Animated.View style={{ transform: [{ scale: imageScaleAnim }] }}>
+                  <Animated.View
+                    style={{ transform: [{ scale: imageScaleAnim }] }}
+                  >
                     {userData?.photoURL ? (
                       <Image
                         source={{ uri: userData.photoURL }}
                         style={styles.profileImage}
                       />
                     ) : (
-                      <Ionicons name="person-circle" size={70} color="#FFCA28" />
+                      <Ionicons
+                        name="person-circle"
+                        size={70}
+                        color="#FFCA28"
+                      />
                     )}
                   </Animated.View>
                   <Text style={styles.sidebarText}>
@@ -277,8 +291,16 @@ export default function Map() {
 
               {/* Navigation Links */}
               <View style={styles.sidebarLinks}>
-                <TouchableOpacity style={styles.sidebarButton} activeOpacity={0.7}>
-                  <Ionicons name="person-outline" size={20} color="#2E7D32" style={styles.icon} />
+                <TouchableOpacity
+                  style={styles.sidebarButton}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons
+                    name="person-outline"
+                    size={20}
+                    color="#2E7D32"
+                    style={styles.icon}
+                  />
                   <Link href="/profile" style={styles.sidebarLinkText}>
                     <Text style={styles.sidebarLinkText} selectable={false}>
                       Profile
@@ -286,8 +308,16 @@ export default function Map() {
                   </Link>
                 </TouchableOpacity>
                 <View style={styles.divider} />
-                <TouchableOpacity style={styles.sidebarButton} activeOpacity={0.7}>
-                  <Ionicons name="settings-outline" size={20} color="#2E7D32" style={styles.icon} />
+                <TouchableOpacity
+                  style={styles.sidebarButton}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons
+                    name="settings-outline"
+                    size={20}
+                    color="#2E7D32"
+                    style={styles.icon}
+                  />
                   <Link href="/settings" style={styles.sidebarLinkText}>
                     <Text style={styles.sidebarLinkText} selectable={false}>
                       Settings
@@ -295,20 +325,41 @@ export default function Map() {
                   </Link>
                 </TouchableOpacity>
                 <View style={styles.divider} />
-                <TouchableOpacity style={styles.sidebarButton} activeOpacity={0.7}>
-                  <Ionicons name="create-outline" size={20} color="#2E7D32" style={styles.icon} />
+                <TouchableOpacity
+                  style={styles.sidebarButton}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons
+                    name="create-outline"
+                    size={20}
+                    color="#2E7D32"
+                    style={styles.icon}
+                  />
                   <Link href="/complete-profile" style={styles.sidebarLinkText}>
                     <Text style={styles.sidebarLinkText} selectable={false}>
-                      {userData?.isProfileComplete ? "Edit Profile" : "Complete Profile"}
+                      {userData?.isProfileComplete
+                        ? "Edit Profile"
+                        : "Complete Profile"}
                     </Text>
                   </Link>
                 </TouchableOpacity>
                 {userData?.isOwner && (
                   <>
                     <View style={styles.divider} />
-                    <TouchableOpacity style={styles.sidebarButton} activeOpacity={0.7}>
-                      <Ionicons name="restaurant-outline" size={20} color="#2E7D32" style={styles.icon} />
-                      <Link href="/my-restaurants" style={styles.sidebarLinkText}>
+                    <TouchableOpacity
+                      style={styles.sidebarButton}
+                      activeOpacity={0.7}
+                    >
+                      <Ionicons
+                        name="restaurant-outline"
+                        size={20}
+                        color="#2E7D32"
+                        style={styles.icon}
+                      />
+                      <Link
+                        href="/my-restaurants"
+                        style={styles.sidebarLinkText}
+                      >
                         <Text style={styles.sidebarLinkText} selectable={false}>
                           My Restaurants
                         </Text>
@@ -317,9 +368,20 @@ export default function Map() {
                   </>
                 )}
                 <View style={styles.divider} />
-                <TouchableOpacity style={styles.sidebarButton} activeOpacity={0.7}>
-                  <Ionicons name="add-circle-outline" size={20} color="#2E7D32" style={styles.icon} />
-                  <Link href="/create-restaurant" style={styles.sidebarLinkText}>
+                <TouchableOpacity
+                  style={styles.sidebarButton}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons
+                    name="add-circle-outline"
+                    size={20}
+                    color="#2E7D32"
+                    style={styles.icon}
+                  />
+                  <Link
+                    href="/create-restaurant"
+                    style={styles.sidebarLinkText}
+                  >
                     <Text style={styles.sidebarLinkText} selectable={false}>
                       Create a Restaurant
                     </Text>
@@ -334,7 +396,12 @@ export default function Map() {
                   onPress={handleLogout}
                   activeOpacity={0.7}
                 >
-                  <Ionicons name="log-out-outline" size={20} color="#FFFFFF" style={styles.icon} />
+                  <Ionicons
+                    name="log-out-outline"
+                    size={20}
+                    color="#FFFFFF"
+                    style={styles.icon}
+                  />
                   <Text style={styles.logoutText} selectable={false}>
                     Logout
                   </Text>
