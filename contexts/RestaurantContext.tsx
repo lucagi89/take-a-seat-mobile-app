@@ -17,6 +17,7 @@ import { ReactNode } from "react";
 
 export const RestaurantProvider = ({ children }: { children: ReactNode }) => {
   const { id } = useLocalSearchParams(); // ✅ Get ID directly from URL
+  const restaurantId = id as string;
   const [restaurant, setRestaurant] = useState<DocumentData | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -39,7 +40,12 @@ export const RestaurantProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <RestaurantContext.Provider
-      value={{ restaurant, setRestaurant, loading, restaurantId: id }}
+      value={{
+        restaurant,
+        setRestaurant,
+        loading,
+        restaurantId,
+      }}
     >
       {children}
     </RestaurantContext.Provider>

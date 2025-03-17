@@ -58,7 +58,7 @@ export default function Reviews() {
 
     try {
       const reviewData = { ...newReview, userId };
-      const newReviewId = await addReview(restaurantId, reviewData); // Assume addReview returns the ID
+      const newReviewId = await addReview(reviewData); // Assume addReview returns the ID
       setReviews([...reviews, { ...reviewData, id: newReviewId }]); // Include ID
       setNewReview({ title: "", body: "", rating: 0, userId, restaurantId });
     } catch (error) {
