@@ -7,8 +7,9 @@ import {
   Platform,
   StyleSheet,
   Animated,
+  Dimensions,
+  PanResponder,
 } from "react-native";
-import Draggable from "react-native-draggable";
 import {
   updateTablePosition,
   deleteDocument,
@@ -18,15 +19,17 @@ import {
 } from "../services/databaseActions";
 import { useUser } from "../contexts/userContext";
 import { Timestamp } from "firebase/firestore";
-import { Ionicons } from "@expo/vector-icons"; // For legend icons
+import { Ionicons } from "@expo/vector-icons";
 
-const getTableSize = (capacity: number) => {
+// Define table size based on capacity
+const getTableSize = (capacity: number): { width: number; height: number } => {
   if (capacity <= 4) return { width: 50, height: 50 };
   if (capacity <= 6) return { width: 80, height: 50 };
   if (capacity <= 8) return { width: 110, height: 50 };
   return { width: 140, height: 50 };
 };
 
+// Define interfaces
 interface Table {
   id: string;
   x: number;
@@ -35,53 +38,66 @@ interface Table {
   isAvailable: boolean;
 }
 
+interface Position {
+  x: number;
+  y: number;
+}
+
 interface RestaurantFloorPlanProps {
-  restaurant: any;
+  restaurant: any; // Replace with a specific type if available
   restaurantId: string;
 }
 
-export default function RestaurantFloorPlan({
+const RestaurantFloorPlan: React.FC<RestaurantFloorPlanProps> = ({
   restaurant,
   restaurantId,
-}: RestaurantFloorPlanProps) {
+}) => {
   const { user } = useUser();
   const userId = user?.uid;
   const ownerId = restaurant?.userId;
   const isOwner = userId === ownerId;
   const [localTables, setLocalTables] = useState<Table[]>([]);
-  const positionsRef = useRef<Record<string, { x: number; y: number }>>({});
+  const positionsRef = useRef<Record<string, Position>>({});
   const scaleAnims = useRef<Record<string, Animated.Value>>({}).current;
+  const panAnims = useRef<Record<string, Animated.ValueXY>>({}).current;
 
-  // Initialize scale animations for all tables when localTables changes
+  // Initialize animations and positions
   useEffect(() => {
     localTables.forEach((table) => {
       if (!scaleAnims[table.id]) {
         scaleAnims[table.id] = new Animated.Value(1);
       }
+      if (!panAnims[table.id]) {
+        panAnims[table.id] = new Animated.ValueXY({
+          x: table.x,
+          y: table.y,
+        });
+      }
     });
 
-    // Clean up unused animations
     Object.keys(scaleAnims).forEach((id) => {
       if (!localTables.find((table) => table.id === id)) {
         delete scaleAnims[id];
       }
     });
+    Object.keys(panAnims).forEach((id) => {
+      if (!localTables.find((table) => table.id === id)) {
+        delete panAnims[id];
+      }
+    });
   }, [localTables]);
 
-  // Fetch tables once on mount
+  // Fetch tables on mount
   useEffect(() => {
     if (!restaurantId) return;
 
     const fetchTables = async () => {
       try {
         const tablesData = await findRestaurantTables(restaurantId);
-
-        // Initialize both state and positionsRef
         const positions = tablesData.reduce((acc, table) => {
           acc[table.id] = { x: table.x, y: table.y };
           return acc;
-        }, {} as Record<string, { x: number; y: number }>);
-
+        }, {} as Record<string, Position>);
         positionsRef.current = positions;
         setLocalTables(tablesData);
       } catch (error) {
@@ -90,15 +106,13 @@ export default function RestaurantFloorPlan({
     };
 
     fetchTables();
-  }, [restaurantId, localTables.length]);
+  }, [restaurantId]);
 
   const handleTablePress = (table: Table) => {
-    // Ensure animation exists before triggering
     if (!scaleAnims[table.id]) {
       scaleAnims[table.id] = new Animated.Value(1);
     }
 
-    // Animate on press
     Animated.sequence([
       Animated.timing(scaleAnims[table.id], {
         toValue: 0.95,
@@ -154,6 +168,7 @@ export default function RestaurantFloorPlan({
       );
       delete positionsRef.current[tableId];
       delete scaleAnims[tableId];
+      delete panAnims[tableId];
     } catch (error) {
       console.error("Error removing table:", error);
     }
@@ -223,6 +238,60 @@ export default function RestaurantFloorPlan({
     }
   };
 
+  const createPanResponder = (table: Table) => {
+    const { width, height } = getTableSize(table.capacity);
+    const containerWidth = Dimensions.get("window").width;
+    const containerHeight = 400; // Matches floorPlanContainer height
+
+    return PanResponder.create({
+      onStartShouldSetPanResponder: () => isOwner, // Only owner can drag
+      onMoveShouldSetPanResponder: () => isOwner, // Ensure move events are captured
+      onPanResponderGrant: () => {
+        panAnims[table.id].flattenOffset(); // Reset accumulated offset
+      },
+      onPanResponderMove: (evt, gestureState) => {
+        const newX =
+          (positionsRef.current[table.id]?.x ?? table.x) + gestureState.dx;
+        const newY =
+          (positionsRef.current[table.id]?.y ?? table.y) + gestureState.dy;
+
+        // Boundary checking
+        const minX = 0;
+        const maxX = containerWidth - width;
+        const minY = 0;
+        const maxY = containerHeight - height;
+
+        const clampedX = Math.max(minX, Math.min(maxX, newX));
+        const clampedY = Math.max(minY, Math.min(maxY, newY));
+
+        panAnims[table.id].setValue({ x: clampedX, y: clampedY });
+      },
+      onPanResponderRelease: async (evt, gestureState) => {
+        const newX = panAnims[table.id].x._value;
+        const newY = panAnims[table.id].y._value;
+
+        positionsRef.current[table.id] = { x: newX, y: newY };
+        setLocalTables((prev) =>
+          prev.map((t) => (t.id === table.id ? { ...t, x: newX, y: newY } : t))
+        );
+
+        try {
+          const updateResult = await updateTablePosition(table.id, newX, newY);
+          if (!updateResult?.success) {
+            console.error("Database update failed", updateResult);
+            Alert.alert("Error", "Failed to update table position.");
+          }
+        } catch (error) {
+          console.error("Error during table position update:", error);
+          Alert.alert(
+            "Error",
+            "An error occurred while updating table position."
+          );
+        }
+      },
+    });
+  };
+
   return (
     <View style={styles.floorPlanWrapper}>
       <View style={styles.legendContainer}>
@@ -244,124 +313,100 @@ export default function RestaurantFloorPlan({
         ) : (
           localTables.map((table) => {
             const { width, height } = getTableSize(table.capacity);
-            const { x, y } = positionsRef.current[table.id] || {
-              x: table.x,
-              y: table.y,
-            };
-
-            // Ensure animation exists
             if (!scaleAnims[table.id]) {
               scaleAnims[table.id] = new Animated.Value(1);
             }
+            if (!panAnims[table.id]) {
+              panAnims[table.id] = new Animated.ValueXY({
+                x: table.x,
+                y: table.y,
+              });
+            }
+
+            // Ensure a minimum touchable area of 48x48px
+            const touchableArea = Math.max(width, 48);
+            const offsetX = (touchableArea - width) / 2;
+            const offsetY = (touchableArea - height) / 2;
 
             return (
-              <Draggable
+              <Animated.View
                 key={table.id}
-                x={positionsRef.current[table.id]?.x ?? table.x}
-                y={positionsRef.current[table.id]?.y ?? table.y}
-                disabled={!isOwner}
-                onDrag={(event, gestureState) => {
-                  const newX =
-                    (positionsRef.current[table.id]?.x ?? table.x) +
-                    gestureState.dx;
-                  const newY =
-                    (positionsRef.current[table.id]?.y ?? table.y) +
-                    gestureState.dy;
-
-                  positionsRef.current[table.id] = { x: newX, y: newY };
-
-                  setLocalTables((prev) =>
-                    prev.map((t) =>
-                      t.id === table.id ? { ...t, x: newX, y: newY } : t
-                    )
-                  );
-                }}
-                onDragRelease={async (event, gestureState) => {
-                  if (!isOwner) return;
-
-                  const finalX = positionsRef.current[table.id]?.x ?? table.x;
-                  const finalY = positionsRef.current[table.id]?.y ?? table.y;
-
-                  try {
-                    const updateResult = await updateTablePosition(
-                      table.id,
-                      finalX,
-                      finalY
-                    );
-
-                    if (updateResult?.success) {
-                      console.log("Database update successful", updateResult);
-                    } else {
-                      console.error("Database update failed", updateResult);
-                      Alert.alert("Error", "Failed to update table position.");
-                    }
-                  } catch (error) {
-                    console.error("Error during table position update:", error);
-                    Alert.alert(
-                      "Error",
-                      "An error occurred while updating table position."
-                    );
-                  }
-                }}
+                {...createPanResponder(table).panHandlers}
+                style={[
+                  styles.tableWrapper,
+                  {
+                    width: touchableArea,
+                    height: touchableArea,
+                    transform: [
+                      { translateX: panAnims[table.id].x },
+                      { translateY: panAnims[table.id].y },
+                    ],
+                  },
+                ]}
               >
-                <TouchableOpacity onPress={() => handleTablePress(table)}>
-                  <Animated.View
-                    style={[
-                      styles.table,
-                      {
-                        width,
-                        height,
-                        backgroundColor: table.isAvailable
-                          ? "#2E7D32"
-                          : "#D32F2F",
-                        transform: [{ scale: scaleAnims[table.id] }],
-                      },
-                    ]}
+                <Animated.View
+                  style={[
+                    styles.table,
+                    {
+                      width,
+                      height,
+                      backgroundColor: table.isAvailable
+                        ? "#2E7D32"
+                        : "#D32F2F",
+                      transform: [{ scale: scaleAnims[table.id] }],
+                      marginLeft: offsetX,
+                      marginTop: offsetY,
+                    },
+                  ]}
+                >
+                  <TouchableOpacity
+                    onPress={() => handleTablePress(table)}
+                    style={styles.touchableOverlay}
+                    activeOpacity={0.8}
                   >
                     <Text style={styles.tableText}>{table.capacity}</Text>
                     <Text style={styles.tableLabel}>Seats</Text>
-                  </Animated.View>
-                </TouchableOpacity>
-              </Draggable>
+                  </TouchableOpacity>
+                </Animated.View>
+              </Animated.View>
             );
           })
         )}
       </View>
     </View>
   );
-}
+};
 
-// In RestaurantFloorPlan.js
 const styles = StyleSheet.create({
   floorPlanWrapper: {
-    marginTop: 5, // Reduced margin
+    marginTop: 5,
   },
   legendContainer: {
     flexDirection: "row",
     justifyContent: "center",
-    marginBottom: 5, // Reduced margin
+    marginBottom: 5,
   },
   legendItem: {
     flexDirection: "row",
     alignItems: "center",
-    marginHorizontal: 12, // Reduced margin
+    marginHorizontal: 12,
   },
   legendColor: {
-    width: 16, // Reduced size
-    height: 16, // Reduced size
+    width: 16,
+    height: 16,
     borderRadius: 4,
     marginRight: 6,
   },
   legendText: {
-    fontSize: 12, // Reduced font size
+    fontSize: 12,
     color: "#333",
     fontWeight: "500",
   },
   floorPlanContainer: {
     width: "100%",
-    height: 400, // Reduced height to fit within parent container
+    height: 400,
     backgroundColor: "#FFFFFF",
-    borderRadius: 12, // Reduced border radius
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: "#E0E0E0",
     shadowColor: "#000",
@@ -372,10 +417,20 @@ const styles = StyleSheet.create({
     position: "relative",
     overflow: "hidden",
   },
+  tableWrapper: {
+    position: "absolute",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  touchableOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   table: {
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: 6, // Reduced border radius
+    borderRadius: 6,
     borderWidth: 2,
     borderColor: "#FFFFFF",
     shadowColor: "#000",
@@ -386,12 +441,12 @@ const styles = StyleSheet.create({
   },
   tableText: {
     color: "#FFFFFF",
-    fontSize: 14, // Reduced font size
+    fontSize: 14,
     fontWeight: "bold",
   },
   tableLabel: {
     color: "#FFFFFF",
-    fontSize: 10, // Reduced font size
+    fontSize: 10,
     fontWeight: "500",
     opacity: 0.8,
   },
@@ -401,9 +456,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   emptyText: {
-    fontSize: 14, // Reduced font size
+    fontSize: 14,
     color: "#666",
     marginTop: 8,
     textAlign: "center",
   },
 });
+
+export default RestaurantFloorPlan;
