@@ -294,6 +294,7 @@ export default function Map() {
                 <TouchableOpacity
                   style={styles.sidebarButton}
                   activeOpacity={0.7}
+                  onPress={() => router.push("/profile")}
                 >
                   <Ionicons
                     name="person-outline"
@@ -301,16 +302,15 @@ export default function Map() {
                     color="#2E7D32"
                     style={styles.icon}
                   />
-                  <Link href="/profile" style={styles.sidebarLinkText}>
-                    <Text style={styles.sidebarLinkText} selectable={false}>
-                      Profile
-                    </Text>
-                  </Link>
+                  <Text style={styles.sidebarLinkText} selectable={false}>
+                    Profile
+                  </Text>
                 </TouchableOpacity>
                 <View style={styles.divider} />
                 <TouchableOpacity
                   style={styles.sidebarButton}
                   activeOpacity={0.7}
+                  onPress={() => router.push("/settings")}
                 >
                   <Ionicons
                     name="settings-outline"
@@ -318,16 +318,15 @@ export default function Map() {
                     color="#2E7D32"
                     style={styles.icon}
                   />
-                  <Link href="/settings" style={styles.sidebarLinkText}>
-                    <Text style={styles.sidebarLinkText} selectable={false}>
-                      Settings
-                    </Text>
-                  </Link>
+                  <Text style={styles.sidebarLinkText} selectable={false}>
+                    Settings
+                  </Text>
                 </TouchableOpacity>
                 <View style={styles.divider} />
                 <TouchableOpacity
                   style={styles.sidebarButton}
                   activeOpacity={0.7}
+                  onPress={() => router.push("/complete-profile")}
                 >
                   <Ionicons
                     name="create-outline"
@@ -335,13 +334,11 @@ export default function Map() {
                     color="#2E7D32"
                     style={styles.icon}
                   />
-                  <Link href="/complete-profile" style={styles.sidebarLinkText}>
-                    <Text style={styles.sidebarLinkText} selectable={false}>
-                      {userData?.isProfileComplete
-                        ? "Edit Profile"
-                        : "Complete Profile"}
-                    </Text>
-                  </Link>
+                  <Text style={styles.sidebarLinkText} selectable={false}>
+                    {userData?.isProfileComplete
+                      ? "Edit Profile"
+                      : "Complete Profile"}
+                  </Text>
                 </TouchableOpacity>
                 {userData?.isOwner && (
                   <>
@@ -349,6 +346,7 @@ export default function Map() {
                     <TouchableOpacity
                       style={styles.sidebarButton}
                       activeOpacity={0.7}
+                      onPress={() => router.push("/my-restaurants")}
                     >
                       <Ionicons
                         name="restaurant-outline"
@@ -356,14 +354,9 @@ export default function Map() {
                         color="#2E7D32"
                         style={styles.icon}
                       />
-                      <Link
-                        href="/my-restaurants"
-                        style={styles.sidebarLinkText}
-                      >
-                        <Text style={styles.sidebarLinkText} selectable={false}>
-                          My Restaurants
-                        </Text>
-                      </Link>
+                      <Text style={styles.sidebarLinkText} selectable={false}>
+                        My Restaurants
+                      </Text>
                     </TouchableOpacity>
                   </>
                 )}
@@ -371,6 +364,7 @@ export default function Map() {
                 <TouchableOpacity
                   style={styles.sidebarButton}
                   activeOpacity={0.7}
+                  onPress={() => router.push("/create-restaurant")}
                 >
                   <Ionicons
                     name="add-circle-outline"
@@ -378,17 +372,11 @@ export default function Map() {
                     color="#2E7D32"
                     style={styles.icon}
                   />
-                  <Link
-                    href="/create-restaurant"
-                    style={styles.sidebarLinkText}
-                  >
-                    <Text style={styles.sidebarLinkText} selectable={false}>
-                      Create a Restaurant
-                    </Text>
-                  </Link>
+                  <Text style={styles.sidebarLinkText} selectable={false}>
+                    Create a Restaurant
+                  </Text>
                 </TouchableOpacity>
               </View>
-
               {/* Footer Section (Logout) */}
               <View style={styles.sidebarFooter}>
                 <TouchableOpacity
