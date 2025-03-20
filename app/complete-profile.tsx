@@ -217,6 +217,7 @@ const CompleteProfileScreen = () => {
         }
         style={styles.input}
         placeholder="Enter your postcode"
+        autoCapitalize="none"
       />
 
       <Text>City:</Text>

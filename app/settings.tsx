@@ -14,6 +14,7 @@ import { useUser } from "../contexts/userContext";
 import { handleLogout } from "../services/auth";
 import * as Location from "expo-location";
 import { Ionicons } from "@expo/vector-icons";
+import Icon from "react-native-vector-icons/MaterialIcons"; // Import the icon library
 
 export default function Settings() {
   const { user, userData } = useUser();
@@ -195,6 +196,11 @@ export default function Settings() {
             />
             <Text style={styles.deleteText}>Delete Account</Text>
           </TouchableOpacity>
+          <TouchableOpacity style={styles.backButton} onPress={() => {}}>
+            <Link href="/">
+              <Icon name="arrow-back" size={30} color="#2E7D32" />
+            </Link>
+          </TouchableOpacity>
         </View>
       </ScrollView>
     </ImageBackground>
@@ -334,5 +340,11 @@ const styles = StyleSheet.create({
   },
   icon: {
     marginRight: 5,
+  },
+  backButton: {
+    position: "absolute",
+    bottom: 10,
+    right: 10,
+    padding: 5,
   },
 });

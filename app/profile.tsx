@@ -4,6 +4,7 @@ import { Text, View, StyleSheet, Image, TouchableOpacity } from "react-native";
 import { useUser } from "../contexts/userContext";
 import { Redirect, Link } from "expo-router";
 import { fetchUserData, getUserRestaurants } from "../services/databaseActions";
+import Icon from "react-native-vector-icons/MaterialIcons"; // Import the icon library
 
 interface UserData {
   name: string;
@@ -12,7 +13,6 @@ interface UserData {
 
 export default function Profile() {
   const { user, loading, userData } = useUser();
-
   const [userRestaurants, setUserRestaurants] = useState([]);
 
   useEffect(() => {
@@ -59,11 +59,6 @@ export default function Profile() {
 
         {/* Navigation Links */}
         <TouchableOpacity style={styles.linkButton} onPress={() => {}}>
-          <Link href="/" style={styles.linkText}>
-            Go to Main Page
-          </Link>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.linkButton} onPress={() => {}}>
           <Link href="/complete-profile" style={styles.linkText}>
             {userData?.isProfileComplete ? "Edit Profile" : "Complete Profile"}
           </Link>
@@ -80,6 +75,13 @@ export default function Profile() {
             Create a Restaurant
           </Link>
         </TouchableOpacity>
+
+        {/* Back Arrow Button */}
+        <TouchableOpacity style={styles.backButton} onPress={() => {}}>
+          <Link href="/">
+            <Icon name="arrow-back" size={30} color="#2E7D32" />
+          </Link>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -91,25 +93,26 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
-    backgroundColor: "#F5F5F5", // Light gray background for a clean look
+    backgroundColor: "#F5F5F5",
   },
   card: {
-    backgroundColor: "#FFFFFF", // White card for content
+    backgroundColor: "#FFFFFF",
     borderRadius: 15,
     padding: 20,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
-    elevation: 5, // For Android shadow
+    elevation: 5,
     width: "90%",
-    maxWidth: 400, // Cap width for larger screens
+    maxWidth: 400,
     alignItems: "center",
+    position: "relative", // Allow absolute positioning of the back button
   },
   title: {
     fontSize: 28,
     fontWeight: "bold",
-    color: "#2E7D32", // Deep green for a restaurant feel
+    color: "#2E7D32",
     textAlign: "center",
     marginBottom: 15,
     textTransform: "uppercase",
@@ -125,16 +128,16 @@ const styles = StyleSheet.create({
   profileImage: {
     width: 120,
     height: 120,
-    borderRadius: 60, // Circular image
+    borderRadius: 60,
     borderWidth: 2,
-    borderColor: "#FFCA28", // Gold border for elegance
+    borderColor: "#FFCA28",
     marginVertical: 15,
   },
   placeholderImage: {
     width: 120,
     height: 120,
     borderRadius: 60,
-    backgroundColor: "#E0E0E0", // Light gray placeholder
+    backgroundColor: "#E0E0E0",
     justifyContent: "center",
     alignItems: "center",
     marginVertical: 15,
@@ -150,7 +153,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   linkButton: {
-    backgroundColor: "#FFCA28", // Gold/yellow for a warm accent
+    backgroundColor: "#FFCA28",
     paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 10,
@@ -168,6 +171,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
     textTransform: "uppercase",
-    textDecorationLine: "none", // Remove default link underline
+    textDecorationLine: "none",
+  },
+  backButton: {
+    position: "absolute",
+    bottom: 10,
+    right: 10,
+    padding: 5,
   },
 });

@@ -27,6 +27,8 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import { Restaurant } from "../data/types";
 import { availableKeywords } from "../data/variables";
 import { tamplateRestaurant } from "../data/variables";
+import Autocomplete from "react-native-autocomplete-input";
+import countries from "world-countries"; // Import country data
 
 export default function CreateRestaurant() {
   const [restaurant, setRestaurant] =
@@ -274,6 +276,7 @@ export default function CreateRestaurant() {
             placeholder="Email Address"
             placeholderTextColor="#666"
             keyboardType="email-address"
+            autoCapitalize="none"
           />
 
           <Text style={styles.label}>Website:</Text>
@@ -286,6 +289,7 @@ export default function CreateRestaurant() {
             placeholder="Website"
             placeholderTextColor="#666"
             keyboardType="url"
+            autoCapitalize="none"
           />
 
           <View style={styles.switchContainer}>
@@ -506,10 +510,10 @@ const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
     padding: 20,
-    backgroundColor: "rgba(240, 236, 227, 0.7)", // Light overlay for wood texture
+    backgroundColor: "none", // Light overlay for wood texture
   },
   card: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "rgba(255, 255, 255, 0.5)",
     borderRadius: 15,
     padding: 20,
     shadowColor: "#000",

@@ -308,7 +308,7 @@ const RestaurantFloorPlan: React.FC<RestaurantFloorPlanProps> = ({
         {localTables.length === 0 ? (
           <View style={styles.emptyContainer}>
             <Ionicons name="restaurant-outline" size={40} color="#666" />
-            <Text style={styles.emptyText}>No tables available</Text>
+            <Text style={styles.emptyText}>No tables set</Text>
           </View>
         ) : (
           localTables.map((table) => {
