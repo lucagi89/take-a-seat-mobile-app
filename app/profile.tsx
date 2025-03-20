@@ -1,6 +1,14 @@
 import React from "react";
 import { useState, useEffect } from "react";
-import { Text, View, StyleSheet, Image, TouchableOpacity } from "react-native";
+import {
+  Text,
+  View,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  ImageBackground,
+  ActivityIndicator,
+} from "react-native";
 import { useUser } from "../contexts/userContext";
 import { Redirect, Link } from "expo-router";
 import { fetchUserData, getUserRestaurants } from "../services/databaseActions";
@@ -14,8 +22,19 @@ interface UserData {
 export default function Profile() {
   const { user, loading, userData } = useUser();
   const [userRestaurants, setUserRestaurants] = useState([]);
+  const [imageLoaded, setImageLoaded] = useState(false);
 
   useEffect(() => {
+    const preloadImage = async () => {
+      try {
+        await Image.prefetch(require("../assets/images/background.png"));
+        setImageLoaded(true);
+      } catch (error) {
+        console.error("Failed to preload image:", error);
+        setImageLoaded(true); // Proceed even if preload fails
+      }
+    };
+    preloadImage();
     if (user) {
       getUserRestaurants(user.uid).then((result) => {
         setUserRestaurants(result);
@@ -36,67 +55,93 @@ export default function Profile() {
   }
 
   return (
-    <View style={styles.container}>
-      <View style={styles.card}>
-        {/* Display name */}
-        <Text style={styles.title}>
-          Hello {userData?.name ? userData.name : user.email}
-        </Text>
+    <ImageBackground
+      source={require("../assets/images/background.png")} // Adjust path as needed
+      style={styles.background}
+      onLoad={() => setImageLoaded(true)}
+      resizeMode="cover"
+    >
+      {/* Show placeholder until image loads */}
+      {!imageLoaded && (
+        <Image
+          source={require("../assets/images/pre-background.png")}
+          style={styles.placeholderBackground}
+          resizeMode="cover"
+        />
+      )}
+      <View style={styles.container}>
+        <View style={styles.card}>
+          {/* Display name */}
+          <Text style={styles.title}>
+            Hello {userData?.name ? userData.name : user.email}
+          </Text>
 
-        {/* Display profile picture if available */}
-        {userData?.photoURL ? (
-          <Image
-            source={{ uri: userData.photoURL }}
-            style={styles.profileImage}
-          />
-        ) : (
-          <View style={styles.placeholderImage}>
-            <Text style={styles.placeholderText}>No Photo</Text>
-          </View>
-        )}
+          {/* Display profile picture if available */}
+          {userData?.photoURL ? (
+            <Image
+              source={{ uri: userData.photoURL }}
+              style={styles.profileImage}
+            />
+          ) : (
+            <View style={styles.placeholderImage}>
+              <Text style={styles.placeholderText}>No Photo</Text>
+            </View>
+          )}
 
-        <Text style={styles.subtitle}>This is your profile page.</Text>
+          <Text style={styles.subtitle}>This is your profile page.</Text>
 
-        {/* Navigation Links */}
-        <TouchableOpacity style={styles.linkButton} onPress={() => {}}>
-          <Link href="/complete-profile" style={styles.linkText}>
-            {userData?.isProfileComplete ? "Edit Profile" : "Complete Profile"}
-          </Link>
-        </TouchableOpacity>
-        {userRestaurants && userRestaurants.length > 0 && (
+          {/* Navigation Links */}
           <TouchableOpacity style={styles.linkButton} onPress={() => {}}>
-            <Link href="/my-restaurants" style={styles.linkText}>
-              View My Restaurants
+            <Link href="/complete-profile" style={styles.linkText}>
+              {userData?.isProfileComplete
+                ? "Edit Profile"
+                : "Complete Profile"}
             </Link>
           </TouchableOpacity>
-        )}
-        <TouchableOpacity style={styles.linkButton} onPress={() => {}}>
-          <Link href="/create-restaurant" style={styles.linkText}>
-            Create a Restaurant
-          </Link>
-        </TouchableOpacity>
+          {userRestaurants && userRestaurants.length > 0 && (
+            <TouchableOpacity style={styles.linkButton} onPress={() => {}}>
+              <Link href="/my-restaurants" style={styles.linkText}>
+                View My Restaurants
+              </Link>
+            </TouchableOpacity>
+          )}
+          <TouchableOpacity style={styles.linkButton} onPress={() => {}}>
+            <Link href="/create-restaurant" style={styles.linkText}>
+              Create a Restaurant
+            </Link>
+          </TouchableOpacity>
 
-        {/* Back Arrow Button */}
-        <TouchableOpacity style={styles.backButton} onPress={() => {}}>
-          <Link href="/">
-            <Icon name="arrow-back" size={30} color="#2E7D32" />
-          </Link>
-        </TouchableOpacity>
+          {/* Back Arrow Button */}
+          <TouchableOpacity style={styles.backButton} onPress={() => {}}>
+            <Link href="/">
+              <Icon name="arrow-back" size={30} color="#2E7D32" />
+            </Link>
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
+  background: {
+    flex: 1,
+    width: "100%",
+    height: "100%",
+  },
   container: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
-    backgroundColor: "#F5F5F5",
+  },
+  placeholderBackground: {
+    ...StyleSheet.absoluteFillObject, // Fill the screen
+    width: "100%",
+    height: "100%",
   },
   card: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "rgba(255, 255, 255, 0.5)",
     borderRadius: 15,
     padding: 20,
     shadowColor: "#000",
