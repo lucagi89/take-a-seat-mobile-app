@@ -32,37 +32,91 @@ export const UserContextProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
+  console.log("UserContextProvider - Starting render");
+
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [userData, setUserData] = useState<Partial<UserData> | undefined>(
     undefined
   );
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      if (currentUser) {
-        setUser({
-          uid: currentUser.uid,
-          email: currentUser.email,
-          displayName: currentUser.displayName,
-        });
+  console.log("UserContextProvider - Initializing with state:", {
+    user,
+    loading,
+    userData,
+  });
 
-        try {
-          const data = await fetchUserData(currentUser.uid);
-          setUserData(data || undefined);
-        } catch (error) {
-          console.error("Error fetching user data:", error);
+  useEffect(() => {
+    console.log("UserContextProvider - Setting up onAuthStateChanged listener");
+    const unsubscribe = onAuthStateChanged(
+      auth,
+      async (currentUser) => {
+        console.log("UserContextProvider - Auth state changed:", currentUser);
+        if (currentUser) {
+          console.log("UserContextProvider - Setting user:", currentUser.uid);
+          setUser({
+            uid: currentUser.uid,
+            email: currentUser.email,
+            displayName: currentUser.displayName,
+          });
+
+          try {
+            console.log(
+              "UserContextProvider - Fetching user data for UID:",
+              currentUser.uid
+            );
+            const data = await fetchUserData(currentUser.uid);
+            console.log("UserContextProvider - Fetched user data:", data);
+            setUserData(data || undefined);
+          } catch (error) {
+            console.error(
+              "UserContextProvider - Error fetching user data:",
+              error
+            );
+            setUserData(undefined);
+          }
+        } else {
+          console.log(
+            "UserContextProvider - No user, clearing user and userData"
+          );
+          setUser(null);
           setUserData(undefined);
         }
-      } else {
+        console.log("UserContextProvider - Setting loading to false");
+        setLoading(false);
+      },
+      (error) => {
+        console.error("UserContextProvider - onAuthStateChanged error:", error);
+        setLoading(false);
+      }
+    );
+
+    // Add a timeout to ensure loading doesn't hang indefinitely
+    const timeout = setTimeout(() => {
+      if (loading) {
+        console.log(
+          "UserContextProvider - Auth state listener timed out, setting loading to false"
+        );
+        setLoading(false);
         setUser(null);
         setUserData(undefined);
       }
-      setLoading(false); // Set loading to false after all async operations
-    });
+    }, 5000);
 
-    return () => unsubscribe();
+    return () => {
+      console.log(
+        "UserContextProvider - Cleaning up onAuthStateChanged listener"
+      );
+      clearTimeout(timeout);
+      unsubscribe();
+    };
   }, []);
+
+  console.log("UserContextProvider - Rendering with state:", {
+    user,
+    loading,
+    userData,
+  });
 
   return (
     <UserContext.Provider
@@ -75,6 +129,7 @@ export const UserContextProvider = ({
 
 export const useUser = () => {
   const context = useContext(UserContext);
+  console.log("useUser - Context:", context);
   if (!context) {
     throw new Error("useUser must be used within a UserContextProvider");
   }

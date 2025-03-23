@@ -10,7 +10,6 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { StripeProvider } from "@stripe/stripe-react-native";
-import { useUser } from "../contexts/userContext";
 import Map from "./map";
 import Animated, {
   useSharedValue,
@@ -18,47 +17,44 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 
-function AuthWrapper({ children }) {
-  const { user, loading: userLoading } = useUser();
-  const router = useRouter();
-
-  useEffect(() => {
-    console.log("User Loading:", userLoading);
-    console.log("User:", user);
-
-    if (!userLoading && !user) {
-      router.replace("/login");
-    } else if (!userLoading && user) {
-      router.replace("/");
-    }
-  }, [user, userLoading, router]);
-
-  if (userLoading) {
-    return (
-      <SafeAreaView style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#0000ff" />
-        <Text>Loading... (Check console for details)</Text>
-      </SafeAreaView>
-    );
-  }
-
-  return children;
-}
-
 export default function RootLayout() {
   const router = useRouter();
-  const [currentRoute, setCurrentRoute] = useState("/"); // Track the current route
-  const translateY = useSharedValue(1000); // Start off-screen (bottom)
+  const [currentRoute, setCurrentRoute] = useState("/"); // Default to "/"
+  const [isMounted, setIsMounted] = useState(false);
+  const translateY = useSharedValue(1000);
+
+  console.log(
+    "RootLayout - currentRoute:",
+    currentRoute,
+    "isMounted:",
+    isMounted
+  );
+
+  useEffect(() => {
+    console.log("RootLayout - Setting isMounted to true");
+    setIsMounted(true);
+  }, []);
 
   const handleRouteChange = (route) => {
+    console.log("RootLayout handleRouteChange - New route:", route);
     setCurrentRoute(route);
+    if (isMounted) {
+      console.log("RootLayout - Navigating to:", route);
+      router.replace(route);
+    } else {
+      console.log(
+        "RootLayout - Not mounted yet, deferring navigation to:",
+        route
+      );
+    }
   };
 
   useEffect(() => {
+    console.log("RootLayout - currentRoute changed:", currentRoute);
     if (currentRoute !== "/") {
-      translateY.value = withTiming(0, { duration: 300 }); // Slide up
+      translateY.value = withTiming(0, { duration: 300 });
     } else {
-      translateY.value = withTiming(1000, { duration: 300 }); // Slide down
+      translateY.value = withTiming(1000, { duration: 300 });
     }
   }, [currentRoute]);
 
@@ -66,35 +62,32 @@ export default function RootLayout() {
     transform: [{ translateY: translateY.value }],
   }));
 
+  console.log(
+    "RootLayout - Rendering main content with currentRoute:",
+    currentRoute
+  );
   return (
     <UserContextProvider>
       <StripeProvider publishableKey="pk_test_YourStripePublicKey">
         <SafeAreaView style={styles.safeArea}>
-          <AuthWrapper>
-            <View style={styles.mapContainer}>
-              <Map
-                onRouteChange={handleRouteChange}
-                isOverlayActive={currentRoute !== "/"}
-              />
-            </View>
+          <View style={styles.mapContainer}>
+            <Map
+              onRouteChange={handleRouteChange}
+              isOverlayActive={currentRoute !== "/"}
+            />
+          </View>
 
-            {currentRoute !== "/" && (
-              <Animated.View style={[styles.overlay, animatedStyle]}>
-                <TouchableOpacity
-                  style={StyleSheet.absoluteFill}
-                  onPress={() => {
-                    router.push("/");
-                    handleRouteChange("/");
-                  }}
-                />
-                <Slot
-                  screenOptions={{
-                    onRouteChange: handleRouteChange, // Pass to Slot children
-                  }}
-                />
-              </Animated.View>
-            )}
-          </AuthWrapper>
+          {currentRoute !== "/" && (
+            <Animated.View style={[styles.overlay, animatedStyle]}>
+              <TouchableOpacity
+                style={StyleSheet.absoluteFill}
+                onPress={() => {
+                  handleRouteChange("/");
+                }}
+              />
+              <Slot />
+            </Animated.View>
+          )}
         </SafeAreaView>
       </StripeProvider>
     </UserContextProvider>
