@@ -1,5 +1,4 @@
-import React from "react";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Text,
   View,
@@ -12,11 +11,12 @@ import {
 import { useUser } from "../contexts/userContext";
 import { Redirect, Link } from "expo-router";
 import { fetchUserData, getUserRestaurants } from "../services/databaseActions";
-import Icon from "react-native-vector-icons/MaterialIcons"; // Import the icon library
+import Icon from "react-native-vector-icons/MaterialIcons";
 
 interface UserData {
   name: string;
-  photoURL: string;
+  photoURL?: string; // Make photoURL optional to reflect reality
+  isProfileComplete?: boolean;
 }
 
 export default function Profile() {
@@ -25,22 +25,12 @@ export default function Profile() {
   const [imageLoaded, setImageLoaded] = useState(false);
 
   useEffect(() => {
-    const preloadImage = async () => {
-      try {
-        await Image.prefetch(require("../assets/images/background.png"));
-        setImageLoaded(true);
-      } catch (error) {
-        console.error("Failed to preload image:", error);
-        setImageLoaded(true); // Proceed even if preload fails
-      }
-    };
-    preloadImage();
     if (user) {
       getUserRestaurants(user.uid).then((result) => {
         setUserRestaurants(result);
       });
     }
-  }, []);
+  }, [user]);
 
   if (loading) {
     return (
@@ -56,7 +46,7 @@ export default function Profile() {
 
   return (
     <ImageBackground
-      source={require("../assets/images/background.png")} // Adjust path as needed
+      source={require("../assets/images/background.png")}
       style={styles.background}
       onLoad={() => setImageLoaded(true)}
       resizeMode="cover"
@@ -76,11 +66,14 @@ export default function Profile() {
             Hello {userData?.name ? userData.name : user.email}
           </Text>
 
-          {/* Display profile picture if available */}
+          {/* Display profile picture if available and valid */}
           {userData?.photoURL ? (
             <Image
               source={{ uri: userData.photoURL }}
               style={styles.profileImage}
+              onError={(e) =>
+                console.log("Image load error:", e.nativeEvent.error)
+              } // Debug loading errors
             />
           ) : (
             <View style={styles.placeholderImage}>
@@ -91,7 +84,7 @@ export default function Profile() {
           <Text style={styles.subtitle}>This is your profile page.</Text>
 
           {/* Navigation Links */}
-          <TouchableOpacity style={styles.linkButton} onPress={() => {}}>
+          <TouchableOpacity style={styles.linkButton}>
             <Link href="/complete-profile" style={styles.linkText}>
               {userData?.isProfileComplete
                 ? "Edit Profile"
@@ -99,20 +92,20 @@ export default function Profile() {
             </Link>
           </TouchableOpacity>
           {userRestaurants && userRestaurants.length > 0 && (
-            <TouchableOpacity style={styles.linkButton} onPress={() => {}}>
+            <TouchableOpacity style={styles.linkButton}>
               <Link href="/my-restaurants" style={styles.linkText}>
                 View My Restaurants
               </Link>
             </TouchableOpacity>
           )}
-          <TouchableOpacity style={styles.linkButton} onPress={() => {}}>
+          <TouchableOpacity style={styles.linkButton}>
             <Link href="/create-restaurant" style={styles.linkText}>
               Create a Restaurant
             </Link>
           </TouchableOpacity>
 
           {/* Back Arrow Button */}
-          <TouchableOpacity style={styles.backButton} onPress={() => {}}>
+          <TouchableOpacity style={styles.backButton}>
             <Link href="/">
               <Icon name="arrow-back" size={30} color="#2E7D32" />
             </Link>
@@ -136,7 +129,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   placeholderBackground: {
-    ...StyleSheet.absoluteFillObject, // Fill the screen
+    ...StyleSheet.absoluteFillObject,
     width: "100%",
     height: "100%",
   },
@@ -152,7 +145,7 @@ const styles = StyleSheet.create({
     width: "90%",
     maxWidth: 400,
     alignItems: "center",
-    position: "relative", // Allow absolute positioning of the back button
+    position: "relative",
   },
   title: {
     fontSize: 28,
