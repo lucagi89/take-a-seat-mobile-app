@@ -1,13 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  Text,
-  View,
-  StyleSheet,
-  Image,
-  TouchableOpacity,
-  ImageBackground,
-  ActivityIndicator,
-} from "react-native";
+import { Text, View, StyleSheet, Image, TouchableOpacity } from "react-native";
 import { useUser } from "../contexts/userContext";
 import { Redirect, Link } from "expo-router";
 import { fetchUserData, getUserRestaurants } from "../services/databaseActions";
@@ -15,14 +7,13 @@ import Icon from "react-native-vector-icons/MaterialIcons";
 
 interface UserData {
   name: string;
-  photoURL?: string; // Make photoURL optional to reflect reality
+  photoURL?: string;
   isProfileComplete?: boolean;
 }
 
 export default function Profile() {
   const { user, loading, userData } = useUser();
   const [userRestaurants, setUserRestaurants] = useState([]);
-  const [imageLoaded, setImageLoaded] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -34,7 +25,7 @@ export default function Profile() {
 
   if (loading) {
     return (
-      <View style={styles.container}>
+      <View style={styles.loadingContainer}>
         <Text style={styles.loadingText}>Loading...</Text>
       </View>
     );
@@ -45,103 +36,72 @@ export default function Profile() {
   }
 
   return (
-    <ImageBackground
-      source={require("../assets/images/background.png")}
-      style={styles.background}
-      onLoad={() => setImageLoaded(true)}
-      resizeMode="cover"
-    >
-      {/* Show placeholder until image loads */}
-      {!imageLoaded && (
-        <Image
-          source={require("../assets/images/pre-background.png")}
-          style={styles.placeholderBackground}
-          resizeMode="cover"
-        />
-      )}
-      <View style={styles.container}>
-        <View style={styles.card}>
-          {/* Display name */}
-          <Text style={styles.title}>
-            Hello {userData?.name ? userData.name : user.email}
-          </Text>
+    <View style={styles.container}>
+      <View style={styles.card}>
+        <Text style={styles.title}>
+          Hello {userData?.name ? userData.name : user.email}
+        </Text>
 
-          {/* Display profile picture if available and valid */}
-          {userData?.photoURL ? (
-            <Image
-              source={{ uri: userData.photoURL }}
-              style={styles.profileImage}
-              onError={(e) =>
-                console.log("Image load error:", e.nativeEvent.error)
-              } // Debug loading errors
-            />
-          ) : (
-            <View style={styles.placeholderImage}>
-              <Text style={styles.placeholderText}>No Photo</Text>
-            </View>
-          )}
+        {userData?.photoURL && userData.photoURL.startsWith("http") ? (
+          <Image
+            source={{ uri: userData.photoURL }}
+            style={styles.profileImage}
+            onError={(e) =>
+              console.log("Image load error:", e.nativeEvent.error)
+            }
+          />
+        ) : (
+          <View style={styles.placeholderImage}>
+            <Text style={styles.placeholderText}>No Photo</Text>
+          </View>
+        )}
 
-          <Text style={styles.subtitle}>This is your profile page.</Text>
+        <Text style={styles.subtitle}>This is your profile page.</Text>
 
-          {/* Navigation Links */}
+        <TouchableOpacity style={styles.linkButton}>
+          <Link href="/complete-profile" style={styles.linkText}>
+            {userData?.isProfileComplete ? "Edit Profile" : "Complete Profile"}
+          </Link>
+        </TouchableOpacity>
+        {userRestaurants.length > 0 && (
           <TouchableOpacity style={styles.linkButton}>
-            <Link href="/complete-profile" style={styles.linkText}>
-              {userData?.isProfileComplete
-                ? "Edit Profile"
-                : "Complete Profile"}
+            <Link href="/my-restaurants" style={styles.linkText}>
+              View My Restaurants
             </Link>
           </TouchableOpacity>
-          {userRestaurants && userRestaurants.length > 0 && (
-            <TouchableOpacity style={styles.linkButton}>
-              <Link href="/my-restaurants" style={styles.linkText}>
-                View My Restaurants
-              </Link>
-            </TouchableOpacity>
-          )}
-          <TouchableOpacity style={styles.linkButton}>
-            <Link href="/create-restaurant" style={styles.linkText}>
-              Create a Restaurant
-            </Link>
-          </TouchableOpacity>
+        )}
+        <TouchableOpacity style={styles.linkButton}>
+          <Link href="/create-restaurant" style={styles.linkText}>
+            Create a Restaurant
+          </Link>
+        </TouchableOpacity>
 
-          {/* Back Arrow Button */}
-          <TouchableOpacity style={styles.backButton}>
-            <Link href="/">
-              <Icon name="arrow-back" size={30} color="#2E7D32" />
-            </Link>
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity style={styles.backButton}>
+          <Link href="/">
+            <Icon name="arrow-back" size={30} color="#2E7D32" />
+          </Link>
+        </TouchableOpacity>
       </View>
-    </ImageBackground>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  background: {
-    flex: 1,
-    width: "100%",
-    height: "100%",
-  },
   container: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
   },
-  placeholderBackground: {
-    ...StyleSheet.absoluteFillObject,
-    width: "100%",
-    height: "100%",
-  },
   card: {
-    backgroundColor: "rgba(255, 255, 255, 0.5)",
-    borderRadius: 15,
+    backgroundColor: "rgba(255, 255, 255, 0.95)", // Slightly more opaque
+    borderRadius: 20,
     padding: 20,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 5,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 8,
     width: "90%",
     maxWidth: 400,
     alignItems: "center",
@@ -185,6 +145,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "500",
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(255, 255, 255, 0.95)",
+  },
   loadingText: {
     fontSize: 18,
     color: "#666",
@@ -213,7 +179,7 @@ const styles = StyleSheet.create({
   },
   backButton: {
     position: "absolute",
-    bottom: 10,
+    top: 10,
     right: 10,
     padding: 5,
   },
