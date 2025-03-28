@@ -1,13 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Slot, useRouter } from "expo-router";
 import { UserContextProvider } from "../contexts/userContext";
 import {
   SafeAreaView,
-  ActivityIndicator,
-  Text,
   View,
   StyleSheet,
   TouchableOpacity,
+  Text,
 } from "react-native";
 import { StripeProvider } from "@stripe/stripe-react-native";
 import Map from "./map";
@@ -17,40 +16,40 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 
-export default function RootLayout() {
-  const router = useRouter();
-  const [currentRoute, setCurrentRoute] = useState("/"); // Default to "/"
-  const [isMounted, setIsMounted] = useState(false);
-  const translateY = useSharedValue(1000);
-
-  console.log(
-    "RootLayout - currentRoute:",
-    currentRoute,
-    "isMounted:",
-    isMounted
-  );
-
-  useEffect(() => {
-    console.log("RootLayout - Setting isMounted to true");
-    setIsMounted(true);
-  }, []);
-
-  const handleRouteChange = (route) => {
-    console.log("RootLayout handleRouteChange - New route:", route);
-    setCurrentRoute(route);
-    if (isMounted) {
-      console.log("RootLayout - Navigating to:", route);
-      router.replace(route);
-    } else {
-      console.log(
-        "RootLayout - Not mounted yet, deferring navigation to:",
-        route
+class ErrorBoundary extends React.Component {
+  state = { hasError: false, error: null };
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <View
+          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+        >
+          <Text>Error: {this.state.error?.message || "Unknown error"}</Text>
+        </View>
       );
     }
+    return this.props.children;
+  }
+}
+
+export default function RootLayout() {
+  const router = useRouter();
+  const [currentRoute, setCurrentRoute] = useState("/");
+  const translateY = useSharedValue(1000);
+  const debounceTimeoutRef = useRef(null);
+
+  const handleRouteChange = (route) => {
+    console.log("RootLayout - Navigating to:", route);
+    setCurrentRoute(route);
+    router.replace(route);
   };
+
   const debounceRouteChange = () => {
-    clearTimeout(debounceTimeout);
-    const debounceTimeout = setTimeout(() => handleRouteChange("/"), 200);
+    clearTimeout(debounceTimeoutRef.current);
+    debounceTimeoutRef.current = setTimeout(() => handleRouteChange("/"), 200);
   };
 
   useEffect(() => {
@@ -62,51 +61,49 @@ export default function RootLayout() {
     }
   }, [currentRoute]);
 
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: translateY.value }],
-  }));
+  const animatedStyle = useAnimatedStyle(() => {
+    console.log(
+      "Animated style - translateY:",
+      translateY.value,
+      "opacity:",
+      currentRoute !== "/" ? 1 : 0
+    );
+    return {
+      transform: [{ translateY: translateY.value }],
+      opacity: currentRoute !== "/" ? 1 : 0,
+    };
+  });
 
-  console.log(
-    "RootLayout - Rendering main content with currentRoute:",
-    currentRoute
-  );
   return (
-    <UserContextProvider>
-      <StripeProvider publishableKey="pk_test_YourStripePublicKey">
-        <SafeAreaView style={styles.safeArea}>
-          <View style={styles.mapContainer}>
-            <Map
-              onRouteChange={handleRouteChange}
-              isOverlayActive={currentRoute !== "/"}
-              // Add fallback for debugging
-              onError={(error) => console.error("Map error:", error)}
-            />
-          </View>
+    <ErrorBoundary>
+      <UserContextProvider>
+        <StripeProvider publishableKey="pk_test_YourStripePublicKey">
+          <SafeAreaView style={styles.safeArea}>
+            <View style={styles.mapContainer}>
+              <Map
+                onRouteChange={handleRouteChange}
+                isOverlayActive={currentRoute !== "/"}
+                onError={(error) => console.error("Map error:", error)}
+              />
+            </View>
 
-          {currentRoute !== "/" && (
             <Animated.View style={[styles.overlay, animatedStyle]}>
               <TouchableOpacity
                 style={StyleSheet.absoluteFill}
                 onPress={debounceRouteChange}
               />
-              ;
               <Slot />
             </Animated.View>
-          )}
-        </SafeAreaView>
-      </StripeProvider>
-    </UserContextProvider>
+          </SafeAreaView>
+        </StripeProvider>
+      </UserContextProvider>
+    </ErrorBoundary>
   );
 }
 
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
   },
   mapContainer: {
     ...StyleSheet.absoluteFillObject,
