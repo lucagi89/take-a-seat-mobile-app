@@ -48,6 +48,10 @@ export default function RootLayout() {
       );
     }
   };
+  const debounceRouteChange = () => {
+    clearTimeout(debounceTimeout);
+    const debounceTimeout = setTimeout(() => handleRouteChange("/"), 200);
+  };
 
   useEffect(() => {
     console.log("RootLayout - currentRoute changed:", currentRoute);
@@ -74,6 +78,8 @@ export default function RootLayout() {
             <Map
               onRouteChange={handleRouteChange}
               isOverlayActive={currentRoute !== "/"}
+              // Add fallback for debugging
+              onError={(error) => console.error("Map error:", error)}
             />
           </View>
 
@@ -81,10 +87,9 @@ export default function RootLayout() {
             <Animated.View style={[styles.overlay, animatedStyle]}>
               <TouchableOpacity
                 style={StyleSheet.absoluteFill}
-                onPress={() => {
-                  handleRouteChange("/");
-                }}
+                onPress={debounceRouteChange}
               />
+              ;
               <Slot />
             </Animated.View>
           )}
