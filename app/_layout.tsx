@@ -1,40 +1,26 @@
 import { Slot } from "expo-router";
-import { SafeAreaView, StyleSheet } from "react-native";
+import { SafeAreaView, StyleSheet, ActivityIndicator } from "react-native";
 import { UserContextProvider } from "../contexts/userContext";
+import { useRootNavigationState, Redirect } from "expo-router";
 
 export default function RootLayout() {
-  return (
-    <UserContextProvider>
-      <SafeAreaView style={styles.safeArea}>
-        <InnerLayout />
-      </SafeAreaView>
-    </UserContextProvider>
-  );
-}
-
-import { useRouter } from "expo-router";
-import { useUser } from "../contexts/userContext";
-import { useEffect, useState } from "react";
-import { ActivityIndicator } from "react-native";
-
-function InnerLayout() {
-  const { user } = useUser();
-  const router = useRouter();
-  const [initialCheckDone, setInitialCheckDone] = useState(false);
-
-  useEffect(() => {
-    if (user === null) {
-      router.replace("/login");
-    } else {
-      setInitialCheckDone(true);
-    }
-  }, [user]);
-
-  if (user === undefined || !initialCheckDone) {
-    return <ActivityIndicator size="large" color="#FFCA28" />;
+  const navigationState = useRootNavigationState();
+  if (!navigationState?.key) {
+    // If the navigation state is not ready, we can return null or a loading indicator
+    return (
+      <ActivityIndicator
+        size="large"
+        color="#0000ff"
+        style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+      />
+    );
   }
 
-  return <Slot />;
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      <Slot />
+    </SafeAreaView>
+  );
 }
 
 const styles = StyleSheet.create({

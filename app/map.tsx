@@ -22,9 +22,11 @@ import { handleLogout } from "../services/auth";
 import { Restaurant } from "../data/types";
 import { LinearGradient } from "expo-linear-gradient";
 
-export default function MapLayout() {
-  const { user, userData } = useUser();
+export default function Map() {
   const router = useRouter();
+  const { user, userData, loading } = useUser();
+
+  const [redirectTimerStarted, setRedirectTimerStarted] = useState(false);
 
   const [location, setLocation] = useState<Location.LocationObject | null>(
     null
@@ -32,19 +34,33 @@ export default function MapLayout() {
   const [visibleRestaurants, setVisibleRestaurants] = useState<Restaurant[]>(
     []
   );
-  const [loading, setLoading] = useState(true);
+  // const [loading, setLoading] = useState(true);
   const [region, setRegion] = useState<Region | null>(null);
   const [showSearchButton, setShowSearchButton] = useState(false);
   const [sidebarVisible, setSidebarVisible] = useState(false);
+  const [appUserData, setAppUserData] = useState<any>(null);
   const slideAnim = useState(new Animated.Value(-250))[0];
   const imageScaleAnim = useState(new Animated.Value(0))[0];
 
   // Redirect to login if user is not authenticated
+  // useEffect(() => {
+  //   if (!user) {
+  //     router.push("/login");
+  //   }
+  // }, [user, router]);
+
   useEffect(() => {
-    if (!user) {
-      router.push("/login");
+    if (!loading && !redirectTimerStarted) {
+      setRedirectTimerStarted(true);
+      const timeout = setTimeout(() => {
+        if (user === null) {
+          router.replace("/login");
+        }
+      }, 5000);
+
+      return () => clearTimeout(timeout);
     }
-  }, [user, router]);
+  }, [loading, redirectTimerStarted, user]);
 
   // Fetch user's location and nearby restaurants
   useEffect(() => {
@@ -106,7 +122,7 @@ export default function MapLayout() {
 
   // Fetch restaurants within the current map region
   const fetchVisibleRestaurants = async (mapRegion: Region) => {
-    if (!mapRegion || !user) return;
+    if (!mapRegion) return;
 
     const { latitude, longitude, latitudeDelta, longitudeDelta } = mapRegion;
     const latMin = latitude - latitudeDelta / 2;
