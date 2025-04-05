@@ -22,7 +22,7 @@ import { handleLogout } from "../services/auth";
 import { Restaurant } from "../data/types";
 import { LinearGradient } from "expo-linear-gradient";
 
-export default function Map() {
+export default function App() {
   const router = useRouter();
   const { user, userData, loading } = useUser();
 
