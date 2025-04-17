@@ -9,7 +9,7 @@ import {
   ActivityIndicator,
   Image,
 } from "react-native";
-import { Slot, useRouter, useFocusEffect } from "expo-router";
+import { useRouter, useFocusEffect } from "expo-router";
 import MapView, { Marker, Region, Callout } from "react-native-maps";
 import * as Location from "expo-location";
 import { collection, query, where, getDocs } from "firebase/firestore";
@@ -330,7 +330,15 @@ export default function App() {
               <View style={styles.sidebarFooter}>
                 <TouchableOpacity
                   style={styles.logoutButton}
-                  onPress={handleLogout}
+                  onPress={() => {
+                    handleLogout()
+                      .then(() => {
+                        router.push("/login");
+                      })
+                      .catch((error) => {
+                        console.error("Logout error:", error);
+                      });
+                  }}
                 >
                   <Ionicons name="log-out-outline" size={20} color="#FFFFFF" />
                   <Text style={styles.logoutText}>Logout</Text>
