@@ -42,7 +42,6 @@ export default function App() {
   const slideAnim = useState(new Animated.Value(-250))[0];
   const imageScaleAnim = useState(new Animated.Value(0))[0];
 
-
   useEffect(() => {
     const getLocation = async () => {
       try {
@@ -340,10 +339,6 @@ export default function App() {
                 </TouchableOpacity>
               </View>
             </Animated.View>
-
-            {/* <View style={styles.slotContainer}>
-              <Slot />
-            </View> */}
           </>
         )}
       </View>
