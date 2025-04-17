@@ -40,12 +40,6 @@ export const UserContextProvider = ({
     undefined
   );
 
-  // console.log("UserContextProvider - Initializing with state:", {
-  //   user,
-  //   loading,
-  //   userData,
-  // });
-
   useEffect(() => {
     console.log("UserContextProvider - Setting up onAuthStateChanged listener");
     const unsubscribe = onAuthStateChanged(
@@ -90,26 +84,6 @@ export const UserContextProvider = ({
         setLoading(false);
       }
     );
-
-    // Add a timeout to ensure loading doesn't hang indefinitely
-    // const timeout = setTimeout(() => {
-    //   if (loading) {
-    //     console.log(
-    //       "UserContextProvider - Auth state listener timed out, setting loading to false"
-    //     );
-    //     setLoading(false);
-    //     setUser(null);
-    //     setUserData(undefined);
-    //   }
-    // }, 5000);
-
-    // return () => {
-    //   console.log(
-    //     "UserContextProvider - Cleaning up onAuthStateChanged listener"
-    //   );
-    //   clearTimeout(timeout);
-    //   unsubscribe();
-    // };
   }, []);
 
   console.log("UserContextProvider - Rendering with state:", {

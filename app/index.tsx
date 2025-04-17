@@ -42,27 +42,7 @@ export default function App() {
   const slideAnim = useState(new Animated.Value(-250))[0];
   const imageScaleAnim = useState(new Animated.Value(0))[0];
 
-  // Redirect to login if user is not authenticated
-  // useEffect(() => {
-  //   if (!user) {
-  //     router.push("/login");
-  //   }
-  // }, [user, router]);
 
-  // useEffect(() => {
-  //   if (!loading && !redirectTimerStarted) {
-  //     setRedirectTimerStarted(true);
-  //     const timeout = setTimeout(() => {
-  //       if (user === null) {
-  //         router.replace("/login");
-  //       }
-  //     }, 5000);
-
-  //     return () => clearTimeout(timeout);
-  //   }
-  // }, [loading, redirectTimerStarted, user]);
-
-  // Fetch user's location and nearby restaurants
   useEffect(() => {
     const getLocation = async () => {
       try {
