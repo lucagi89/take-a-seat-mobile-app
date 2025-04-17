@@ -26,8 +26,6 @@ export default function App() {
   const router = useRouter();
   const { user, userData, loading } = useUser();
 
-  const [redirectTimerStarted, setRedirectTimerStarted] = useState(false);
-
   const [location, setLocation] = useState<Location.LocationObject | null>(
     null
   );
