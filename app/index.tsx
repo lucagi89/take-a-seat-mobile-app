@@ -49,18 +49,18 @@ export default function App() {
   //   }
   // }, [user, router]);
 
-  useEffect(() => {
-    if (!loading && !redirectTimerStarted) {
-      setRedirectTimerStarted(true);
-      const timeout = setTimeout(() => {
-        if (user === null) {
-          router.replace("/login");
-        }
-      }, 5000);
+  // useEffect(() => {
+  //   if (!loading && !redirectTimerStarted) {
+  //     setRedirectTimerStarted(true);
+  //     const timeout = setTimeout(() => {
+  //       if (user === null) {
+  //         router.replace("/login");
+  //       }
+  //     }, 5000);
 
-      return () => clearTimeout(timeout);
-    }
-  }, [loading, redirectTimerStarted, user]);
+  //     return () => clearTimeout(timeout);
+  //   }
+  // }, [loading, redirectTimerStarted, user]);
 
   // Fetch user's location and nearby restaurants
   useEffect(() => {
@@ -361,9 +361,9 @@ export default function App() {
               </View>
             </Animated.View>
 
-            <View style={styles.slotContainer}>
+            {/* <View style={styles.slotContainer}>
               <Slot />
-            </View>
+            </View> */}
           </>
         )}
       </View>
