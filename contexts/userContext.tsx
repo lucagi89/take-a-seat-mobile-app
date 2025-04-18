@@ -20,6 +20,7 @@ type UserData = {
 type UserContextType = {
   user: any;
   loading: boolean;
+  setLoading: (loading: boolean) => void;
   userData: Partial<UserData> | undefined;
   setUser: (user: any) => void;
   setUserData: (userData: Partial<UserData> | undefined) => void;
@@ -94,7 +95,7 @@ export const UserContextProvider = ({
 
   return (
     <UserContext.Provider
-      value={{ user, loading, userData, setUser, setUserData }}
+      value={{ user, loading, setLoading, userData, setUser, setUserData }}
     >
       {children}
     </UserContext.Provider>

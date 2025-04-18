@@ -24,7 +24,7 @@ import { LinearGradient } from "expo-linear-gradient";
 
 export default function App() {
   const router = useRouter();
-  const { user, userData, loading } = useUser();
+  const { user, userData, loading, setLoading } = useUser();
 
   const [location, setLocation] = useState<Location.LocationObject | null>(
     null
@@ -32,11 +32,10 @@ export default function App() {
   const [visibleRestaurants, setVisibleRestaurants] = useState<Restaurant[]>(
     []
   );
-  // const [loading, setLoading] = useState(true);
   const [region, setRegion] = useState<Region | null>(null);
   const [showSearchButton, setShowSearchButton] = useState(false);
   const [sidebarVisible, setSidebarVisible] = useState(false);
-  const [appUserData, setAppUserData] = useState<any>(null);
+  // const [appUserData, setAppUserData] = useState<any>(null);
   const slideAnim = useState(new Animated.Value(-250))[0];
   const imageScaleAnim = useState(new Animated.Value(0))[0];
 
