@@ -2,8 +2,10 @@ import { View, Text, TouchableOpacity, Image } from "react-native";
 import { Animated } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
+import { styles } from "../styles/main-page-style";
+import { handleLogout } from "../services/auth";
 
-const Sidebar = ({
+export const Sidebar = ({
   sidebarVisible,
   toggleSidebar,
   user,
@@ -60,7 +62,13 @@ const Sidebar = ({
 };
 
 // Extract SidebarLinks as a separate component
-const SidebarLinks = ({ userData, router }: { userData: any; router: any }) => (
+export const SidebarLinks = ({
+  userData,
+  router,
+}: {
+  userData: any;
+  router: any;
+}) => (
   <View style={styles.sidebarLinks}>
     <SidebarButton
       icon="person-outline"
@@ -99,7 +107,7 @@ const SidebarLinks = ({ userData, router }: { userData: any; router: any }) => (
 );
 
 // Extract SidebarButton for reusability
-const SidebarButton = ({
+export const SidebarButton = ({
   icon,
   text,
   onPress,
@@ -130,3 +138,18 @@ const SidebarFooter = ({ router }: { router: any }) => (
     </TouchableOpacity>
   </View>
 );
+
+export const SearchButton = ({
+  showSearchButton,
+  onPress,
+}: {
+  showSearchButton: boolean;
+  onPress: () => void;
+}) => {
+  if (!showSearchButton) return null;
+  return (
+    <TouchableOpacity style={styles.searchButton} onPress={onPress}>
+      <Text style={styles.searchButtonText}>Search Here</Text>
+    </TouchableOpacity>
+  );
+};
