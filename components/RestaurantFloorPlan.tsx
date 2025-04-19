@@ -20,6 +20,7 @@ import {
 import { useUser } from "../contexts/userContext";
 import { Timestamp } from "firebase/firestore";
 import { Ionicons } from "@expo/vector-icons";
+import { Restaurant } from "@/data/types";
 
 // Define table size based on capacity
 const getTableSize = (capacity: number): { width: number; height: number } => {
@@ -44,7 +45,7 @@ interface Position {
 }
 
 interface RestaurantFloorPlanProps {
-  restaurant: any; // Replace with a specific type if available
+  restaurant: Restaurant;
   restaurantId: string;
 }
 
