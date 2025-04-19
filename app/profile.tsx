@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Text, View, StyleSheet, Image, TouchableOpacity } from "react-native";
 import { useUser } from "../contexts/userContext";
 import { Redirect, Link } from "expo-router";
-import { fetchUserData, getUserRestaurants } from "../services/databaseActions";
+import { getUserRestaurants } from "../services/databaseActions";
 import Icon from "react-native-vector-icons/MaterialIcons";
 
 interface UserData {

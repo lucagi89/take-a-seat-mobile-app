@@ -22,12 +22,7 @@ import { styles } from "../styles/main-page-style";
 export default function App() {
   const router = useRouter();
   const { user, userData, loading } = useUser();
-  const {
-    location,
-    region,
-    setRegion,
-    loading: locationLoading,
-  } = useLocation();
+  const { region, setRegion, loading: locationLoading } = useLocation();
   const { visibleRestaurants, fetchVisibleRestaurants } =
     useRestaurants(region);
   const [showSearchButton, setShowSearchButton] = useState(false);
