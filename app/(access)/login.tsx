@@ -34,6 +34,7 @@ const Login = () => {
     try {
       await handleUser(email, password);
       console.log("User signed in!");
+      await saveFcmToken();
       router.push("/");
     } catch (error) {
       console.error(error);
