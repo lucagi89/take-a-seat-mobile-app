@@ -9,12 +9,26 @@ import {
 } from "react-native";
 import { handleUser, signInWithGoogle } from "../../services/auth";
 import { useRouter, Link } from "expo-router";
+import messaging from "@react-native-firebase/messaging";
+import { auth, db } from "../../scripts/firebase.config";
+import { doc, setDoc } from "firebase/firestore";
 
 const Login = () => {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState(null);
+
+  const saveFcmToken = async () => {
+    const token = await messaging().getToken();
+    await setDoc(
+      doc(db, "users", auth.currentUser.uid),
+      {
+        fcmToken: token,
+      },
+      { merge: true }
+    );
+  };
 
   const handleLogin = async () => {
     try {
