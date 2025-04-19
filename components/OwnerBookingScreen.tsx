@@ -1,0 +1,103 @@
+import React, { useState, useEffect } from "react";
+import { View, Text, Button, FlatList } from "react-native";
+import {
+  collection,
+  query,
+  where,
+  onSnapshot,
+  doc,
+  updateDoc,
+} from "firebase/firestore";
+import { db, auth } from "../scripts/firebase.config";
+
+const OwnerBookingScreen = () => {
+  const [bookings, setBookings] = useState([]);
+
+  useEffect(() => {
+    // Get restaurant owned by the current user
+    const restaurantQuery = query(
+      collection(db, "restaurants"),
+      where("ownerId", "==", auth.currentUser.uid)
+    );
+
+    const unsubscribeRestaurant = onSnapshot(
+      restaurantQuery,
+      (restaurantSnap) => {
+        if (!restaurantSnap.empty) {
+          const restaurantId = restaurantSnap.docs[0].id;
+
+          // Listen for pending bookings for this restaurant
+          const bookingsQuery = query(
+            collection(db, "bookings"),
+            where("restaurantId", "==", restaurantId),
+            where("status", "==", "pending")
+          );
+
+          const unsubscribeBookings = onSnapshot(bookingsQuery, (snapshot) => {
+            const bookingList = snapshot.docs.map((doc) => ({
+              id: doc.id,
+              ...doc.data(),
+            }));
+            setBookings(bookingList);
+          });
+
+          return () => unsubscribeBookings();
+        }
+      }
+    );
+
+    return () => unsubscribeRestaurant();
+  }, []);
+
+  const handleAcceptBooking = async (bookingId: string) => {
+    try {
+      await updateDoc(doc(db, "bookings", bookingId), {
+        status: "accepted",
+        updatedAt: serverTimestamp(),
+      });
+      Alert.alert("Success", "Booking accepted.");
+    } catch (error) {
+      console.error("Error accepting booking:", error);
+      Alert.alert("Error", "Failed to accept booking.");
+    }
+  };
+
+  const handleRejectBooking = async (bookingId: string) => {
+    try {
+      await updateDoc(doc(db, "bookings", bookingId), {
+        status: "rejected",
+        updatedAt: serverTimestamp(),
+      });
+      Alert.alert("Success", "Booking rejected.");
+    } catch (error) {
+      console.error("Error rejecting booking:", error);
+      Alert.alert("Error", "Failed to reject booking.");
+    }
+  };
+
+  return (
+    <View>
+      <Text>Pending Booking Requests</Text>
+      <FlatList
+        data={bookings}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <View>
+            <Text>Table: {item.tableId}</Text>
+            <Text>Party Size: {item.partySize}</Text>
+            <Button
+              title="Accept"
+              onPress={() => handleAcceptBooking(item.id)}
+            />
+            <Button
+              title="Reject"
+              onPress={() => handleRejectBooking(item.id)}
+            />
+          </View>
+        )}
+      />
+    </View>
+  );
+};
+
+export default OwnerBookingScreen;
