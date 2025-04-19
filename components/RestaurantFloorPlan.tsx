@@ -145,18 +145,25 @@ const RestaurantFloorPlan: React.FC<RestaurantFloorPlanProps> = ({
         Alert.prompt(
           "Book Table",
           "Enter party size",
-          (partySizeStr) => {
+          async (partySizeStr) => {
             const partySize = parseInt(partySizeStr, 10);
             if (isNaN(partySize) || partySize <= 0) {
               Alert.alert("Invalid Input", "Enter a valid party size.");
               return;
             }
-            handleBooking(table, partySize);
+            await handleBooking(table, partySize);
           },
           "plain-text"
         );
       } else {
-        Alert.alert("Booking", "Please enter your party size manually.");
+        Alert.prompt("Book Table", "Enter party size", async (partySizeStr) => {
+          const partySize = parseInt(partySizeStr, 10);
+          if (isNaN(partySize) || partySize <= 0) {
+            Alert.alert("Invalid Input", "Enter a valid party size.");
+            return;
+          }
+          await handleBooking(table, partySize);
+        });
       }
     }
   };

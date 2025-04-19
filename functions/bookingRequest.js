@@ -65,3 +65,80 @@ exports.notifyOwnerOnBooking = functions.firestore
 
     return null;
   });
+
+
+exports.notifyUserOnBookingStatus = functions.firestore
+  .document("bookings/{bookingId}")
+  .onUpdate(async (change, context) => {
+    const newData = change.after.data();
+    const oldData = change.before.data();
+
+    // Check if status changed
+    if (newData.status === oldData.status) {
+      return null;
+    }
+
+    const {userId, tableId, status} = newData;
+
+    // Create notification message based on status
+    let title;
+    let body;
+    let type;
+    if (status === "accepted") {
+      title = "Booking Confirmed";
+      body = `Your booking for Table ${tableId} has been confirmed!`;
+      type = "booking_accepted";
+    } else if (status === "rejected") {
+      title = "Booking Rejected";
+      body = `Your booking for Table ${tableId} was not approved.`;
+      type = "booking_rejected";
+    } else {
+      return null;
+    }
+
+    // Save notification to Firestore
+    const notification = {
+      userId,
+      title,
+      body,
+      type,
+      bookingId: change.after.id,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      read: false,
+    };
+
+    await admin
+      .firestore()
+      .collection("notifications")
+      .add(notification);
+
+    // Send FCM notification to user
+    const userDoc =
+      await admin.firestore().collection("users").doc(userId).get();
+    const user = userDoc.data();
+    const fcmToken = user.fcmToken;
+
+    if (fcmToken) {
+      const message = {
+        notification: {title, body},
+        data: {
+          bookingId: change.after.id,
+          type,
+        },
+        token: fcmToken,
+      };
+
+      await admin.messaging().send(message);
+    }
+
+    // Update table's isBooked status if accepted
+    if (status === "accepted") {
+      await admin
+        .firestore()
+        .collection("tables")
+        .doc(tableId)
+        .update({isBooked: true});
+    }
+
+    return null;
+  });
