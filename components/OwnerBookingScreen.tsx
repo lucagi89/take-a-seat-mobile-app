@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, Button, FlatList } from "react-native";
+import { View, Text, Button, FlatList, Alert } from "react-native";
 import {
   collection,
   query,
@@ -11,13 +11,20 @@ import {
 import { db, auth } from "../scripts/firebase.config";
 
 const OwnerBookingScreen = () => {
-  const [bookings, setBookings] = useState([]);
+  interface Booking {
+    id: string;
+    tableId?: string;
+    partySize?: number;
+    [key: string]: any; // Add this to allow additional fields if needed
+  }
+
+  const [bookings, setBookings] = useState<Booking[]>([]);
 
   useEffect(() => {
     // Get restaurant owned by the current user
     const restaurantQuery = query(
       collection(db, "restaurants"),
-      where("ownerId", "==", auth.currentUser.uid)
+      where("ownerId", "==", auth.currentUser?.uid || "")
     );
 
     const unsubscribeRestaurant = onSnapshot(

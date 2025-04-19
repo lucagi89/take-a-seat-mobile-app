@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   SafeAreaView,
   View,
@@ -18,6 +18,8 @@ import { fetchUserData } from "../services/databaseActions";
 import { useSidebarAnimation } from "../hooks/useSidebarAnimation";
 import { Sidebar, SearchButton } from "../components/ComponentsForMap";
 import { styles } from "../styles/main-page-style";
+import { doc, onSnapshot, collection, where } from "firebase/firestore";
+import { db, auth } from "../scripts/firebase.config";
 
 export default function App() {
   const router = useRouter();
@@ -28,6 +30,34 @@ export default function App() {
   const [showSearchButton, setShowSearchButton] = useState(false);
   const [sidebarVisible, setSidebarVisible] = useState(false);
   const { slideAnim, imageScaleAnim, toggleSidebar } = useSidebarAnimation();
+
+  useEffect(() => {
+    if (!auth.currentUser) return;
+
+    // Listen for bookings created by the current user
+    const unsubscribe = onSnapshot(
+      collection(db, "bookings").where("userId", "==", auth.currentUser.uid),
+      (snapshot) => {
+        snapshot.docChanges().forEach((change) => {
+          const booking = change.doc.data();
+          if (change.type === "modified" && booking.status !== "pending") {
+            const message =
+              booking.status === "accepted"
+                ? `Your booking for Table ${booking.tableId} is confirmed!`
+                : `Your booking for Table ${booking.tableId} was rejected.`;
+            Alert.alert(
+              booking.status === "accepted"
+                ? "Booking Confirmed"
+                : "Booking Rejected",
+              message
+            );
+          }
+        });
+      }
+    );
+
+    return () => unsubscribe();
+  }, []);
 
   useFocusEffect(
     React.useCallback(() => {
