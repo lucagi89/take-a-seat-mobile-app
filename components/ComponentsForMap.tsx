@@ -103,6 +103,11 @@ export const SidebarLinks = ({
       text="Create a Restaurant"
       onPress={() => router.push("/create-restaurant")}
     />
+    <SidebarButton
+      icon="add-circle-outline"
+      text="Go to messages"
+      onPress={() => router.push("/messages")}
+    />
   </View>
 );
 

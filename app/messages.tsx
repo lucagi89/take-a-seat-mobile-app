@@ -16,7 +16,7 @@ import {
   orderBy,
   serverTimestamp,
 } from "firebase/firestore";
-import { auth, db } from "../../scripts/firebase.config";
+import { auth, db } from "../scripts/firebase.config";
 
 interface Message {
   id: string;
