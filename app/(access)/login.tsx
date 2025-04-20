@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import { handleUser, signInWithGoogle } from "../../services/auth";
 import { useRouter, Link } from "expo-router";
-import messaging from "@react-native-firebase/messaging";
+// import messaging from "@react-native-firebase/messaging";
 import { auth, db } from "../../scripts/firebase.config";
 import { doc, setDoc } from "firebase/firestore";
 

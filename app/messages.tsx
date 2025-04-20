@@ -23,6 +23,7 @@ interface Message {
   text: string;
   createdAt: any; // Firestore Timestamp
   userId: string;
+  author: string;
 }
 
 const MessagesScreen = () => {
@@ -74,6 +75,7 @@ const MessagesScreen = () => {
         text: newMessage.trim(),
         createdAt: serverTimestamp(),
         userId: auth.currentUser.uid,
+        author: auth.currentUser.displayName || "Anonymous",
       });
       setNewMessage(""); // Clear input
     } catch (error) {
@@ -86,7 +88,7 @@ const MessagesScreen = () => {
   const renderMessage = ({ item }: { item: Message }) => (
     <View style={styles.messageContainer}>
       <Text style={styles.messageText}>{item.text}</Text>
-      <Text style={styles.messageUser}>User: {item.userId}</Text>
+      <Text style={styles.messageUser}>User: {item.author}</Text>
     </View>
   );
 
