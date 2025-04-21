@@ -25,7 +25,7 @@ export default function App() {
   const router = useRouter();
   const { user, userData, loading } = useUser();
   const { region, setRegion, loading: locationLoading } = useLocation();
-  const { visibleRestaurants, fetchVisibleRestaurants } =
+  const { visibleRestaurants, fetchVisibleRestaurants, restaurantsQuery } =
     useRestaurants(region);
   const [showSearchButton, setShowSearchButton] = useState(false);
   const [sidebarVisible, setSidebarVisible] = useState(false);
@@ -69,7 +69,7 @@ export default function App() {
   // }, []);
 
   useEffect(() => {
-    const unsubscribe = onSnapshot(visibleRestaurants, (snapshot) => {
+    const unsubscribe = onSnapshot(restaurantsQuery, (snapshot) => {
       const restaurants = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
