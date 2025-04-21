@@ -12,6 +12,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import {
   getRestaurantById,
   findRestaurantTables,
+  updateDocument,
 } from "../../../services/databaseActions";
 import { DocumentData } from "firebase/firestore";
 import RestaurantFloorPlan from "../../../components/RestaurantFloorPlan";
@@ -65,6 +66,22 @@ export default function MyRestaurantPage() {
     }, [restaurantId])
   );
 
+  const closeRestaurant = async () => {
+    if (!restaurant) return;
+    setLoading(true);
+    setError("");
+    try {
+      await updateDocument("restaurants", restaurantId, {
+        isAvailable: false,
+      });
+    } catch (error) {
+      console.error("Error closing restaurant:", error);
+      setError("Error closing restaurant.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (loading) {
     return (
       <View style={styles.container}>
@@ -85,6 +102,13 @@ export default function MyRestaurantPage() {
           />
           <Text style={styles.error}>{error || "Restaurant not found."}</Text>
         </View>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={closeRestaurant}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.backButtonText}>Close the Restaurant</Text>
+        </TouchableOpacity>
         <TouchableOpacity
           style={styles.backButton}
           onPress={() => router.replace("/my-restaurants")}
