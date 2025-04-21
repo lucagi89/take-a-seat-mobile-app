@@ -18,7 +18,7 @@ import { fetchUserData } from "../services/databaseActions";
 import { useSidebarAnimation } from "../hooks/useSidebarAnimation";
 import { Sidebar, SearchButton } from "../components/ComponentsForMap";
 import { styles } from "../styles/main-page-style";
-import { doc, onSnapshot, collection, where } from "firebase/firestore";
+import { doc, onSnapshot, collection, where, query } from "firebase/firestore";
 import { db, auth } from "../scripts/firebase.config";
 
 export default function App() {
@@ -30,13 +30,17 @@ export default function App() {
   const [showSearchButton, setShowSearchButton] = useState(false);
   const [sidebarVisible, setSidebarVisible] = useState(false);
   const { slideAnim, imageScaleAnim, toggleSidebar } = useSidebarAnimation();
-
   useEffect(() => {
     if (!auth.currentUser) return;
 
     // Listen for bookings created by the current user
+    const bookingsQuery = query(
+      collection(db, "bookings"),
+      where("userId", "==", auth.currentUser.uid)
+    );
+
     const unsubscribe = onSnapshot(
-      collection(db, "bookings").where("userId", "==", auth.currentUser.uid),
+      bookingsQuery,
       (snapshot) => {
         snapshot.docChanges().forEach((change) => {
           const booking = change.doc.data();
@@ -53,6 +57,10 @@ export default function App() {
             );
           }
         });
+      },
+      (error) => {
+        console.error("Firestore listener error:", error);
+        Alert.alert("Error", "Failed to fetch booking updates.");
       }
     );
 

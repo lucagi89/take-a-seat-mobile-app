@@ -7,6 +7,7 @@ import {
   FlatList,
   StyleSheet,
   Alert,
+  TouchableOpacity,
 } from "react-native";
 import {
   collection,
@@ -17,6 +18,7 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 import { auth, db } from "../scripts/firebase.config";
+import { useRouter } from "expo-router";
 
 interface Message {
   id: string;
@@ -29,6 +31,7 @@ interface Message {
 const MessagesScreen = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
+  const router = useRouter();
 
   // Listen for real-time updates to messages
   useEffect(() => {
@@ -110,6 +113,12 @@ const MessagesScreen = () => {
           placeholder="Type a message"
         />
         <Button title="Send" onPress={handleAddMessage} />
+        <TouchableOpacity
+          onPress={() => router.push("/")}
+          style={{ marginLeft: 10 }}
+        >
+          <Text style={{ color: "#007AFF" }}>Go Back</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
