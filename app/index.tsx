@@ -30,42 +30,54 @@ export default function App() {
   const [showSearchButton, setShowSearchButton] = useState(false);
   const [sidebarVisible, setSidebarVisible] = useState(false);
   const { slideAnim, imageScaleAnim, toggleSidebar } = useSidebarAnimation();
+
+  // useEffect(() => {
+  //   if (!auth.currentUser) return;
+
+  //   // Listen for bookings created by the current user
+  //   const bookingsQuery = query(
+  //     collection(db, "bookings"),
+  //     where("userId", "==", auth.currentUser.uid)
+  //   );
+
+  //   const unsubscribe = onSnapshot(
+  //     bookingsQuery,
+  //     (snapshot) => {
+  //       snapshot.docChanges().forEach((change) => {
+  //         const booking = change.doc.data();
+  //         if (change.type === "modified" && booking.status !== "pending") {
+  //           const message =
+  //             booking.status === "accepted"
+  //               ? `Your booking for Table ${booking.tableId} is confirmed!`
+  //               : `Your booking for Table ${booking.tableId} was rejected.`;
+  //           Alert.alert(
+  //             booking.status === "accepted"
+  //               ? "Booking Confirmed"
+  //               : "Booking Rejected",
+  //             message
+  //           );
+  //         }
+  //       });
+  //     },
+  //     (error) => {
+  //       console.error("Firestore listener error:", error);
+  //       Alert.alert("Error", "Failed to fetch booking updates.");
+  //     }
+  //   );
+
+  //   return () => unsubscribe();
+  // }, []);
+
   useEffect(() => {
-    if (!auth.currentUser) return;
-
-    // Listen for bookings created by the current user
-    const bookingsQuery = query(
-      collection(db, "bookings"),
-      where("userId", "==", auth.currentUser.uid)
-    );
-
-    const unsubscribe = onSnapshot(
-      bookingsQuery,
-      (snapshot) => {
-        snapshot.docChanges().forEach((change) => {
-          const booking = change.doc.data();
-          if (change.type === "modified" && booking.status !== "pending") {
-            const message =
-              booking.status === "accepted"
-                ? `Your booking for Table ${booking.tableId} is confirmed!`
-                : `Your booking for Table ${booking.tableId} was rejected.`;
-            Alert.alert(
-              booking.status === "accepted"
-                ? "Booking Confirmed"
-                : "Booking Rejected",
-              message
-            );
-          }
-        });
-      },
-      (error) => {
-        console.error("Firestore listener error:", error);
-        Alert.alert("Error", "Failed to fetch booking updates.");
-      }
-    );
-
+    const unsubscribe = onSnapshot(visibleRestaurants, (snapshot) => {
+      const restaurants = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setVisibleRestaurants(restaurants);
+    });
     return () => unsubscribe();
-  }, []);
+  }, [visibleRestaurants]);
 
   useFocusEffect(
     React.useCallback(() => {

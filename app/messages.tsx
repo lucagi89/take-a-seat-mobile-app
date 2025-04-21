@@ -38,7 +38,7 @@ const MessagesScreen = () => {
     // Create a query to order messages by creation time
     const messagesQuery = query(
       collection(db, "messages"),
-      orderBy("createdAt", "desc")
+      orderBy("createdAt", "asc")
     );
 
     // Set up real-time listener
