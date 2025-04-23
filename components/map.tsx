@@ -83,59 +83,59 @@ export default function Map() {
   }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
-        {region && (
-          <>
-            <MapView
-              style={styles.map}
-              showsUserLocation
-              showsMyLocationButton
-              showsCompass
-              region={region}
-              onRegionChangeComplete={(newRegion) => {
-                setRegion(newRegion);
-              }}
-            >
-              {visibleRestaurants.map((restaurant) => (
-                <Marker
-                  key={restaurant.id}
-                  coordinate={{
-                    latitude: restaurant.latitude,
-                    longitude: restaurant.longitude,
-                  }}
-                  pinColor={restaurant.isAvailable ? "green" : "red"}
+    // <SafeAreaView style={styles.safeArea}>
+    <View style={styles.container}>
+      {region && (
+        <>
+          <MapView
+            style={styles.map}
+            showsUserLocation
+            showsMyLocationButton
+            showsCompass
+            region={region}
+            onRegionChangeComplete={(newRegion) => {
+              setRegion(newRegion);
+            }}
+          >
+            {visibleRestaurants.map((restaurant) => (
+              <Marker
+                key={restaurant.id}
+                coordinate={{
+                  latitude: restaurant.latitude,
+                  longitude: restaurant.longitude,
+                }}
+                pinColor={restaurant.isAvailable ? "green" : "red"}
+              >
+                <Callout
+                  onPress={() => restaurantSelectionHandler(restaurant.id)}
                 >
-                  <Callout
-                    onPress={() => restaurantSelectionHandler(restaurant.id)}
-                  >
-                    <View>
-                      <Text style={styles.calloutTitle}>{restaurant.name}</Text>
-                      <Text>{restaurant.streetAddress}</Text>
-                      <Text>{`${restaurant.cuisine_one}, ${restaurant.cuisine_two}, ${restaurant.cuisine_three}`}</Text>
-                    </View>
-                  </Callout>
-                </Marker>
-              ))}
-            </MapView>
-            <TouchableOpacity
-              style={styles.menuButton}
-              onPress={() => toggleSidebar()}
-            >
-              <Ionicons name="menu" size={32} color="white" />
-            </TouchableOpacity>
-            <Sidebar
-              sidebarVisible={sidebarVisible}
-              toggleSidebar={() => toggleSidebar()}
-              user={user}
-              userData={userData}
-              slideAnim={slideAnim}
-              imageScaleAnim={imageScaleAnim}
-              router={router}
-            />
-          </>
-        )}
-      </View>
-    </SafeAreaView>
+                  <View>
+                    <Text style={styles.calloutTitle}>{restaurant.name}</Text>
+                    <Text>{restaurant.streetAddress}</Text>
+                    <Text>{`${restaurant.cuisine_one}, ${restaurant.cuisine_two}, ${restaurant.cuisine_three}`}</Text>
+                  </View>
+                </Callout>
+              </Marker>
+            ))}
+          </MapView>
+          <TouchableOpacity
+            style={styles.menuButton}
+            onPress={() => toggleSidebar()}
+          >
+            <Ionicons name="menu" size={32} color="white" />
+          </TouchableOpacity>
+          <Sidebar
+            sidebarVisible={sidebarVisible}
+            toggleSidebar={() => toggleSidebar()}
+            user={user}
+            userData={userData}
+            slideAnim={slideAnim}
+            imageScaleAnim={imageScaleAnim}
+            router={router}
+          />
+        </>
+      )}
+    </View>
+    // </SafeAreaView>
   );
 }
