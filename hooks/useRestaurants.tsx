@@ -3,13 +3,11 @@ import { db } from "../scripts/firebase.config"; // Adjust the import based on y
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { Region } from "react-native-maps";
 import { Restaurant } from "../data/types"; // Adjust the import based on your project structure
-import { migrateRestaurants } from "../services/geoFirestore"; // Adjust the import based on your project structure
 
 export const useRestaurants = (region: Region | null) => {
   const [visibleRestaurants, setVisibleRestaurants] = useState<Restaurant[]>(
     []
   );
-  let restaurantsQuery;
 
   const fetchVisibleRestaurants = async (mapRegion: Region) => {
     if (!mapRegion) return;
@@ -21,21 +19,19 @@ export const useRestaurants = (region: Region | null) => {
 
     try {
       const restaurantsRef = collection(db, "restaurants");
-      restaurantsQuery = query(
+      const q = query(
         restaurantsRef,
         where("latitude", ">=", latMin),
         where("latitude", "<=", latMax),
         where("longitude", ">=", lonMin),
         where("longitude", "<=", lonMax)
       );
-      const querySnapshot = await getDocs(restaurantsQuery);
+      const querySnapshot = await getDocs(q);
       const fetchedRestaurants = querySnapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       }));
-      setQuerySnapshot(querySnapshot);
       setVisibleRestaurants(fetchedRestaurants as Restaurant[]);
-      migrateRestaurants();
     } catch (error) {
       console.error("Error fetching visible restaurants:", error);
     }
@@ -47,5 +43,5 @@ export const useRestaurants = (region: Region | null) => {
     }
   }, [region]);
 
-  return { visibleRestaurants, fetchVisibleRestaurants, restaurantsQuery };
+  return { visibleRestaurants, fetchVisibleRestaurants };
 };

@@ -25,7 +25,7 @@ export default function App() {
   const router = useRouter();
   const { user, userData, loading } = useUser();
   const { region, setRegion, loading: locationLoading } = useLocation();
-  const { visibleRestaurants, fetchVisibleRestaurants, restaurantsQuery } =
+  const { visibleRestaurants, fetchVisibleRestaurants } =
     useRestaurants(region);
   const [showSearchButton, setShowSearchButton] = useState(false);
   const [sidebarVisible, setSidebarVisible] = useState(false);
@@ -67,17 +67,6 @@ export default function App() {
 
   //   return () => unsubscribe();
   // }, []);
-
-  useEffect(() => {
-    const unsubscribe = onSnapshot(restaurantsQuery, (snapshot) => {
-      const restaurants = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      setVisibleRestaurants(restaurants);
-    });
-    return () => unsubscribe();
-  }, [visibleRestaurants]);
 
   useFocusEffect(
     React.useCallback(() => {
