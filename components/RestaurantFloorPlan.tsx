@@ -14,13 +14,15 @@ import {
   updateTablePosition,
   deleteDocument,
   updateTableAvailability,
-  findRestaurantTables,
+  // findRestaurantTables,
   addDocument,
 } from "../services/databaseActions";
 import { useUser } from "../contexts/userContext";
 import { Timestamp } from "firebase/firestore";
 import { Ionicons } from "@expo/vector-icons";
 import { Restaurant } from "@/data/types";
+import { onSnapshot, collection, query, where } from "firebase/firestore";
+import { db } from "../scripts/firebase.config"; // adjust path as needed
 
 // Define table size based on capacity
 const getTableSize = (capacity: number): { width: number; height: number } => {
@@ -89,24 +91,51 @@ const RestaurantFloorPlan: React.FC<RestaurantFloorPlanProps> = ({
   }, [localTables]);
 
   // Fetch tables on mount
+  // useEffect(() => {
+  //   if (!restaurantId) return;
+
+  //   const fetchTables = async () => {
+  //     try {
+  //       const tablesData = await findRestaurantTables(restaurantId);
+  //       const positions = tablesData.reduce((acc, table) => {
+  //         acc[table.id] = { x: table.x, y: table.y };
+  //         return acc;
+  //       }, {} as Record<string, Position>);
+  //       positionsRef.current = positions;
+  //       setLocalTables(tablesData);
+  //     } catch (error) {
+  //       console.error("Error fetching tables:", error);
+  //     }
+  //   };
+
+  //   fetchTables();
+  // }, [restaurantId]);
+
   useEffect(() => {
     if (!restaurantId) return;
 
-    const fetchTables = async () => {
-      try {
-        const tablesData = await findRestaurantTables(restaurantId);
-        const positions = tablesData.reduce((acc, table) => {
-          acc[table.id] = { x: table.x, y: table.y };
-          return acc;
-        }, {} as Record<string, Position>);
-        positionsRef.current = positions;
-        setLocalTables(tablesData);
-      } catch (error) {
-        console.error("Error fetching tables:", error);
-      }
-    };
+    const q = query(
+      collection(db, "tables"),
+      where("restaurantId", "==", restaurantId)
+    );
 
-    fetchTables();
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const updatedTables = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as Table[];
+
+      // Update position reference
+      const positions = updatedTables.reduce((acc, table) => {
+        acc[table.id] = { x: table.x, y: table.y };
+        return acc;
+      }, {} as Record<string, Position>);
+
+      positionsRef.current = positions;
+      setLocalTables(updatedTables);
+    });
+
+    return () => unsubscribe(); // Clean up on unmount
   }, [restaurantId]);
 
   const handleTablePress = (table: Table) => {
