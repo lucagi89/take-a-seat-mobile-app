@@ -28,6 +28,8 @@ export default function MyRestaurantPage() {
   const restaurantId = Array.isArray(id) ? id[0] : id;
 
   const [restaurant, setRestaurant] = useState<DocumentData | null>(null);
+  const [restaurantStatus, setRestaurantStatus] = useState("");
+  console.log("Restaurant Status:", restaurantStatus);
   const [tables, setTables] = useState<Table[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -46,6 +48,7 @@ export default function MyRestaurantPage() {
             setError("Restaurant not found.");
           } else {
             setRestaurant(restaurantData as Restaurant);
+            setRestaurantStatus(restaurantData.isAvailable ? "Open" : "Closed");
           }
         } catch (error) {
           console.error("Error fetching restaurant:", error);
@@ -66,14 +69,23 @@ export default function MyRestaurantPage() {
     }, [restaurantId])
   );
 
-  const closeRestaurant = async () => {
+  const openCloseRestaurant = async () => {
     if (!restaurant) return;
+    const currentStatus = restaurant.isAvailable;
     setLoading(true);
     setError("");
+
     try {
+      const updatedStatus = !currentStatus;
       await updateDocument("restaurants", restaurantId, {
-        isAvailable: false,
+        isAvailable: updatedStatus,
       });
+
+      setRestaurant((prev) =>
+        prev ? { ...prev, isAvailable: updatedStatus } : prev
+      );
+
+      setRestaurantStatus(updatedStatus ? "Open" : "Closed");
     } catch (error) {
       console.error("Error closing restaurant:", error);
       setError("Error closing restaurant.");
@@ -102,13 +114,6 @@ export default function MyRestaurantPage() {
           />
           <Text style={styles.error}>{error || "Restaurant not found."}</Text>
         </View>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={closeRestaurant}
-          activeOpacity={0.7}
-        >
-          <Text style={styles.backButtonText}>Close the Restaurant</Text>
-        </TouchableOpacity>
         <TouchableOpacity
           style={styles.backButton}
           onPress={() => router.replace("/my-restaurants")}
@@ -167,6 +172,17 @@ export default function MyRestaurantPage() {
       </View>
 
       <View style={styles.buttonContainer}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={openCloseRestaurant}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.backButtonText}>
+            {restaurantStatus === "Open"
+              ? "Close the Restaurant"
+              : "Open Restaurant"}
+          </Text>
+        </TouchableOpacity>
         <TouchableOpacity
           style={styles.createButton}
           onPress={() =>
