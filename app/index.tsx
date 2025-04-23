@@ -29,7 +29,8 @@ export default function App() {
     useRestaurants(region);
   const [showSearchButton, setShowSearchButton] = useState(false);
   const [sidebarVisible, setSidebarVisible] = useState(false);
-  const { slideAnim, imageScaleAnim, toggleSidebar } = useSidebarAnimation();
+  const { slideAnim, imageScaleAnim, openSidebar, closeSidebar } =
+    useSidebarAnimation();
 
   // useEffect(() => {
   //   if (!auth.currentUser) return;
@@ -81,6 +82,16 @@ export default function App() {
     if (region) {
       setShowSearchButton(false);
       fetchVisibleRestaurants(region);
+    }
+  };
+
+  const toggleSidebar = () => {
+    if (sidebarVisible) {
+      closeSidebar();
+      setSidebarVisible(false);
+    } else {
+      openSidebar();
+      setSidebarVisible(true);
     }
   };
 

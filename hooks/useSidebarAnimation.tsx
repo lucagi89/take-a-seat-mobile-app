@@ -1,27 +1,42 @@
-import { useState } from "react";
+import { useRef } from "react";
 import { Animated } from "react-native";
 
 export const useSidebarAnimation = () => {
-  const slideAnim = useState(new Animated.Value(-250))[0];
-  const imageScaleAnim = useState(new Animated.Value(0))[0];
+  const slideAnim = useRef(new Animated.Value(-300)).current;
+  const imageScaleAnim = useRef(new Animated.Value(0)).current;
 
-  const toggleSidebar = (visible: boolean) => {
-    Animated.timing(slideAnim, {
-      toValue: visible ? 0 : -250,
-      duration: 300,
-      useNativeDriver: true,
-    }).start();
-
-    if (visible) {
+  const openSidebar = () => {
+    Animated.parallel([
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }),
       Animated.spring(imageScaleAnim, {
         toValue: 1,
-        friction: 8,
         useNativeDriver: true,
-      }).start();
-    } else {
-      imageScaleAnim.setValue(0);
-    }
+      }),
+    ]).start();
   };
 
-  return { slideAnim, imageScaleAnim, toggleSidebar };
+  const closeSidebar = () => {
+    Animated.parallel([
+      Animated.timing(slideAnim, {
+        toValue: -300,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.spring(imageScaleAnim, {
+        toValue: 0,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  };
+
+  return {
+    slideAnim,
+    imageScaleAnim,
+    openSidebar,
+    closeSidebar,
+  };
 };
