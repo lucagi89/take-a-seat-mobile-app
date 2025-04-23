@@ -2,29 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "../scripts/firebase.config";
 import { fetchUserData } from "../services/databaseActions";
-
-type UserData = {
-  name: string;
-  lastName: string;
-  photoURL: string;
-  streetAddress: string;
-  city: string;
-  country: string;
-  postcode: string;
-  email: string;
-  phone: string;
-  isOwner: boolean;
-  isProfileComplete: boolean;
-};
-
-type UserContextType = {
-  user: any;
-  loading: boolean;
-  setLoading: (loading: boolean) => void;
-  userData: Partial<UserData> | undefined;
-  setUser: (user: any) => void;
-  setUserData: (userData: Partial<UserData> | undefined) => void;
-};
+import { UserData, UserContextType } from "../data/types";
 
 const UserContext = createContext<UserContextType | null>(null);
 

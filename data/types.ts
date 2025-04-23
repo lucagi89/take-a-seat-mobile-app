@@ -87,3 +87,34 @@ export interface Reservation {
   isCancelled: boolean;
   isCompleted: boolean;
 }
+
+
+export interface UserData {
+  name: string;
+  lastName: string;
+  photoURL: string;
+  streetAddress: string;
+  city: string;
+  country: string;
+  postcode: string;
+  email: string;
+  phone: string;
+  isOwner: boolean;
+  isProfileComplete: boolean;
+};
+
+export interface UserContextType {
+  user: any;
+  loading: boolean;
+  setLoading: (loading: boolean) => void;
+  userData: Partial<UserData> | undefined;
+  setUser: (user: any) => void;
+  setUserData: (userData: Partial<UserData> | undefined) => void;
+};
+
+export interface RestaurantContextType {
+  restaurant: Restaurant | null;
+  setRestaurant: (restaurant: Restaurant | null) => void;
+  loading: boolean;
+  restaurantId: string;
+}

@@ -1,13 +1,8 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { useLocalSearchParams } from "expo-router";
 import { getRestaurantById } from "../services/databaseActions";
-
-interface RestaurantContextType {
-  restaurant: any;
-  setRestaurant: React.Dispatch<React.SetStateAction<any>>;
-  loading: boolean;
-  restaurantId: string;
-}
+import { DocumentData } from "firebase/firestore";
+import { RestaurantContextType } from "../data/types";
 
 const RestaurantContext = createContext<RestaurantContextType | null>(null);
 
@@ -27,7 +22,7 @@ export const RestaurantProvider = ({ children }: { children: ReactNode }) => {
     const fetchRestaurant = async () => {
       try {
         const data = await getRestaurantById(Array.isArray(id) ? id[0] : id);
-        setRestaurant(data);
+        setRestaurant(data || null);
       } catch (error) {
         console.error("Error fetching restaurant:", error);
       } finally {
