@@ -78,12 +78,12 @@ export default function App() {
     }, [])
   );
 
-  const handleSearchHere = () => {
-    if (region) {
-      setShowSearchButton(false);
-      fetchVisibleRestaurants(region);
-    }
-  };
+  // const handleSearchHere = () => {
+  //   if (region) {
+  //     setShowSearchButton(false);
+  //     fetchVisibleRestaurants(region);
+  //   }
+  // };
 
   const toggleSidebar = () => {
     if (sidebarVisible) {
@@ -154,10 +154,10 @@ export default function App() {
                 </Marker>
               ))}
             </MapView>
-            <SearchButton
+            {/* <SearchButton
               showSearchButton={showSearchButton}
               onPress={handleSearchHere}
-            />
+            /> */}
             <TouchableOpacity
               style={styles.menuButton}
               onPress={() => toggleSidebar(!sidebarVisible)}

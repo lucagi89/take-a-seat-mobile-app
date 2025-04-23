@@ -22,6 +22,6 @@ const provider = new GoogleAuthProvider();
 const auth = initializeAuth(app, {
   persistence: getReactNativePersistence(AsyncStorage),
 });
-const messaging = getMessaging(app);
+// const messaging = getMessaging(app);
 
-export { app, auth, db, storage, provider, messaging };
+export { app, auth, db, storage, provider };
