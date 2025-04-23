@@ -490,7 +490,7 @@ export default function CreateRestaurant() {
 
           <TouchableOpacity
             style={styles.cancelButton}
-            onPress={() => router.push("/profile")}
+            onPress={() => router.back()}
             activeOpacity={0.7}
           >
             <Text style={styles.cancelButtonText}>Cancel</Text>

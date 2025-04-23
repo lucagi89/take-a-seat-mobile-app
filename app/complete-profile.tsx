@@ -264,7 +264,7 @@ const CompleteProfileScreen = () => {
 
         <Button
           title="Skip for now"
-          onPress={() => router.push("/profile")}
+          onPress={() => router.back()}
           disabled={uploading}
         />
       </View>
