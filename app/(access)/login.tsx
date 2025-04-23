@@ -8,8 +8,10 @@ import {
   ImageBackground,
 } from "react-native";
 import { handleUser, signInWithGoogle } from "../../services/auth";
+// import { messaging } from "../../scripts/firebase-messagging";
+import { getToken } from "firebase/messaging";
 import { useRouter, Link } from "expo-router";
-// import messaging from "@react-native-firebase/messaging";
+
 import { auth, db } from "../../scripts/firebase.config";
 import { doc, setDoc } from "firebase/firestore";
 
@@ -19,22 +21,26 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState(null);
 
-  const saveFcmToken = async () => {
-    const token = await messaging().getToken();
-    await setDoc(
-      doc(db, "users", auth.currentUser.uid),
-      {
-        fcmToken: token,
-      },
-      { merge: true }
-    );
-  };
+  // const saveFcmToken = async () => {
+  //   try {
+  //     const token = await getToken(messaging, {
+  //       vapidKey: process.env.EXPO_PUBLIC_FIREBASE_VAPID_KEY,
+  //     });
+  //     await setDoc(
+  //       doc(db, "users", auth.currentUser.uid),
+  //       { fcmToken: token },
+  //       { merge: true }
+  //     );
+  //   } catch (error) {
+  //     console.log("FCM token error:", error);
+  //   }
+  // };
 
   const handleLogin = async () => {
     try {
       await handleUser(email, password);
       console.log("User signed in!");
-      await saveFcmToken();
+      // await saveFcmToken();
       router.push("/");
     } catch (error) {
       console.error(error);

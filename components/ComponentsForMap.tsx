@@ -72,19 +72,19 @@ export const SidebarLinks = ({
   <View style={styles.sidebarLinks}>
     <SidebarButton
       icon="person-outline"
-      text="Profile"
+      text=" Profile"
       onPress={() => router.push("/profile")}
     />
     <View style={styles.divider} />
     <SidebarButton
       icon="settings-outline"
-      text="Settings"
+      text=" Settings"
       onPress={() => router.push("/settings")}
     />
     <View style={styles.divider} />
     <SidebarButton
       icon="create-outline"
-      text={userData?.isProfileComplete ? "Edit Profile" : "Complete Profile"}
+      text={userData?.isProfileComplete ? " Edit Profile" : " Complete Profile"}
       onPress={() => router.push("/complete-profile")}
     />
     {userData?.isOwner && (
@@ -92,7 +92,7 @@ export const SidebarLinks = ({
         <View style={styles.divider} />
         <SidebarButton
           icon="restaurant-outline"
-          text="My Restaurants"
+          text=" My Restaurants"
           onPress={() => router.push("/my-restaurants")}
         />
       </>
@@ -100,12 +100,13 @@ export const SidebarLinks = ({
     <View style={styles.divider} />
     <SidebarButton
       icon="add-circle-outline"
-      text="Create a Restaurant"
+      text=" Create a Restaurant"
       onPress={() => router.push("/create-restaurant")}
     />
+    <View style={styles.divider} />
     <SidebarButton
-      icon="add-circle-outline"
-      text="Go to messages"
+      icon="mail-outline"
+      text=" Go to messages"
       onPress={() => router.push("/messages")}
     />
   </View>

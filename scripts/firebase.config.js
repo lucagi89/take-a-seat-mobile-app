@@ -3,6 +3,7 @@ import { getFirestore } from "firebase/firestore";
 import { getAuth, initializeAuth, getReactNativePersistence, GoogleAuthProvider } from "firebase/auth";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getStorage } from "firebase/storage";
+import { getMessaging } from "firebase/messaging";
 
 const firebaseConfig = {
   apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
@@ -21,5 +22,6 @@ const provider = new GoogleAuthProvider();
 const auth = initializeAuth(app, {
   persistence: getReactNativePersistence(AsyncStorage),
 });
+const messaging = getMessaging(app);
 
-export { app, auth, db, storage, provider };
+export { app, auth, db, storage, provider, messaging };
