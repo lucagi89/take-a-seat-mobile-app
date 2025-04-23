@@ -16,74 +16,26 @@ import { useLocation } from "../hooks/useLocation";
 import { useRestaurants } from "../hooks/useRestaurants";
 import { fetchUserData } from "../services/databaseActions";
 import { useSidebarAnimation } from "../hooks/useSidebarAnimation";
-import { Sidebar, SearchButton } from "../components/ComponentsForMap";
+import { Sidebar } from "../components/sidebar/Sidebar";
 import { styles } from "../styles/main-page-style";
-import { doc, onSnapshot, collection, where, query } from "firebase/firestore";
-import { db, auth } from "../scripts/firebase.config";
 
 export default function App() {
   const router = useRouter();
   const { user, userData, loading } = useUser();
   const { region, setRegion, loading: locationLoading } = useLocation();
-  const { visibleRestaurants, fetchVisibleRestaurants } =
-    useRestaurants(region);
-  const [showSearchButton, setShowSearchButton] = useState(false);
+  const { visibleRestaurants } = useRestaurants(region);
   const [sidebarVisible, setSidebarVisible] = useState(false);
   const { slideAnim, imageScaleAnim, openSidebar, closeSidebar } =
     useSidebarAnimation();
 
-  // useEffect(() => {
-  //   if (!auth.currentUser) return;
-
-  //   // Listen for bookings created by the current user
-  //   const bookingsQuery = query(
-  //     collection(db, "bookings"),
-  //     where("userId", "==", auth.currentUser.uid)
-  //   );
-
-  //   const unsubscribe = onSnapshot(
-  //     bookingsQuery,
-  //     (snapshot) => {
-  //       snapshot.docChanges().forEach((change) => {
-  //         const booking = change.doc.data();
-  //         if (change.type === "modified" && booking.status !== "pending") {
-  //           const message =
-  //             booking.status === "accepted"
-  //               ? `Your booking for Table ${booking.tableId} is confirmed!`
-  //               : `Your booking for Table ${booking.tableId} was rejected.`;
-  //           Alert.alert(
-  //             booking.status === "accepted"
-  //               ? "Booking Confirmed"
-  //               : "Booking Rejected",
-  //             message
-  //           );
-  //         }
-  //       });
-  //     },
-  //     (error) => {
-  //       console.error("Firestore listener error:", error);
-  //       Alert.alert("Error", "Failed to fetch booking updates.");
-  //     }
-  //   );
-
-  //   return () => unsubscribe();
-  // }, []);
-
-  useFocusEffect(
-    React.useCallback(() => {
-      return () => {
-        toggleSidebar(false);
-        setSidebarVisible(false);
-      };
-    }, [])
-  );
-
-  // const handleSearchHere = () => {
-  //   if (region) {
-  //     setShowSearchButton(false);
-  //     fetchVisibleRestaurants(region);
-  //   }
-  // };
+  // useFocusEffect(
+  //   React.useCallback(() => {
+  //     return () => {
+  //       toggleSidebar(false);
+  //       setSidebarVisible(false);
+  //     };
+  //   }, [])
+  // );
 
   const toggleSidebar = () => {
     if (sidebarVisible) {
@@ -130,7 +82,6 @@ export default function App() {
               region={region}
               onRegionChangeComplete={(newRegion) => {
                 setRegion(newRegion);
-                setShowSearchButton(true);
               }}
             >
               {visibleRestaurants.map((restaurant) => (
@@ -154,19 +105,15 @@ export default function App() {
                 </Marker>
               ))}
             </MapView>
-            {/* <SearchButton
-              showSearchButton={showSearchButton}
-              onPress={handleSearchHere}
-            /> */}
             <TouchableOpacity
               style={styles.menuButton}
-              onPress={() => toggleSidebar(!sidebarVisible)}
+              onPress={() => toggleSidebar()}
             >
               <Ionicons name="menu" size={32} color="white" />
             </TouchableOpacity>
             <Sidebar
               sidebarVisible={sidebarVisible}
-              toggleSidebar={() => toggleSidebar(!sidebarVisible)}
+              toggleSidebar={() => toggleSidebar()}
               user={user}
               userData={userData}
               slideAnim={slideAnim}
