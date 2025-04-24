@@ -8,11 +8,12 @@ import {
   StyleSheet,
   Image,
   ActivityIndicator,
-  ImageBackground,
+  TouchableOpacity,
 } from "react-native";
 import { updateProfile, onAuthStateChanged } from "firebase/auth";
 import { getFirestore, doc, setDoc } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { db, storage, auth } from "../scripts/firebase.config";
 import { useRouter } from "expo-router";
@@ -178,10 +179,9 @@ const CompleteProfileScreen = () => {
           }
           style={styles.imagePreview}
         />
-        <Button
-          title={imageUri ? "Change Your Picture" : "Select Profile Picture"}
-          onPress={pickImage}
-        />
+        <TouchableOpacity style={styles.btn} onPress={pickImage}>
+          <Ionicons name="create-outline" size={20} color="black" />
+        </TouchableOpacity>
       </View>
       {uploading && <ActivityIndicator size="small" color="#0000ff" />}
 
@@ -262,30 +262,24 @@ const CompleteProfileScreen = () => {
         disabled={uploading}
       />
 
-      <Button
-        title="Skip for now"
+      <TouchableOpacity
+        style={styles.abort}
         onPress={() => router.back()}
         disabled={uploading}
-      />
+      >
+        <Text style={{ color: "black", textAlign: "center" }}>X</Text>
+      </TouchableOpacity>
     </View>
     // </ImageBackground>
   );
 };
 
 const styles = StyleSheet.create({
-  // background: {
-  //   width: "100%",
-  //   display: "flex",
-  //   justifyContent: "center",
-  //   alignItems: "center",
-  // },
   container: {
     padding: 30,
+    height: "90%",
     width: "90%",
-    position: "absolute",
-    top: "50%",
-    left: "50%",
-    maxWidth: 500,
+    alignSelf: "center",
     justifyContent: "center",
     backgroundColor: "rgba(255, 255, 255, 0.5)",
   },
@@ -314,6 +308,23 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     borderRadius: 50,
     alignSelf: "center",
+  },
+  btn: {
+    backgroundColor: "#FFCA28",
+    padding: 5,
+    borderRadius: 50,
+    marginTop: -40,
+    marginLeft: 70,
+  },
+  abort: {
+    backgroundColor: "#FFCA28",
+    position: "absolute",
+    bottom: 10,
+    right: 10,
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    borderRadius: 50,
+    marginTop: 20,
   },
 });
 

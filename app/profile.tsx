@@ -3,7 +3,7 @@ import { Text, View, StyleSheet, Image, TouchableOpacity } from "react-native";
 import { useUser } from "../contexts/userContext";
 import { Redirect, Link } from "expo-router";
 import { getUserRestaurants } from "../services/databaseActions";
-import Icon from "react-native-vector-icons/MaterialIcons";
+import { useRouter } from "expo-router";
 
 interface UserData {
   name: string;
@@ -14,6 +14,7 @@ interface UserData {
 export default function Profile() {
   const { user, loading, userData } = useUser();
   const [userRestaurants, setUserRestaurants] = useState([]);
+  const router = useRouter();
 
   useEffect(() => {
     if (user) {
@@ -76,10 +77,8 @@ export default function Profile() {
           </Link>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.backButton}>
-          <Link href="/">
-            <Icon name="arrow-back" size={30} color="#2E7D32" />
-          </Link>
+        <TouchableOpacity style={styles.abort} onPress={() => router.back()}>
+          <Text style={{ color: "black", textAlign: "center" }}>X</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -93,7 +92,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   card: {
-    backgroundColor: "rgba(255, 255, 255, 0.8)", // Slightly more opaque
+    backgroundColor: "rgba(255, 255, 255, 0.37)", // Slightly more opaque
     borderRadius: 20,
     padding: 20,
     shadowColor: "#000",
@@ -177,10 +176,14 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
     textDecorationLine: "none",
   },
-  backButton: {
+  abort: {
+    backgroundColor: "#FFCA28",
     position: "absolute",
-    top: 10,
+    bottom: 10,
     right: 10,
-    padding: 5,
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    borderRadius: 50,
+    marginTop: 20,
   },
 });
