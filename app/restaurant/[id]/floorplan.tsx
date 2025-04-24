@@ -8,7 +8,7 @@ export default function Floorplan() {
   if (!restaurant) return <Text>Loading Floorplan...</Text>;
 
   return (
-    <View>
+    <View style={{ padding: 20, height: 800 }}>
       <Text>Floorplan</Text>;
       <RestaurantFloorPlan
         restaurant={restaurant}

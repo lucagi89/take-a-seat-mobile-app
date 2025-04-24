@@ -29,7 +29,7 @@ export default function Info() {
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 20 },
+  container: { padding: 20, height: 800 },
   title: { fontSize: 24, fontWeight: "bold" },
-  image: { width: 200, height: 200, marginVertical: 10 },
+  image: { width: 180, height: 180, marginVertical: 10 },
 });

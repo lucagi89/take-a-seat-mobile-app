@@ -228,7 +228,7 @@ const LayoutContent = () => {
                 (pathname === "/" || pathname === "") && styles.activeNavText,
               ]}
             >
-              MAP
+              X
             </Text>
           </Link>
         </View>
@@ -241,23 +241,31 @@ const styles = StyleSheet.create({
   // Make the root container fill the entire overlay area
   container: {
     // flex: 1,
-    backgroundColor: "rgba(240, 236, 227, 0.7)",
+    backgroundColor: "rgba(254, 180, 8, 0.7)",
     position: "absolute",
-    top: 0,
+    top: 30,
     left: 0,
     right: 0,
     bottom: 0,
     height: "100%",
+    borderBottomEndRadius: 20,
+    borderBottomStartRadius: 20,
   },
   // Give the Stack room to render in the body of the modal
   stackContainer: {
+    maxHeight: "100%",
     flex: 1,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+    overflow: "hidden",
   },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#F5F5F5",
+    borderBottomEndRadius: 20,
+    borderBottomStartRadius: 20,
   },
   loadingText: {
     fontSize: 18,
@@ -274,9 +282,11 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: 0,
     left: 0,
-    width: SCREEN_WIDTH,
+    width: "100%", // full width
     height: 50, // give it a fixed height
     zIndex: 10,
+    borderBottomEndRadius: 20,
+    borderBottomStartRadius: 20,
   },
   navItem: {
     paddingHorizontal: 8,
