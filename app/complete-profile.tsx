@@ -160,129 +160,132 @@ const CompleteProfileScreen = () => {
   }
 
   return (
-    <ImageBackground
-      source={require("../assets/images/background.png")} // Adjust path as needed
-      style={styles.background}
-      resizeMode="cover"
-    >
-      <View style={styles.container}>
-        <Text style={styles.title}>Complete Your Profile</Text>
+    // <ImageBackground
+    //   source={require("../assets/images/background.png")} // Adjust path as needed
+    //   style={styles.background}
+    //   resizeMode="cover"
+    // >
+    <View style={styles.container}>
+      <Text style={styles.title}>Complete Your Profile</Text>
 
-        {/* Profile Picture Section */}
-        <View style={styles.profilePicContainer}>
-          <Image
-            source={
-              imageUri
-                ? { uri: imageUri }
-                : require("../assets/images/placeholderprofilepic.png")
-            }
-            style={styles.imagePreview}
-          />
-          <Button
-            title={imageUri ? "Change Your Picture" : "Select Profile Picture"}
-            onPress={pickImage}
-          />
-        </View>
-        {uploading && <ActivityIndicator size="small" color="#0000ff" />}
-
-        <Text>Name:</Text>
-        <TextInput
-          value={userInfo.name}
-          onChangeText={(text) =>
-            setUserInfo((prev) => ({ ...prev, name: text }))
+      {/* Profile Picture Section */}
+      <View style={styles.profilePicContainer}>
+        <Image
+          source={
+            imageUri
+              ? { uri: imageUri }
+              : require("../assets/images/placeholderprofilepic.png")
           }
-          style={styles.input}
-          placeholder="Enter your name"
+          style={styles.imagePreview}
         />
-
-        <Text>Last Name:</Text>
-        <TextInput
-          value={userInfo.lastName}
-          onChangeText={(text) =>
-            setUserInfo((prev) => ({ ...prev, lastName: text }))
-          }
-          style={styles.input}
-          placeholder="Enter your surname"
-        />
-
-        <Text>Street Address:</Text>
-        <TextInput
-          value={userInfo.streetAddress}
-          onChangeText={(text) =>
-            setUserInfo((prev) => ({ ...prev, streetAddress: text }))
-          }
-          style={styles.input}
-          placeholder="Enter your address"
-        />
-
-        <Text>Postcode:</Text>
-        <TextInput
-          value={userInfo.postcode}
-          onChangeText={(text) =>
-            setUserInfo((prev) => ({ ...prev, postcode: text }))
-          }
-          style={styles.input}
-          placeholder="Enter your postcode"
-          autoCapitalize="none"
-        />
-
-        <Text>City:</Text>
-        <TextInput
-          value={userInfo.city}
-          onChangeText={(text) =>
-            setUserInfo((prev) => ({ ...prev, city: text }))
-          }
-          style={styles.input}
-          placeholder="Enter your city"
-        />
-
-        <Text>Country:</Text>
-        <TextInput
-          value={userInfo.country}
-          onChangeText={(text) =>
-            setUserInfo((prev) => ({ ...prev, country: text }))
-          }
-          style={styles.input}
-          placeholder="Enter your country"
-        />
-
-        <Text>Phone:</Text>
-        <TextInput
-          value={userInfo.phone}
-          onChangeText={(text) =>
-            setUserInfo((prev) => ({ ...prev, phone: text }))
-          }
-          style={styles.input}
-          placeholder="Enter your phone number"
-        />
-
         <Button
-          title="Save Profile"
-          onPress={handleSaveProfile}
-          disabled={uploading}
-        />
-
-        <Button
-          title="Skip for now"
-          onPress={() => router.back()}
-          disabled={uploading}
+          title={imageUri ? "Change Your Picture" : "Select Profile Picture"}
+          onPress={pickImage}
         />
       </View>
-    </ImageBackground>
+      {uploading && <ActivityIndicator size="small" color="#0000ff" />}
+
+      <Text>Name:</Text>
+      <TextInput
+        value={userInfo.name}
+        onChangeText={(text) =>
+          setUserInfo((prev) => ({ ...prev, name: text }))
+        }
+        style={styles.input}
+        placeholder="Enter your name"
+      />
+
+      <Text>Last Name:</Text>
+      <TextInput
+        value={userInfo.lastName}
+        onChangeText={(text) =>
+          setUserInfo((prev) => ({ ...prev, lastName: text }))
+        }
+        style={styles.input}
+        placeholder="Enter your surname"
+      />
+
+      <Text>Street Address:</Text>
+      <TextInput
+        value={userInfo.streetAddress}
+        onChangeText={(text) =>
+          setUserInfo((prev) => ({ ...prev, streetAddress: text }))
+        }
+        style={styles.input}
+        placeholder="Enter your address"
+      />
+
+      <Text>Postcode:</Text>
+      <TextInput
+        value={userInfo.postcode}
+        onChangeText={(text) =>
+          setUserInfo((prev) => ({ ...prev, postcode: text }))
+        }
+        style={styles.input}
+        placeholder="Enter your postcode"
+        autoCapitalize="none"
+      />
+
+      <Text>City:</Text>
+      <TextInput
+        value={userInfo.city}
+        onChangeText={(text) =>
+          setUserInfo((prev) => ({ ...prev, city: text }))
+        }
+        style={styles.input}
+        placeholder="Enter your city"
+      />
+
+      <Text>Country:</Text>
+      <TextInput
+        value={userInfo.country}
+        onChangeText={(text) =>
+          setUserInfo((prev) => ({ ...prev, country: text }))
+        }
+        style={styles.input}
+        placeholder="Enter your country"
+      />
+
+      <Text>Phone:</Text>
+      <TextInput
+        value={userInfo.phone}
+        onChangeText={(text) =>
+          setUserInfo((prev) => ({ ...prev, phone: text }))
+        }
+        style={styles.input}
+        placeholder="Enter your phone number"
+      />
+
+      <Button
+        title="Save Profile"
+        onPress={handleSaveProfile}
+        disabled={uploading}
+      />
+
+      <Button
+        title="Skip for now"
+        onPress={() => router.back()}
+        disabled={uploading}
+      />
+    </View>
+    // </ImageBackground>
   );
 };
 
 const styles = StyleSheet.create({
-  background: {
-    width: "100%",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-  },
+  // background: {
+  //   width: "100%",
+  //   display: "flex",
+  //   justifyContent: "center",
+  //   alignItems: "center",
+  // },
   container: {
     padding: 30,
     width: "90%",
-    height: "100%",
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    maxWidth: 500,
     justifyContent: "center",
     backgroundColor: "rgba(255, 255, 255, 0.5)",
   },
