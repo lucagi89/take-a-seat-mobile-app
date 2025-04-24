@@ -60,7 +60,7 @@ export const SidebarLinks = ({
       <SidebarButton
         icon="heart-outline"
         text=" Favourites"
-        onPress={() => router.push("/settings")}
+        onPress={() => router.push("/favourites")}
       />
       <View style={styles.divider} />
       <SidebarButton
