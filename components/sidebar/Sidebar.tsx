@@ -41,8 +41,8 @@ export const Sidebar = ({
       <Animated.View
         style={[styles.sidebar, { transform: [{ translateX: slideAnim }] }]}
       >
-        <LinearGradient
-          colors={["#2E7D32", "#4CAF50"]}
+        <View
+          // colors={["black", "none"]}
           style={styles.sidebarGradient}
         >
           <View style={styles.sidebarHeader}>
@@ -57,10 +57,10 @@ export const Sidebar = ({
               )}
             </Animated.View>
             <Text style={styles.sidebarText}>
-              Welcome, {userData?.name || user?.displayName || "Guest"}
+              HI, {userData?.name || user?.displayName || "Guest"}
             </Text>
           </View>
-        </LinearGradient>
+        </View>
         <SidebarLinks userData={userData} router={router} />
         <SidebarFooter router={router} />
       </Animated.View>

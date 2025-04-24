@@ -26,20 +26,14 @@ export const SidebarLinks = ({
           }
         }}
       />
-      <View style={styles.divider} />
-      <SidebarButton
-        icon="settings-outline"
-        text=" Settings"
-        onPress={() => router.push("/settings")}
-      />
-      <View style={styles.divider} />
+      {/* <View style={styles.divider} />
       <SidebarButton
         icon="create-outline"
         text={
           userData?.isProfileComplete ? " Edit Profile" : " Complete Profile"
         }
         onPress={() => router.push("/complete-profile")}
-      />
+      /> */}
       {userData?.isOwner && (
         <>
           <View style={styles.divider} />
@@ -50,18 +44,43 @@ export const SidebarLinks = ({
           />
         </>
       )}
-      <View style={styles.divider} />
+      {/* <View style={styles.divider} />
       <SidebarButton
         icon="add-circle-outline"
         text=" Create a Restaurant"
         onPress={() => router.push("/create-restaurant")}
-      />
+      /> */}
       <View style={styles.divider} />
       <SidebarButton
         icon="mail-outline"
-        text=" Go to messages"
+        text=" Notifications"
         onPress={() => router.push("/messages")}
       />
+      <View style={styles.divider} />
+      <SidebarButton
+        icon="heart-outline"
+        text=" Favourites"
+        onPress={() => router.push("/settings")}
+      />
+      <View style={styles.divider} />
+      <SidebarButton
+        icon="restaurant-outline"
+        text=" Hungry button"
+        onPress={() => router.push("/settings")}
+      />
+      <View style={styles.divider} />
+      <SidebarButton
+        icon="settings-outline"
+        text=" Settings"
+        onPress={() => router.push("/settings")}
+      />
+      <View style={styles.divider} />
+      <SidebarButton
+        icon="information-circle-outline"
+        text=" Info"
+        onPress={() => router.push("/settings")}
+      />
+      <View style={styles.divider} />
     </View>
   );
 };

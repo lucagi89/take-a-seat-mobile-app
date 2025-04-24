@@ -65,7 +65,7 @@ export const styles = StyleSheet.create({
     left: 0,
     width: 250,
     height: "90%",
-    backgroundColor: "rgba(0, 0, 0, 0.3)",
+    backgroundColor: "rgba(255, 255, 255, 0.4)",
     shadowColor: "#000",
     shadowOffset: { width: 2, height: 0 },
     shadowOpacity: 0.5,
@@ -79,6 +79,7 @@ export const styles = StyleSheet.create({
     borderTopRightRadius: 20,
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
+    // backgroundColor: "rgb(255, 255, 255)",
   },
   sidebarHeader: { alignItems: "center" },
   profileImage: {
