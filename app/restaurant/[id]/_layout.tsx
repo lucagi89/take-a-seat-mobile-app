@@ -158,7 +158,14 @@
 
 // app/restaurant/[id]/_layout.tsx
 import { Stack, Link, usePathname } from "expo-router";
-import { View, Text, StyleSheet, Dimensions, SafeAreaView } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Dimensions,
+  SafeAreaView,
+  TouchableOpacity,
+} from "react-native";
 import {
   RestaurantProvider,
   useRestaurant,
@@ -186,8 +193,26 @@ const LayoutContent = () => {
     );
   }
 
+  const addToFavourites = async (id) => {
+    try {
+      await 
+
+      console.log("Added to favourites successfully");
+    } catch (error) {
+      console.error("Error adding to favourites:", error);
+    }
+  };
+
   return (
     <SafeAreaView style={{ flex: 1 }}>
+      <TouchableOpacity
+        style={styles.abort}
+        onPress={() => {
+          addToFavourites(restaurantId);
+        }}
+      >
+        <Text>X</Text>
+      </TouchableOpacity>
       <View style={styles.container}>
         {/* 1. Give this full-height space to the Stack */}
         <View style={styles.stackContainer}>
