@@ -9,7 +9,7 @@ export default function Floorplan() {
 
   return (
     <View style={{ padding: 20, height: 800 }}>
-      <Text>Floorplan</Text>;
+      <Text>Floorplan</Text>
       <RestaurantFloorPlan
         restaurant={restaurant}
         restaurantId={restaurantId}
