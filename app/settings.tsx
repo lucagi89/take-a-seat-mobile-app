@@ -6,8 +6,8 @@ import {
   Switch,
   TouchableOpacity,
   ScrollView,
-  ImageBackground,
   Alert,
+  SafeAreaView,
 } from "react-native";
 import { useRouter, Link } from "expo-router";
 import { useUser } from "../contexts/userContext";
@@ -61,11 +61,12 @@ export default function Settings() {
   };
 
   return (
-    <ImageBackground
-      source={require("../assets/images/background.png")} // Adjust path as needed
-      style={styles.background}
-      resizeMode="cover"
-    >
+    // <ImageBackground
+    //   source={require("../assets/images/background.png")} // Adjust path as needed
+    //   style={styles.background}
+    //   resizeMode="cover"
+    // >
+    <SafeAreaView style={{ flex: 1 }}>
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.card}>
           <Text style={styles.title}>Settings</Text>
@@ -203,20 +204,21 @@ export default function Settings() {
           </TouchableOpacity>
         </View>
       </ScrollView>
-    </ImageBackground>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  background: {
-    flex: 1,
-    width: "100%",
-    height: "100%",
-  },
+  // background: {
+  //   flex: 1,
+  //   width: "100%",
+  //   height: "100%",
+  // },
   container: {
     flexGrow: 1,
-    padding: 20,
+    // padding: 20,
     backgroundColor: "rgba(240, 236, 227, 0.7)", // Light overlay for wood texture
+    // height: "80%",
   },
   card: {
     backgroundColor: "#FFFFFF",

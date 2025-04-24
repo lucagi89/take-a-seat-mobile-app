@@ -158,7 +158,7 @@
 
 // app/restaurant/[id]/_layout.tsx
 import { Stack, Link, usePathname } from "expo-router";
-import { View, Text, StyleSheet, Dimensions } from "react-native";
+import { View, Text, StyleSheet, Dimensions, SafeAreaView } from "react-native";
 import {
   RestaurantProvider,
   useRestaurant,
@@ -187,57 +187,67 @@ const LayoutContent = () => {
   }
 
   return (
-    <View style={styles.container}>
-      {/* 1. Give this full-height space to the Stack */}
-      <View style={styles.stackContainer}>
-        <Stack screenOptions={{ headerShown: false }} />
-      </View>
+    <SafeAreaView style={{ flex: 1 }}>
+      <View style={styles.container}>
+        {/* 1. Give this full-height space to the Stack */}
+        <View style={styles.stackContainer}>
+          <Stack screenOptions={{ headerShown: false }} />
+        </View>
 
-      {/* 2. Now this navbar will pin to the bottom of that full-screen container */}
-      <View style={styles.navbar}>
-        {["info", "floorplan", "dishes", "reviews"].map((tab) => {
-          const isActive = pathname.includes(
-            `/restaurant/${restaurantId}/${tab}`
-          );
-          return (
-            <Link
-              key={tab}
-              href={`/restaurant/${restaurantId}/${tab}`}
-              style={[styles.navItem, isActive && styles.activeNavItem]}
-            >
-              <Text style={[styles.navText, isActive && styles.activeNavText]}>
-                {tab.toUpperCase()}
-              </Text>
-            </Link>
-          );
-        })}
+        {/* 2. Now this navbar will pin to the bottom of that full-screen container */}
+        <View style={styles.navbar}>
+          {["info", "floorplan", "dishes", "reviews"].map((tab) => {
+            const isActive = pathname.includes(
+              `/restaurant/${restaurantId}/${tab}`
+            );
+            return (
+              <Link
+                key={tab}
+                href={`/restaurant/${restaurantId}/${tab}`}
+                style={[styles.navItem, isActive && styles.activeNavItem]}
+              >
+                <Text
+                  style={[styles.navText, isActive && styles.activeNavText]}
+                >
+                  {tab.toUpperCase()}
+                </Text>
+              </Link>
+            );
+          })}
 
-        <Link
-          href="/"
-          style={[
-            styles.navItem,
-            (pathname === "/" || pathname === "") && styles.activeNavItem,
-          ]}
-        >
-          <Text
+          <Link
+            href="/"
             style={[
-              styles.navText,
-              (pathname === "/" || pathname === "") && styles.activeNavText,
+              styles.navItem,
+              (pathname === "/" || pathname === "") && styles.activeNavItem,
             ]}
           >
-            MAP
-          </Text>
-        </Link>
+            <Text
+              style={[
+                styles.navText,
+                (pathname === "/" || pathname === "") && styles.activeNavText,
+              ]}
+            >
+              MAP
+            </Text>
+          </Link>
+        </View>
       </View>
-    </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   // Make the root container fill the entire overlay area
   container: {
-    flex: 1,
+    // flex: 1,
     backgroundColor: "rgba(240, 236, 227, 0.7)",
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: "100%",
   },
   // Give the Stack room to render in the body of the modal
   stackContainer: {

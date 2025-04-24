@@ -28,9 +28,9 @@ export default function RootLayout() {
           {/* routed screen – always rendered so router is happy,
               but on root it'll be empty (your index.tsx returns false) */}
           <View style={styles.modal}>
-            <SafeAreaView>
-              <Slot />
-            </SafeAreaView>
+            {/* <SafeAreaView> */}
+            <Slot />
+            {/* </SafeAreaView> */}
           </View>
         </View>
       </View>
@@ -44,17 +44,17 @@ const styles = StyleSheet.create({
   },
   overlayWrapper: {
     ...StyleSheet.absoluteFillObject,
-    zIndex: 1,
+    zIndex: 0,
   },
   dim: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0,0,0,0.5)",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   modal: {
     ...StyleSheet.absoluteFillObject,
     zIndex: 2,
     justifyContent: "center",
-    alignItems: "center",
+    alignItems: "stretch",
     padding: 20,
   },
 });

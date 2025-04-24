@@ -91,10 +91,9 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    padding: 20,
   },
   card: {
-    backgroundColor: "rgba(255, 255, 255, 0.95)", // Slightly more opaque
+    backgroundColor: "rgba(255, 255, 255, 0.8)", // Slightly more opaque
     borderRadius: 20,
     padding: 20,
     shadowColor: "#000",
@@ -102,8 +101,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 6,
     elevation: 8,
-    width: "90%",
-    maxWidth: 400,
+    height: "90%",
+    width: "100%",
+    maxWidth: 500,
     alignItems: "center",
     position: "relative",
   },
