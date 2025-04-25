@@ -14,7 +14,7 @@ import {
   useRestaurant,
 } from "../../../contexts/RestaurantContext";
 import {
-  addRestaurantToFavourites,
+  toggleRestaurantToFavourites,
   seeIfRestaurantIsInFavourites,
 } from "../../../services/databaseActions";
 import { useUser } from "../../../contexts/userContext";
@@ -48,6 +48,18 @@ const LayoutContent = () => {
     }
   }, [user, restaurantId]);
 
+  const handleToggleFavourite = () => {
+    if (user) {
+      toggleRestaurantToFavourites(user.uid, restaurantId)
+        .then(() => {
+          setIsRestaurantFavourite((prev) => !prev);
+        })
+        .catch((error) => {
+          console.error("Error toggling restaurant favourite:", error);
+        });
+    }
+  };
+
   // Check if the restaurant is a favourite when the user or restaurantId changes
 
   if (loading) {
@@ -63,19 +75,19 @@ const LayoutContent = () => {
       <TouchableOpacity
         style={{
           position: "absolute",
-          top: 10,
+          top: 40,
           right: 20,
           zIndex: 10,
           borderRadius: 50,
           padding: 10,
         }}
         onPress={() => {
-          addRestaurantToFavourites(user.uid, restaurantId);
+          handleToggleFavourite();
         }}
       >
         <Ionicons
-          name={isRestaurantFavourite ? "star-filled" : "star-outline"}
-          size={20}
+          name={isRestaurantFavourite ? "star" : "star-outline"}
+          size={30}
           color="#2E7D32"
         />
       </TouchableOpacity>

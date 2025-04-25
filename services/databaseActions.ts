@@ -366,7 +366,7 @@ export async function seeIfRestaurantIsInFavourites(
 /**
  * Adds the given restaurantId to the user's favourites array (if not already present).
  */
-export async function addRestaurantToFavourites(
+export async function toggleRestaurantToFavourites(
   userId: string,
   restaurantId: string
 ): Promise<void> {
@@ -375,7 +375,10 @@ export async function addRestaurantToFavourites(
     const favourites = await getUserFavourites(userId);
 
     if (favourites.includes(restaurantId)) {
-      console.log("Already a favourite:", restaurantId);
+      await updateDoc(userRef, {
+        favourites: favourites.filter((id) => id !== restaurantId),
+      });
+      console.log("Removed from favourites:", restaurantId);
       return;
     }
 
