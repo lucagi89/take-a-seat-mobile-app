@@ -82,7 +82,7 @@ const LayoutContent = () => {
           padding: 10,
         }}
         onPress={() => {
-          handleToggleFavourite();
+          handleToggleFavouriteRestaurant();
         }}
       >
         <Ionicons
