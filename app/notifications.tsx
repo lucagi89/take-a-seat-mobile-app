@@ -28,7 +28,7 @@ interface Notification {
   author: string;
 }
 
-const Notifications = () => {
+export const Notifications = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [newNotification, setNewNotification] = useState("");
   const router = useRouter();
@@ -63,11 +63,8 @@ const Notifications = () => {
           </View>
         )}
       />
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => router.push("/messages")}
-      >
-        <Text style={styles.buttonText}>Go to Messages</Text>
+      <TouchableOpacity style={styles.button} onPress={() => router.push("/")}>
+        <Text style={styles.buttonText}>Go to map</Text>
       </TouchableOpacity>
     </View>
   );

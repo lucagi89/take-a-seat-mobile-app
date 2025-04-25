@@ -2,6 +2,8 @@ import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import React from "react";
 import { useRouter } from "expo-router";
 import { useUser } from "../contexts/userContext";
+import { getRestaurantById } from "../services/databaseActions";
+import RestaurantCard from "@/components/RestaurantCard";
 
 export default function Favourites() {
   const { userData } = useUser();
@@ -10,10 +12,38 @@ export default function Favourites() {
   const [favouriteRestaurants, setFavouriteRestaurants] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState(null);
+
+  React.useEffect(() => {
+    if (favourites && favourites.length > 0) {
+      const fetchRestaurants = async () => {
+        try {
+          const restaurants = await Promise.all(
+            favourites.map((id) => getRestaurantById(id))
+          );
+          setFavouriteRestaurants(restaurants);
+        } catch (err) {
+          setError(err);
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchRestaurants();
+    } else {
+      setLoading(false);
+    }
+  }, [favourites]);
+
   return (
     <View style={styles.container}>
       <Text>Favourites</Text>
       <Text>This is the Favourites page.</Text>
+      {favouriteRestaurants ? (
+        favouriteRestaurants.map((restaurant) => (
+          <RestaurantCard key={restaurant.id} restaurant={restaurant} />
+        ))
+      ) : (
+        <Text>No favourite restaurants found.</Text>
+      )}
       <TouchableOpacity style={styles.abort} onPress={() => router.back()}>
         <Text>X</Text>
       </TouchableOpacity>
@@ -26,7 +56,6 @@ const styles = StyleSheet.create({
     // flex: 1,
     width: "100%",
     height: "90%",
-    // justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#fff",
   },
