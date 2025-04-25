@@ -7,7 +7,6 @@ import {
   toggleRestaurantToFavourites,
 } from "../services/databaseActions";
 import RestaurantCard from "@/components/RestaurantCard";
-import { Ionicons } from "@expo/vector-icons";
 
 export default function Favourites() {
   const { userData, user } = useUser();
@@ -17,19 +16,13 @@ export default function Favourites() {
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState(null);
 
-  // const removeFromFavourites = (id) => {
-  //   const updatedFavourites = favourites.filter((favId) => favId !== id);
-  //   setFavouriteRestaurants(updatedFavourites);
-
-  // };
-  // Function to fetch restaurant details by ID
-
   const handleToggleFavouriteRestaurant = (id: string) => {
     if (user) {
       setFavouriteRestaurants((prev) =>
         prev.filter((restaurant) => restaurant.id !== id)
-      )
+      );
       toggleRestaurantToFavourites(user.uid, id);
+    }
   };
 
   React.useEffect(() => {
@@ -59,9 +52,9 @@ export default function Favourites() {
       {favouriteRestaurants ? (
         favouriteRestaurants.map((restaurant) => (
           <>
-            <RestaurantCard key={restaurant.id} restaurant={restaurant} />
+            <RestaurantCard key={restaurant?.id} restaurant={restaurant} />
             <TouchableOpacity
-              onPress={handleToggleFavouriteRestaurant(restaurant.id)}
+              onPress={() => handleToggleFavouriteRestaurant(restaurant?.id)}
             >
               <Text>X</Text>
             </TouchableOpacity>
