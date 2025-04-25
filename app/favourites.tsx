@@ -2,16 +2,35 @@ import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import React from "react";
 import { useRouter } from "expo-router";
 import { useUser } from "../contexts/userContext";
-import { getRestaurantById } from "../services/databaseActions";
+import {
+  getRestaurantById,
+  toggleRestaurantToFavourites,
+} from "../services/databaseActions";
 import RestaurantCard from "@/components/RestaurantCard";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function Favourites() {
-  const { userData } = useUser();
+  const { userData, user } = useUser();
   const { favourites } = userData || [];
   const router = useRouter();
   const [favouriteRestaurants, setFavouriteRestaurants] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState(null);
+
+  // const removeFromFavourites = (id) => {
+  //   const updatedFavourites = favourites.filter((favId) => favId !== id);
+  //   setFavouriteRestaurants(updatedFavourites);
+
+  // };
+  // Function to fetch restaurant details by ID
+
+  const handleToggleFavouriteRestaurant = (id: string) => {
+    if (user) {
+      setFavouriteRestaurants((prev) =>
+        prev.filter((restaurant) => restaurant.id !== id)
+      )
+      toggleRestaurantToFavourites(user.uid, id);
+  };
 
   React.useEffect(() => {
     if (favourites && favourites.length > 0) {
@@ -39,7 +58,14 @@ export default function Favourites() {
       <Text>This is the Favourites page.</Text>
       {favouriteRestaurants ? (
         favouriteRestaurants.map((restaurant) => (
-          <RestaurantCard key={restaurant.id} restaurant={restaurant} />
+          <>
+            <RestaurantCard key={restaurant.id} restaurant={restaurant} />
+            <TouchableOpacity
+              onPress={handleToggleFavouriteRestaurant(restaurant.id)}
+            >
+              <Text>X</Text>
+            </TouchableOpacity>
+          </>
         ))
       ) : (
         <Text>No favourite restaurants found.</Text>

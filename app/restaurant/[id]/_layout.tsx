@@ -48,7 +48,7 @@ const LayoutContent = () => {
     }
   }, [user, restaurantId]);
 
-  const handleToggleFavourite = () => {
+  const handleToggleFavouriteRestaurant = () => {
     if (user) {
       toggleRestaurantToFavourites(user.uid, restaurantId)
         .then(() => {
