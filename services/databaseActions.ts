@@ -338,47 +338,56 @@ export const getRestaurantById = async (restaurantId: string) => {
   }
 };
 
-export const seeIfRestaurantIsInFavourites = async (userId: string, restaurantId: string) => {
+
+// Helper to fetch the current favourites array (or [])
+async function getUserFavourites(userId: string): Promise<string[]> {
+  const userRef = doc(db, "users", userId);
+  const snap = await getDoc(userRef);
+  if (!snap.exists()) return [];
+  return (snap.data().favourites as string[]) || [];
+}
+
+/**
+ * Returns true if the given restaurantId is in the user's favourites.
+ */
+export async function seeIfRestaurantIsInFavourites(
+  userId: string,
+  restaurantId: string
+): Promise<boolean> {
   try {
-    const userRef = doc(db, "users", userId);
-    const userDoc = await getDoc(userRef);
-    if (userDoc.exists()) {
-      const userData = userDoc.data();
-      const favourites = userData.favourites || [];
-      return favourites.includes(restaurantId);
-    } else {
-      console.log("User not found:", userId);
-      return false;
-    }
-  } catch (error) {
-    console.error("Error checking restaurant in favourites:", error);
+    const favourites = await getUserFavourites(userId);
+    return favourites.includes(restaurantId);
+  } catch (err) {
+    console.error("Error checking favourites:", err);
     return false;
   }
-};
+}
 
-export const addRestaurantToFavourites = async (userId: string, restaurantId: string) => {
+/**
+ * Adds the given restaurantId to the user's favourites array (if not already present).
+ */
+export async function addRestaurantToFavourites(
+  userId: string,
+  restaurantId: string
+): Promise<void> {
   try {
     const userRef = doc(db, "users", userId);
-    const userDoc = await getDoc(userRef);
-    if (userDoc.exists()) {
-      const userData = userDoc.data();
-      const favourites = userData.favourites || [];
+    const favourites = await getUserFavourites(userId);
 
-      // Check if the restaurant is already in favourites
-      if (!favourites.includes(restaurantId)) {
-        favourites.push(restaurantId);
-        await updateDoc(userRef, { favourites });
-        console.log("Restaurant added to favourites:", restaurantId);
-      } else {
-        console.log("Restaurant already in favourites:", restaurantId);
-      }
-    } else {
-      console.log("User not found:", userId);
+    if (favourites.includes(restaurantId)) {
+      console.log("Already a favourite:", restaurantId);
+      return;
     }
-  } catch (error) {
-    console.error("Error adding restaurant to favourites:", error);
+
+    await updateDoc(userRef, {
+      favourites: [...favourites, restaurantId],
+    });
+    console.log("Added to favourites:", restaurantId);
+  } catch (err) {
+    console.error("Error adding to favourites:", err);
   }
 }
+
 
 
 export const updateTablePosition = async (tableId: string, x: number, y: number) => {
