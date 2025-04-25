@@ -54,7 +54,7 @@ export const SidebarLinks = ({
       <SidebarButton
         icon="mail-outline"
         text=" Notifications"
-        onPress={() => router.push("/messages")}
+        onPress={() => router.push("/notifications")}
       />
       <View style={styles.divider} />
       <SidebarButton
