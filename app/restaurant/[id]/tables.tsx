@@ -58,10 +58,10 @@ import { StyleSheet } from "react-native";
 const styles = StyleSheet.create({
   container: {
     height: 800,
-    display: "flex",
-    alignItems: "center",
+    width: "100%",
   },
   switch: {
+    margin: "auto",
     width: "80%",
     height: 50,
     flexDirection: "row",
@@ -70,14 +70,14 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     marginTop: 40,
     marginBottom: 10,
-    borderWidth: 1,
-    borderColor: "#ccc",
   },
   buttonSwitch: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     padding: 10,
+    borderTopWidth: 1,
+    borderColor: "#ccc",
   },
   lighter: {
     backgroundColor: "#f0f0f0",
