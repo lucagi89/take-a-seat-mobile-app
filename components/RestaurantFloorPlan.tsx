@@ -40,27 +40,23 @@ const RestaurantFloorPlan: React.FC<Props> = ({ restaurant, restaurantId }) => {
   const { user } = useUser();
   const { tables } = useRestaurantTables(restaurantId);
   const userId = user?.uid;
-  const ownerId = restaurant.userId;
-  const isOwner = userId === ownerId;
+  const isOwner = userId === restaurant.userId;
 
   const scaleAnims = useRef<Record<string, Animated.Value>>({}).current;
   const panAnims = useRef<Record<string, Animated.ValueXY>>({}).current;
 
-  // Sync animations on every tables update
+  // Sync animations whenever tables change
   useEffect(() => {
     tables.forEach((table) => {
-      // init scale
       if (!scaleAnims[table.id]) {
         scaleAnims[table.id] = new Animated.Value(1);
       }
-      // init or update pan
       if (!panAnims[table.id]) {
         panAnims[table.id] = new Animated.ValueXY({ x: table.x, y: table.y });
       } else {
         panAnims[table.id].setValue({ x: table.x, y: table.y });
       }
     });
-    // cleanup removed tables
     Object.keys(panAnims).forEach((id) => {
       if (!tables.find((t) => t.id === id)) {
         delete panAnims[id];
@@ -98,7 +94,7 @@ const RestaurantFloorPlan: React.FC<Props> = ({ restaurant, restaurantId }) => {
         { text: "Cancel", style: "cancel" },
       ]);
     } else {
-      const promptFn = Platform.OS === "ios" ? Alert.prompt : Alert.prompt;
+      const promptFn = Alert.prompt;
       promptFn(
         "Book Table",
         "Enter party size",
@@ -152,24 +148,23 @@ const RestaurantFloorPlan: React.FC<Props> = ({ restaurant, restaurantId }) => {
 
   const createPanResponder = (table: Table) => {
     const { width, height } = getTableSize(table.capacity);
-    const cw = SCREEN_WIDTH;
-    const ch = 400;
+    const pan = panAnims[table.id];
 
+    // Set offset on grant for correct relative movement
     return PanResponder.create({
       onStartShouldSetPanResponder: () => isOwner,
       onMoveShouldSetPanResponder: () => isOwner,
-      onPanResponderGrant: () => panAnims[table.id].flattenOffset(),
-      onPanResponderMove: (_, gs) => {
-        const nx = (panAnims[table.id].x._value ?? table.x) + gs.dx;
-        const ny = (panAnims[table.id].y._value ?? table.y) + gs.dy;
-        panAnims[table.id].setValue({
-          x: Math.max(0, Math.min(cw - width, nx)),
-          y: Math.max(0, Math.min(ch - height, ny)),
-        });
+      onPanResponderGrant: () => {
+        pan.setOffset({ x: pan.x._value, y: pan.y._value });
+        pan.setValue({ x: 0, y: 0 });
       },
+      onPanResponderMove: Animated.event([null, { dx: pan.x, dy: pan.y }], {
+        useNativeDriver: false,
+      }),
       onPanResponderRelease: async () => {
-        const x = panAnims[table.id].x._value;
-        const y = panAnims[table.id].y._value;
+        pan.flattenOffset();
+        const x = pan.x._value;
+        const y = pan.y._value;
         await updateTablePosition(table.id, x, y);
       },
     });
@@ -196,14 +191,22 @@ const RestaurantFloorPlan: React.FC<Props> = ({ restaurant, restaurantId }) => {
           </View>
         ) : (
           tables.map((table) => {
+            // lazy init anims
+            if (!panAnims[table.id])
+              panAnims[table.id] = new Animated.ValueXY({
+                x: table.x,
+                y: table.y,
+              });
+            if (!scaleAnims[table.id])
+              scaleAnims[table.id] = new Animated.Value(1);
+            const pan = panAnims[table.id];
+            const scale = scaleAnims[table.id];
+            const pr = createPanResponder(table);
+
             const { width, height } = getTableSize(table.capacity);
             const area = Math.max(width, 48);
             const ox = (area - width) / 2;
             const oy = (area - height) / 2;
-
-            const pan = panAnims[table.id];
-            const scale = scaleAnims[table.id];
-            const pr = createPanResponder(table);
 
             return (
               <Animated.View
