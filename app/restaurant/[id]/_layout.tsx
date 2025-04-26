@@ -99,7 +99,7 @@ const LayoutContent = () => {
 
         {/* 2. Now this navbar will pin to the bottom of that full-screen container */}
         <View style={styles.navbar}>
-          {["info", "floorplan", "dishes", "reviews"].map((tab) => {
+          {["info", "tables", "dishes", "reviews"].map((tab) => {
             const isActive = pathname.includes(
               `/restaurant/${restaurantId}/${tab}`
             );
