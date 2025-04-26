@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -14,122 +14,70 @@ import {
   updateTablePosition,
   deleteDocument,
   updateTableAvailability,
-  // findRestaurantTables,
   addDocument,
 } from "../services/databaseActions";
 import { useUser } from "../contexts/userContext";
 import { Timestamp } from "firebase/firestore";
 import { Ionicons } from "@expo/vector-icons";
-import { Restaurant } from "@/data/types";
-import { onSnapshot, collection, query, where } from "firebase/firestore";
-import { db } from "../scripts/firebase.config"; // adjust path as needed
+import { useRestaurantTables } from "../hooks/useRestaurantTables";
+import { Restaurant, Table } from "../data/types";
 
-// Define table size based on capacity
-const getTableSize = (capacity: number): { width: number; height: number } => {
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
+
+const getTableSize = (capacity: number) => {
   if (capacity <= 4) return { width: 50, height: 50 };
   if (capacity <= 6) return { width: 80, height: 50 };
   if (capacity <= 8) return { width: 110, height: 50 };
   return { width: 140, height: 50 };
 };
 
-// Define interfaces
-interface Table {
-  id: string;
-  x: number;
-  y: number;
-  capacity: number;
-  isAvailable: boolean;
-}
-
-interface Position {
-  x: number;
-  y: number;
-}
-
-interface RestaurantFloorPlanProps {
+interface Props {
   restaurant: Restaurant;
   restaurantId: string;
 }
 
-const RestaurantFloorPlan: React.FC<RestaurantFloorPlanProps> = ({
-  restaurant,
-  restaurantId,
-}) => {
+const RestaurantFloorPlan: React.FC<Props> = ({ restaurant, restaurantId }) => {
   const { user } = useUser();
+  const { tables } = useRestaurantTables(restaurantId);
   const userId = user?.uid;
-  const ownerId = restaurant?.userId;
+  const ownerId = restaurant.userId;
   const isOwner = userId === ownerId;
-  const [localTables, setLocalTables] = useState<Table[]>([]);
-  const positionsRef = useRef<Record<string, Position>>({});
+
   const scaleAnims = useRef<Record<string, Animated.Value>>({}).current;
   const panAnims = useRef<Record<string, Animated.ValueXY>>({}).current;
 
-  // Initialize animations and positions
+  // Sync animations on every tables update
   useEffect(() => {
-    localTables.forEach((table) => {
+    tables.forEach((table) => {
+      // init scale
       if (!scaleAnims[table.id]) {
         scaleAnims[table.id] = new Animated.Value(1);
       }
+      // init or update pan
       if (!panAnims[table.id]) {
-        panAnims[table.id] = new Animated.ValueXY({
-          x: table.x,
-          y: table.y,
-        });
+        panAnims[table.id] = new Animated.ValueXY({ x: table.x, y: table.y });
+      } else {
+        panAnims[table.id].setValue({ x: table.x, y: table.y });
       }
     });
-
-    Object.keys(scaleAnims).forEach((id) => {
-      if (!localTables.find((table) => table.id === id)) {
+    // cleanup removed tables
+    Object.keys(panAnims).forEach((id) => {
+      if (!tables.find((t) => t.id === id)) {
+        delete panAnims[id];
         delete scaleAnims[id];
       }
     });
-    Object.keys(panAnims).forEach((id) => {
-      if (!localTables.find((table) => table.id === id)) {
-        delete panAnims[id];
-      }
-    });
-  }, [localTables]);
-
-  useEffect(() => {
-    if (!restaurantId) return;
-
-    const q = query(
-      collection(db, "tables"),
-      where("restaurantId", "==", restaurantId)
-    );
-
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const updatedTables = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as Table[];
-
-      // Update position reference
-      snapshot.docs.forEach((doc) => {
-        const { x, y } = doc.data() as { x: number; y: number };
-        const id = doc.id;
-        if (panAnims[id]) {
-          panAnims[id].setValue({ x, y });
-        }
-      });
-      setLocalTables(updatedTables);
-    });
-
-    return () => unsubscribe(); // Clean up on unmount
-  }, [restaurantId]);
+  }, [tables]);
 
   const handleTablePress = (table: Table) => {
-    if (!scaleAnims[table.id]) {
-      scaleAnims[table.id] = new Animated.Value(1);
-    }
-
+    const scale = scaleAnims[table.id];
     Animated.sequence([
-      Animated.timing(scaleAnims[table.id], {
+      Animated.timing(scale, {
         toValue: 0.95,
         duration: 100,
         useNativeDriver: true,
       }),
-      Animated.timing(scaleAnims[table.id], {
+      Animated.timing(scale, {
         toValue: 1,
         duration: 100,
         useNativeDriver: true,
@@ -145,166 +93,84 @@ const RestaurantFloorPlan: React.FC<RestaurantFloorPlanProps> = ({
         },
         {
           text: table.isAvailable ? "Close Table" : "Open Table",
-          onPress: () => toggleTableAvailability(table.id),
+          onPress: () => toggleAvailability(table.id),
         },
         { text: "Cancel", style: "cancel" },
       ]);
     } else {
-      if (Platform.OS === "ios") {
-        Alert.prompt(
-          "Book Table",
-          "Enter party size",
-          async (partySizeStr) => {
-            const partySize = parseInt(partySizeStr, 10);
-            if (isNaN(partySize) || partySize <= 0) {
-              Alert.alert("Invalid Input", "Enter a valid party size.");
-              return;
-            }
-            await handleBooking(table, partySize);
-          },
-          "plain-text"
-        );
-      } else {
-        Alert.prompt("Book Table", "Enter party size", async (partySizeStr) => {
-          const partySize = parseInt(partySizeStr, 10);
-          if (isNaN(partySize) || partySize <= 0) {
-            Alert.alert("Invalid Input", "Enter a valid party size.");
-            return;
-          }
-          await handleBooking(table, partySize);
-        });
-      }
+      const promptFn = Platform.OS === "ios" ? Alert.prompt : Alert.prompt;
+      promptFn(
+        "Book Table",
+        "Enter party size",
+        async (input) => {
+          const size = parseInt(input, 10);
+          if (!size || size <= 0)
+            return Alert.alert("Invalid Input", "Enter a valid party size.");
+          await handleBooking(table, size);
+        },
+        "plain-text"
+      );
     }
   };
 
-  const removeTable = async (tableId: string) => {
-    try {
-      await deleteDocument("tables", tableId);
-      setLocalTables((prevTables) =>
-        prevTables.filter((table) => table.id !== tableId)
-      );
-      delete positionsRef.current[tableId];
-      delete scaleAnims[tableId];
-      delete panAnims[tableId];
-    } catch (error) {
-      console.error("Error removing table:", error);
-    }
+  const removeTable = async (id: string) => {
+    await deleteDocument("tables", id);
   };
 
-  const toggleTableAvailability = async (tableId: string) => {
-    const table = localTables.find((t) => t.id === tableId);
-    if (!table) return;
-
-    const newAvailability = !table.isAvailable;
-
-    try {
-      await updateTableAvailability(tableId, newAvailability);
-      setLocalTables((prev) =>
-        prev.map((t) =>
-          t.id === tableId ? { ...t, isAvailable: newAvailability } : t
-        )
-      );
-    } catch (error) {
-      console.error("Error updating availability:", error);
-    }
+  const toggleAvailability = async (id: string) => {
+    const tbl = tables.find((t) => t.id === id);
+    if (!tbl) return;
+    await updateTableAvailability(id, !tbl.isAvailable);
   };
 
   const handleBooking = async (table: Table, partySize: number) => {
-    if (partySize > table.capacity) {
-      Alert.alert("Too Many People", "Please select a larger table.");
-    } else if (table.capacity - partySize >= 3) {
-      Alert.alert("Table Too Big", "Consider choosing a smaller table.");
-    } else {
-      try {
-        const bookedTime = Timestamp.fromDate(new Date());
-        const limitTime = Timestamp.fromDate(
-          new Date(new Date().getTime() + 15 * 60 * 1000)
-        );
+    if (partySize > table.capacity)
+      return Alert.alert("Too Many People", "Please select a larger table.");
+    if (table.capacity - partySize >= 3)
+      return Alert.alert("Table Too Big", "Consider a smaller table.");
 
-        await addDocument(
-          {
-            userId,
-            restaurantId,
-            tableId: table.id,
-            partySize,
-            bookedTime,
-            limitTime,
-            isApproved: true,
-            isFullfilled: true,
-            isExpired: false,
-          },
-          "bookings"
-        );
+    const bookedTime = Timestamp.fromDate(new Date());
+    const limitTime = Timestamp.fromDate(new Date(Date.now() + 15 * 60000));
 
-        await updateTableAvailability(table.id, false);
-
-        setLocalTables((prevTables) =>
-          prevTables.map((t) =>
-            t.id === table.id ? { ...t, isAvailable: false } : t
-          )
-        );
-
-        Alert.alert(
-          "Booking Confirmed",
-          `Table booked for ${partySize} people. We will notify you once the booking is approved. Once it is approved, you will have 15 minutes to arrive before the booking falls off.`
-        );
-      } catch (error) {
-        console.error("Error creating booking:", error);
-        Alert.alert("Error", "Could not create booking. Please try again.");
-      }
-    }
+    await addDocument(
+      {
+        userId,
+        restaurantId,
+        tableId: table.id,
+        partySize,
+        bookedTime,
+        limitTime,
+        isApproved: true,
+        isFullfilled: true,
+        isExpired: false,
+      },
+      "bookings"
+    );
+    await updateTableAvailability(table.id, false);
+    Alert.alert("Booking Confirmed", `Table booked for ${partySize} people.`);
   };
 
   const createPanResponder = (table: Table) => {
     const { width, height } = getTableSize(table.capacity);
-    const containerWidth = Dimensions.get("window").width;
-    const containerHeight = 400; // Matches floorPlanContainer height
+    const cw = SCREEN_WIDTH;
+    const ch = 400;
 
     return PanResponder.create({
-      onStartShouldSetPanResponder: () => isOwner, // Only owner can drag
-      onMoveShouldSetPanResponder: () => isOwner, // Ensure move events are captured
-      onPanResponderGrant: () => {
-        panAnims[table.id].flattenOffset(); // Reset accumulated offset
+      onStartShouldSetPanResponder: () => isOwner,
+      onMoveShouldSetPanResponder: () => isOwner,
+      onPanResponderGrant: () => panAnims[table.id].flattenOffset(),
+      onPanResponderMove: (_, gs) => {
+        const nx = (panAnims[table.id].x._value ?? table.x) + gs.dx;
+        const ny = (panAnims[table.id].y._value ?? table.y) + gs.dy;
+        panAnims[table.id].setValue({
+          x: Math.max(0, Math.min(cw - width, nx)),
+          y: Math.max(0, Math.min(ch - height, ny)),
+        });
       },
-      onPanResponderMove: (evt, gestureState) => {
-        const newX =
-          (positionsRef.current[table.id]?.x ?? table.x) + gestureState.dx;
-        const newY =
-          (positionsRef.current[table.id]?.y ?? table.y) + gestureState.dy;
-
-        // Boundary checking
-        const minX = 0;
-        const maxX = containerWidth - width;
-        const minY = 0;
-        const maxY = containerHeight - height;
-
-        const clampedX = Math.max(minX, Math.min(maxX, newX));
-        const clampedY = Math.max(minY, Math.min(maxY, newY));
-
-        panAnims[table.id].setValue({ x: clampedX, y: clampedY });
-      },
-      onPanResponderRelease: async (evt, gestureState) => {
-        const newX = panAnims[table.id].x._value;
-        const newY = panAnims[table.id].y._value;
-
-        positionsRef.current[table.id] = { x: newX, y: newY };
-        setLocalTables((prev) =>
-          prev.map((t) => (t.id === table.id ? { ...t, x: newX, y: newY } : t))
-        );
-
-        try {
-          const updateResult = await updateTablePosition(table.id, newX, newY);
-          if (!updateResult?.success) {
-            console.error("Database update failed", updateResult);
-            Alert.alert("Error", "Failed to update table position.");
-          }
-        } catch (error) {
-          console.error("Error during table position update:", error);
-          Alert.alert(
-            "Error",
-            "An error occurred while updating table position."
-          );
-        }
+      onPanResponderRelease: async () => {
+        const x = panAnims[table.id].x._value;
+        const y = panAnims[table.id].y._value;
+        await updateTablePosition(table.id, x, y);
       },
     });
   };
@@ -321,43 +187,34 @@ const RestaurantFloorPlan: React.FC<RestaurantFloorPlanProps> = ({
           <Text style={styles.legendText}>Unavailable</Text>
         </View>
       </View>
+
       <View style={styles.floorPlanContainer}>
-        {localTables.length === 0 ? (
+        {tables.length === 0 ? (
           <View style={styles.emptyContainer}>
             <Ionicons name="restaurant-outline" size={40} color="#666" />
             <Text style={styles.emptyText}>No tables set</Text>
           </View>
         ) : (
-          localTables.map((table) => {
+          tables.map((table) => {
             const { width, height } = getTableSize(table.capacity);
-            if (!scaleAnims[table.id]) {
-              scaleAnims[table.id] = new Animated.Value(1);
-            }
-            if (!panAnims[table.id]) {
-              panAnims[table.id] = new Animated.ValueXY({
-                x: table.x,
-                y: table.y,
-              });
-            }
+            const area = Math.max(width, 48);
+            const ox = (area - width) / 2;
+            const oy = (area - height) / 2;
 
-            // Ensure a minimum touchable area of 48x48px
-            const touchableArea = Math.max(width, 48);
-            const offsetX = (touchableArea - width) / 2;
-            const offsetY = (touchableArea - height) / 2;
+            const pan = panAnims[table.id];
+            const scale = scaleAnims[table.id];
+            const pr = createPanResponder(table);
 
             return (
               <Animated.View
                 key={table.id}
-                {...createPanResponder(table).panHandlers}
+                {...pr.panHandlers}
                 style={[
                   styles.tableWrapper,
                   {
-                    width: touchableArea,
-                    height: touchableArea,
-                    transform: [
-                      { translateX: panAnims[table.id].x },
-                      { translateY: panAnims[table.id].y },
-                    ],
+                    width: area,
+                    height: area,
+                    transform: [{ translateX: pan.x }, { translateY: pan.y }],
                   },
                 ]}
               >
@@ -370,10 +227,9 @@ const RestaurantFloorPlan: React.FC<RestaurantFloorPlanProps> = ({
                       backgroundColor: table.isAvailable
                         ? "#2E7D32"
                         : "#D32F2F",
-                      transform: [{ scale: scaleAnims[table.id] }],
-                      marginLeft: offsetX,
-                      marginTop: offsetY,
+                      transform: [{ scale }],
                     },
+                    { marginLeft: ox, marginTop: oy },
                   ]}
                 >
                   <TouchableOpacity
@@ -395,9 +251,7 @@ const RestaurantFloorPlan: React.FC<RestaurantFloorPlanProps> = ({
 };
 
 const styles = StyleSheet.create({
-  floorPlanWrapper: {
-    marginTop: 5,
-  },
+  floorPlanWrapper: { marginTop: 5 },
   legendContainer: {
     flexDirection: "row",
     justifyContent: "center",
@@ -408,17 +262,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginHorizontal: 12,
   },
-  legendColor: {
-    width: 16,
-    height: 16,
-    borderRadius: 4,
-    marginRight: 6,
-  },
-  legendText: {
-    fontSize: 12,
-    color: "#333",
-    fontWeight: "500",
-  },
+  legendColor: { width: 16, height: 16, borderRadius: 4, marginRight: 6 },
+  legendText: { fontSize: 12, color: "#333", fontWeight: "500" },
   floorPlanContainer: {
     width: "100%",
     height: 400,
@@ -431,7 +276,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 5,
-    position: "relative",
     overflow: "hidden",
   },
   tableWrapper: {
@@ -456,28 +300,15 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
     elevation: 4,
   },
-  tableText: {
-    color: "#FFFFFF",
-    fontSize: 14,
-    fontWeight: "bold",
-  },
+  tableText: { color: "#FFFFFF", fontSize: 14, fontWeight: "bold" },
   tableLabel: {
     color: "#FFFFFF",
     fontSize: 10,
     fontWeight: "500",
     opacity: 0.8,
   },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  emptyText: {
-    fontSize: 14,
-    color: "#666",
-    marginTop: 8,
-    textAlign: "center",
-  },
+  emptyContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
+  emptyText: { fontSize: 14, color: "#666", marginTop: 8, textAlign: "center" },
 });
 
 export default RestaurantFloorPlan;
