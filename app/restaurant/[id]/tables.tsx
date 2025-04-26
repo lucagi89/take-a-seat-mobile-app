@@ -1,5 +1,5 @@
 import React from "react";
-import { Text, View } from "react-native";
+import { Text, View, TouchableOpacity } from "react-native";
 import RestaurantFloorPlan from "@/components/RestaurantFloorPlan";
 import TableList from "@/components/TableList";
 import { useRestaurant } from "../../../contexts/RestaurantContext";
@@ -9,27 +9,38 @@ export default function Tables() {
   const { restaurant, restaurantId } = useRestaurant();
   const { tables, loading } = useRestaurantTables(restaurantId);
 
-  const [restaurantListView, setRestaurantListView] = React.useState(false);
+  const [restaurantListView, setRestaurantListView] = React.useState(true);
 
   if (!restaurant) return <Text>Loading Tables...</Text>;
 
+  const handleSwitchView = () => {
+    setRestaurantListView((prev) => !prev);
+  };
+
   return (
-    <View style={{ padding: 20, height: 800 }}>
-      <Text>Floorplan</Text>
-      //need to add a button to toggle between list and floorplan view
-      <Text
-        onPress={() => setRestaurantListView((prev) => !prev)}
-        style={{
-          padding: 10,
-          backgroundColor: restaurantListView ? "blue" : "green",
-          color: "white",
-          textAlign: "center",
-          borderRadius: 5,
-          marginBottom: 10,
-        }}
+    <View style={styles.container}>
+      <Text>Tables</Text>
+      <TouchableOpacity
+        onPress={() => handleSwitchView()}
+        style={styles.switch}
       >
-        {restaurantListView ? "Floorplan" : "List"}
-      </Text>
+        <Text
+          style={[
+            styles.buttonSwitch,
+            restaurantListView ? styles.lighter : styles.darker,
+          ]}
+        >
+          List
+        </Text>
+        <Text
+          style={[
+            styles.buttonSwitch,
+            !restaurantListView ? styles.lighter : styles.darker,
+          ]}
+        >
+          Floorplan
+        </Text>
+      </TouchableOpacity>
       {!restaurantListView ? (
         <RestaurantFloorPlan
           restaurant={restaurant}
@@ -41,3 +52,37 @@ export default function Tables() {
     </View>
   );
 }
+
+import { StyleSheet } from "react-native";
+
+const styles = StyleSheet.create({
+  container: {
+    height: 800,
+    display: "flex",
+    alignItems: "center",
+  },
+  switch: {
+    width: "80%",
+    height: 50,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    padding: 10,
+    borderRadius: 5,
+    marginTop: 40,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: "#ccc",
+  },
+  buttonSwitch: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 10,
+  },
+  lighter: {
+    backgroundColor: "#f0f0f0",
+  },
+  darker: {
+    backgroundColor: "#ccc",
+  },
+});
