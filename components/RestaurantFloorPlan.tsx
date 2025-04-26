@@ -90,27 +90,6 @@ const RestaurantFloorPlan: React.FC<RestaurantFloorPlanProps> = ({
     });
   }, [localTables]);
 
-  // Fetch tables on mount
-  // useEffect(() => {
-  //   if (!restaurantId) return;
-
-  //   const fetchTables = async () => {
-  //     try {
-  //       const tablesData = await findRestaurantTables(restaurantId);
-  //       const positions = tablesData.reduce((acc, table) => {
-  //         acc[table.id] = { x: table.x, y: table.y };
-  //         return acc;
-  //       }, {} as Record<string, Position>);
-  //       positionsRef.current = positions;
-  //       setLocalTables(tablesData);
-  //     } catch (error) {
-  //       console.error("Error fetching tables:", error);
-  //     }
-  //   };
-
-  //   fetchTables();
-  // }, [restaurantId]);
-
   useEffect(() => {
     if (!restaurantId) return;
 

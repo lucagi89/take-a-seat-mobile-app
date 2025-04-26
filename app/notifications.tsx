@@ -28,7 +28,7 @@ interface Notification {
   author: string;
 }
 
-export const Notifications = () => {
+export default function Notifications() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [newNotification, setNewNotification] = useState("");
   const router = useRouter();
@@ -68,7 +68,7 @@ export const Notifications = () => {
       </TouchableOpacity>
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
