@@ -105,12 +105,13 @@ const RestaurantFloorPlan: React.FC<RestaurantFloorPlanProps> = ({
       })) as Table[];
 
       // Update position reference
-      const positions = updatedTables.reduce((acc, table) => {
-        acc[table.id] = { x: table.x, y: table.y };
-        return acc;
-      }, {} as Record<string, Position>);
-
-      positionsRef.current = positions;
+      snapshot.docs.forEach((doc) => {
+        const { x, y } = doc.data() as { x: number; y: number };
+        const id = doc.id;
+        if (panAnims[id]) {
+          panAnims[id].setValue({ x, y });
+        }
+      });
       setLocalTables(updatedTables);
     });
 
