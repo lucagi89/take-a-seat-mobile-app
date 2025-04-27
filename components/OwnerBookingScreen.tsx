@@ -7,6 +7,7 @@ import {
   onSnapshot,
   doc,
   updateDoc,
+  serverTimestamp,
 } from "firebase/firestore";
 import { db, auth } from "../scripts/firebase.config";
 
@@ -63,6 +64,11 @@ const OwnerBookingScreen = () => {
         updatedAt: serverTimestamp(),
       });
       Alert.alert("Success", "Booking accepted.");
+      // send notification to user
+      // const userId = bookings.find((b) => b.id === bookingId)?.userId;
+      // if (userId) {
+      //   await sendNotification(userId, "Booking Accepted", "Your booking has been accepted.");
+      // }
     } catch (error) {
       console.error("Error accepting booking:", error);
       Alert.alert("Error", "Failed to accept booking.");
@@ -76,6 +82,11 @@ const OwnerBookingScreen = () => {
         updatedAt: serverTimestamp(),
       });
       Alert.alert("Success", "Booking rejected.");
+      // send notification to user
+      // const userId = bookings.find((b) => b.id === bookingId)?.userId;
+      // if (userId) {
+      //   await sendNotification(userId, "Booking Rejected", "Your booking has been rejected.");
+      // }
     } catch (error) {
       console.error("Error rejecting booking:", error);
       Alert.alert("Error", "Failed to reject booking.");
