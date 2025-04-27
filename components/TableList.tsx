@@ -8,6 +8,7 @@ import {
 } from "react-native";
 import { useRestaurantTables } from "../hooks/useRestaurantTables";
 import { Table } from "../data/types";
+import { handleTablePress } from "./functions/handleTablePress";
 
 interface TableListProps {
   restaurantId: string;
@@ -38,7 +39,7 @@ export default function TableList({
             <TouchableOpacity
               onPress={() => {
                 // Handle table selection or action
-                console.log(`Table ${t.id} selected`);
+                handleTablePress(t, isOwner, tables);
               }}
               style={{
                 backgroundColor: t.isAvailable ? "green" : "red",

@@ -10,23 +10,23 @@ export const handleBooking = async (table: Table, partySize: number) => {
     if (table.capacity - partySize >= 3)
       return Alert.alert("Table Too Big", "Consider a smaller table.");
 
-    const bookedTime = Timestamp.fromDate(new Date());
-    const limitTime = Timestamp.fromDate(new Date(Date.now() + 15 * 60000));
+    // const bookedTime = Timestamp.fromDate(new Date());
+    // const limitTime = Timestamp.fromDate(new Date(Date.now() + 15 * 60000));
 
-    await addDocument(
-      {
-        userId,
-        restaurantId,
-        tableId: table.id,
-        partySize,
-        bookedTime,
-        limitTime,
-        isApproved: true,
-        isFullfilled: true,
-        isExpired: false,
-      },
-      "bookings"
-    );
-    await updateTableAvailability(table.id, false);
+    // await addDocument(
+    //   {
+    //     userId,
+    //     restaurantId,
+    //     tableId: table.id,
+    //     partySize,
+    //     bookedTime,
+    //     limitTime,
+    //     isApproved: true,
+    //     isFullfilled: true,
+    //     isExpired: false,
+    //   },
+    //   "bookings"
+    // );
+    // await updateTableAvailability(table.id, false);
     Alert.alert("Booking Confirmed", `Table booked for ${partySize} people.`);
   };
