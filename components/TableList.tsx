@@ -7,13 +7,20 @@ import {
   StyleSheet,
 } from "react-native";
 import { useRestaurantTables } from "../hooks/useRestaurantTables";
+import { Table } from "../data/types";
 
 interface TableListProps {
   restaurantId: string;
+  tables: Table[];
+  isOwner: boolean;
 }
 
-export default function TableList({ restaurantId }: TableListProps) {
-  const { tables, loading, error } = useRestaurantTables(restaurantId);
+export default function TableList({
+  restaurantId,
+  tables,
+  isOwner,
+}: TableListProps) {
+  const { loading, error } = useRestaurantTables(restaurantId);
 
   if (loading) return <ActivityIndicator />;
   if (error) return <Text>Error loading tables.</Text>;

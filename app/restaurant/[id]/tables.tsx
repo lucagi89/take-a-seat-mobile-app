@@ -4,10 +4,13 @@ import RestaurantFloorPlan from "@/components/RestaurantFloorPlan";
 import TableList from "@/components/TableList";
 import { useRestaurant } from "../../../contexts/RestaurantContext";
 import { useRestaurantTables } from "@/hooks/useRestaurantTables";
+import { useUser } from "../../../contexts/userContext";
 
 export default function Tables() {
   const { restaurant, restaurantId } = useRestaurant();
   const { tables, loading } = useRestaurantTables(restaurantId);
+  const { user } = useUser();
+  const isOwner = user?.uid === restaurant?.userId;
 
   const [restaurantListView, setRestaurantListView] = React.useState(true);
 
@@ -15,6 +18,11 @@ export default function Tables() {
 
   const handleSwitchView = () => {
     setRestaurantListView((prev) => !prev);
+  };
+
+  const handleBooking = (tableId) => {
+    // Handle table booking logic here
+    console.log(`Table ${tableId} booked`);
   };
 
   return (
@@ -45,9 +53,15 @@ export default function Tables() {
         <RestaurantFloorPlan
           restaurant={restaurant}
           restaurantId={restaurantId}
+          tables={tables}
+          isOwner={isOwner}
         />
       ) : (
-        <TableList restaurantId={restaurantId} />
+        <TableList
+          restaurantId={restaurantId}
+          tables={tables}
+          isOwner={isOwner}
+        />
       )}
     </View>
   );
