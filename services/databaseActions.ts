@@ -311,6 +311,8 @@ export async function createNewRestaurant(data: any, myCollection: string): Prom
 };
 
 
+
+
 export const getUserRestaurants = async (userId: string) => {
   try {
     // Assuming the field name is "owner"

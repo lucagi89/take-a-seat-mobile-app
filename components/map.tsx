@@ -118,6 +118,14 @@ export default function Map() {
               </Marker>
             ))}
           </MapView>
+          {userData?.isOwner && (
+            <TouchableOpacity
+              style={styles.menuButton}
+              onPress={() => router.push("/owner-dashboard")}
+            >
+              <Ionicons name="plate" size={32} color="white" />
+            </TouchableOpacity>
+          )}
           <TouchableOpacity
             style={styles.menuButton}
             onPress={() => toggleSidebar()}

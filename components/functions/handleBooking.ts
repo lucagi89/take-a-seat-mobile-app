@@ -27,6 +27,21 @@ export const handleBooking = async (table: Table, partySize: number) => {
     // Add booking to the database
     await addDocument(booking, "bookings");
 
+    // send notification to restaurant owner
+    // const restaurantOwnerId = table.ownerId;
+    // if (restaurantOwnerId) {
+    //   await sendNotification(restaurantOwnerId, "New Booking", `New booking for ${partySize} people.`);
+    // }
+    // send notification to user
+    // const userId = auth.currentUser?.uid;
+    // if (userId) {
+    //   await sendNotification(userId, "Booking Confirmed", `Table booked for ${partySize} people.`);
+    // }
+    // Optionally, you can show a success message or navigate to another screen
+    // Alert.alert("Success", "Booking confirmed.");
+    // For now, just show an alert
+    // Alert.alert("Success", `Table booked for ${partySize} people.`);
+
 
 
     Alert.alert("Booking Confirmed", `Table booked for ${partySize} people.`);
