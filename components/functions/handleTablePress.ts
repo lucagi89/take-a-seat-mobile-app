@@ -5,6 +5,7 @@ import {
 // import { useRef } from "react";
 import { Table } from "../../data/types";
 import { updateTableAvailability, deleteDocument } from "../../services/databaseActions";
+import { handleBooking } from "./handleBooking";
 
 export const handleTablePress = (table: Table, isOwner: boolean, tables: Table[]) => {
 

@@ -4,7 +4,7 @@ import { addDocument } from "@/services/databaseActions";
 import { Alert } from "react-native";
 import { Table } from "../../data/types";
 
-const handleBooking = async (table: Table, partySize: number) => {
+export const handleBooking = async (table: Table, partySize: number) => {
     if (partySize > table.capacity)
       return Alert.alert("Too Many People", "Please select a larger table.");
     if (table.capacity - partySize >= 3)
