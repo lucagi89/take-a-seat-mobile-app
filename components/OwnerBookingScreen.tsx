@@ -25,7 +25,7 @@ const OwnerBookingScreen = () => {
     // Get restaurant owned by the current user
     const restaurantQuery = query(
       collection(db, "restaurants"),
-      where("ownerId", "==", auth.currentUser?.uid || "")
+      where("userId", "==", auth.currentUser?.uid || "")
     );
 
     const unsubscribeRestaurant = onSnapshot(
@@ -48,6 +48,8 @@ const OwnerBookingScreen = () => {
             }));
             setBookings(bookingList);
           });
+
+          console.log("Pending bookings:", bookings);
 
           return () => unsubscribeBookings();
         }

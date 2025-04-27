@@ -120,7 +120,7 @@ export default function Map() {
           </MapView>
           {userData?.isOwner && (
             <TouchableOpacity
-              style={styles.menuButton}
+              style={styles.ownerButton}
               onPress={() => router.push("/owner-dashboard")}
             >
               <Ionicons name="plate" size={32} color="white" />

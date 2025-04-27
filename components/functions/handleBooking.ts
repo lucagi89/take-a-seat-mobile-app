@@ -12,6 +12,8 @@ export const handleBooking = async (table: Table, partySize: number) => {
 
     //create booking object with tableId, partySize, timestamp and status pending
 
+    console.log("working on the booking")
+
     const booking: Booking = {
       tableId: table.id,
       partySize,
