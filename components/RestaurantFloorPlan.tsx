@@ -44,11 +44,6 @@ const RestaurantFloorPlan: React.FC<Props> = ({
   tables,
   isOwner,
 }) => {
-  const { user } = useUser();
-  // const { tables } = useRestaurantTables(restaurantId);
-  // const userId = user?.uid;
-  // const isOwner = userId === restaurant.userId;
-
   const scaleAnims = useRef<Record<string, Animated.Value>>({}).current;
   const panAnims = useRef<Record<string, Animated.ValueXY>>({}).current;
 
@@ -72,32 +67,21 @@ const RestaurantFloorPlan: React.FC<Props> = ({
     });
   }, [tables]);
 
-  const handleBooking = async (table: Table, partySize: number) => {
-    if (partySize > table.capacity)
-      return Alert.alert("Too Many People", "Please select a larger table.");
-    if (table.capacity - partySize >= 3)
-      return Alert.alert("Table Too Big", "Consider a smaller table.");
+  const handleFloorplanPress = (table: Table) => {
+    const scale = scaleAnims[table.id];
+    Animated.sequence([
+      Animated.timing(scale, {
+        toValue: 0.95,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+      Animated.timing(scale, {
+        toValue: 1,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+    ]).start();
 
-    const bookedTime = Timestamp.fromDate(new Date());
-    const limitTime = Timestamp.fromDate(new Date(Date.now() + 15 * 60000));
-
-    await addDocument(
-      {
-        userId,
-        restaurantId,
-        tableId: table.id,
-        partySize,
-        bookedTime,
-        limitTime,
-        isApproved: true,
-        isFullfilled: true,
-        isExpired: false,
-      },
-      "bookings"
-    );
-    await updateTableAvailability(table.id, false);
-    Alert.alert("Booking Confirmed", `Table booked for ${partySize} people.`);
-  };
 
   const createPanResponder = (table: Table) => {
     const { width, height } = getTableSize(table.capacity);
@@ -189,7 +173,7 @@ const RestaurantFloorPlan: React.FC<Props> = ({
                   ]}
                 >
                   <TouchableOpacity
-                    onPress={() => handleTablePress(table)}
+                    onPress={() => handleFloorplanPress(table)}
                     style={styles.touchableOverlay}
                     activeOpacity={0.8}
                   >

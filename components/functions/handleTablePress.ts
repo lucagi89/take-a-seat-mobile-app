@@ -6,21 +6,6 @@ import { useRef } from "react";
 import { Table } from "../../data/types";
 
 export const handleTablePress = (table: Table, isOwner: boolean) => {
-  const scaleAnims = useRef<Record<string, Animated.Value>>({}).current;
-    const panAnims = useRef<Record<string, Animated.ValueXY>>({}).current;
-    const scale = scaleAnims[table.id];
-    Animated.sequence([
-      Animated.timing(scale, {
-        toValue: 0.95,
-        duration: 100,
-        useNativeDriver: true,
-      }),
-      Animated.timing(scale, {
-        toValue: 1,
-        duration: 100,
-        useNativeDriver: true,
-      }),
-    ]).start();
 
     if (isOwner) {
       Alert.alert("Manage Table", "Choose an action", [

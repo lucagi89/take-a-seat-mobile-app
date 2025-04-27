@@ -4,22 +4,28 @@ import { Alert } from "react-native";
 import { Table } from "../../data/types";
 
 const handleBooking = async (table: Table, partySize: number) => {
-  try {
-    // Create a booking request
-    const bookingData = {
-      tableId: table.id,
-      restaurantId: table.restaurantId,
-      userId: auth.currentUser.uid,
-      partySize,
-      status: "pending",
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
-    };
+    if (partySize > table.capacity)
+      return Alert.alert("Too Many People", "Please select a larger table.");
+    if (table.capacity - partySize >= 3)
+      return Alert.alert("Table Too Big", "Consider a smaller table.");
 
-    await addDoc(collection(db, "bookings"), bookingData);
-    Alert.alert("Booking Requested", "Your booking request has been sent. You'll be notified once the owner responds.");
-  } catch (error) {
-    console.error("Error creating booking:", error);
-    Alert.alert("Error", "Failed to create booking request.");
-  }
-};
+    const bookedTime = Timestamp.fromDate(new Date());
+    const limitTime = Timestamp.fromDate(new Date(Date.now() + 15 * 60000));
+
+    await addDocument(
+      {
+        userId,
+        restaurantId,
+        tableId: table.id,
+        partySize,
+        bookedTime,
+        limitTime,
+        isApproved: true,
+        isFullfilled: true,
+        isExpired: false,
+      },
+      "bookings"
+    );
+    await updateTableAvailability(table.id, false);
+    Alert.alert("Booking Confirmed", `Table booked for ${partySize} people.`);
+  };
