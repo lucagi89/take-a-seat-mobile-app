@@ -1,5 +1,7 @@
 // Definition of the types used in the application
 
+import { Timestamp } from "@google-cloud/firestore";
+
 export interface User {
   id: string;
   name: string;
@@ -117,4 +119,17 @@ export interface RestaurantContextType {
   setRestaurant: (restaurant: Restaurant | null) => void;
   loading: boolean;
   restaurantId: string;
+}
+
+
+export interface Booking {
+  id: string;
+  tableId: string;
+  partySize: number;
+  timestamp: Timestamp;
+  status: string;
+  restaurantId: string;
+  userId: string;
+  reservationTime: string;
+  reservationDate: string;
 }

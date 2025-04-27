@@ -2,7 +2,7 @@ import { collection, addDoc, serverTimestamp, Timestamp } from "firebase/firesto
 import { db, auth } from "../../scripts/firebase.config";
 import { addDocument } from "@/services/databaseActions";
 import { Alert } from "react-native";
-import { Table } from "../../data/types";
+import { Table, Booking } from "../../data/types";
 
 export const handleBooking = async (table: Table, partySize: number) => {
     if (partySize > table.capacity)
@@ -10,23 +10,24 @@ export const handleBooking = async (table: Table, partySize: number) => {
     if (table.capacity - partySize >= 3)
       return Alert.alert("Table Too Big", "Consider a smaller table.");
 
-    // const bookedTime = Timestamp.fromDate(new Date());
-    // const limitTime = Timestamp.fromDate(new Date(Date.now() + 15 * 60000));
+    //create booking object with tableId, partySize, timestamp and status pending
 
-    // await addDocument(
-    //   {
-    //     userId,
-    //     restaurantId,
-    //     tableId: table.id,
-    //     partySize,
-    //     bookedTime,
-    //     limitTime,
-    //     isApproved: true,
-    //     isFullfilled: true,
-    //     isExpired: false,
-    //   },
-    //   "bookings"
-    // );
-    // await updateTableAvailability(table.id, false);
+    const booking: Booking = {
+      tableId: table.id,
+      partySize,
+      timestamp: serverTimestamp() as Timestamp,
+      status: "pending",
+      restaurantId: table.restaurantId,
+      userId: auth.currentUser?.uid || "",
+      id: "", // This will be set by Firestore
+      reservationDate: new Date().toISOString(),
+      reservationTime: new Date().toISOString(),
+    };
+
+    // Add booking to the database
+    await addDocument(booking, "bookings");
+
+
+
     Alert.alert("Booking Confirmed", `Table booked for ${partySize} people.`);
   };
