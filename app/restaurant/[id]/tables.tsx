@@ -20,10 +20,10 @@ export default function Tables() {
     setRestaurantListView((prev) => !prev);
   };
 
-  const handleBooking = (tableId) => {
-    // Handle table booking logic here
-    console.log(`Table ${tableId} booked`);
-  };
+  // const handleBooking = (tableId) => {
+  //   // Handle table booking logic here
+  //   console.log(`Table ${tableId} booked`);
+  // };
 
   return (
     <View style={styles.container}>

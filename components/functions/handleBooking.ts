@@ -1,5 +1,6 @@
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { collection, addDoc, serverTimestamp, Timestamp } from "firebase/firestore";
 import { db, auth } from "../../scripts/firebase.config";
+import { addDocument } from "@/services/databaseActions";
 import { Alert } from "react-native";
 import { Table } from "../../data/types";
 

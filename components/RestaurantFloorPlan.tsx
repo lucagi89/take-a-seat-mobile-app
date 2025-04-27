@@ -21,6 +21,7 @@ import { Timestamp } from "firebase/firestore";
 import { Ionicons } from "@expo/vector-icons";
 // import { useRestaurantTables } from "../hooks/useRestaurantTables";
 import { Restaurant, Table } from "../data/types";
+import { handleTablePress } from "./functions/handleTablePress";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -38,7 +39,7 @@ interface Props {
   isOwner: boolean;
 }
 
-const RestaurantFloorPlan: React.FC<Props> = ({
+export const RestaurantFloorPlan: React.FC<Props> = ({
   restaurant,
   restaurantId,
   tables,
@@ -82,6 +83,8 @@ const RestaurantFloorPlan: React.FC<Props> = ({
       }),
     ]).start();
 
+    handleTablePress(table, isOwner, tables);
+  };
 
   const createPanResponder = (table: Table) => {
     const { width, height } = getTableSize(table.capacity);

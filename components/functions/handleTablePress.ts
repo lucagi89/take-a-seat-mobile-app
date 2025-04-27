@@ -2,12 +2,16 @@ import {
   Alert,
   Animated,
 } from "react-native";
-import { useRef } from "react";
+// import { useRef } from "react";
 import { Table } from "../../data/types";
+import { updateTableAvailability, deleteDocument } from "../../services/databaseActions";
 
-export const handleTablePress = (table: Table, isOwner: boolean) => {
+export const handleTablePress = (table: Table, isOwner: boolean, tables: Table[]) => {
 
+  // Function to handle table press
+  //
     if (isOwner) {
+      // If the user is the owner, show options to remove or toggle table
       Alert.alert("Manage Table", "Choose an action", [
         {
           text: "Remove Table",
@@ -16,11 +20,12 @@ export const handleTablePress = (table: Table, isOwner: boolean) => {
         },
         {
           text: table.isAvailable ? "Close Table" : "Open Table",
-          onPress: () => toggleAvailability(table.id),
+          onPress: () => toggleAvailability(table.id, tables),
         },
         { text: "Cancel", style: "cancel" },
       ]);
     } else {
+      // If the user is not the owner, show booking prompt
       const promptFn = Alert.prompt;
       promptFn(
         "Book Table",
@@ -40,7 +45,7 @@ export const handleTablePress = (table: Table, isOwner: boolean) => {
     await deleteDocument("tables", id);
   };
 
-  const toggleAvailability = async (id: string) => {
+  const toggleAvailability = async (id: string, tables: Table[]) => {
     const tbl = tables.find((t) => t.id === id);
     if (!tbl) return;
     await updateTableAvailability(id, !tbl.isAvailable);
