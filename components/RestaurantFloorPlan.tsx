@@ -124,7 +124,7 @@ export const RestaurantFloorPlan: React.FC<Props> = ({
       </View>
 
       <View style={styles.floorPlanContainer}>
-        {tables.length === 0 ? (
+        {tables.length === 0 || tables === null ? (
           <View style={styles.emptyContainer}>
             <Ionicons name="restaurant-outline" size={40} color="#666" />
             <Text style={styles.emptyText}>No tables set</Text>
