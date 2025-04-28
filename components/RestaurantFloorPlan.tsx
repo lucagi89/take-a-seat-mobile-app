@@ -50,7 +50,7 @@ export const RestaurantFloorPlan: React.FC<Props> = ({
 
   // Sync animations whenever tables change
   useEffect(() => {
-    tables.forEach((table) => {
+    tables?.forEach((table) => {
       if (!scaleAnims[table.id]) {
         scaleAnims[table.id] = new Animated.Value(1);
       }
@@ -130,7 +130,7 @@ export const RestaurantFloorPlan: React.FC<Props> = ({
             <Text style={styles.emptyText}>No tables set</Text>
           </View>
         ) : (
-          tables.map((table) => {
+          tables?.map((table) => {
             // lazy init anims
             if (!panAnims[table.id])
               panAnims[table.id] = new Animated.ValueXY({
