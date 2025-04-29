@@ -1,5 +1,11 @@
-import { useState } from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+// import { useState } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  SafeAreaView,
+} from "react-native";
 import { useRouter } from "expo-router";
 import { useUser } from "../contexts/userContext";
 import OwnerBookingScreen from "@/components/OwnerBookingScreen";
@@ -7,8 +13,8 @@ import OwnerBookingScreen from "@/components/OwnerBookingScreen";
 export default function OwnerDashboard() {
   const router = useRouter();
   const { user, userData } = useUser();
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  // const [loading, setLoading] = useState(true);
+  // const [error, setError] = useState(null);
 
   if (!user) {
     router.push("/login");
@@ -20,27 +26,40 @@ export default function OwnerDashboard() {
   }
 
   return (
-    <View>
-      <Text>Owner Dashboard</Text>
-      <Text>This is the Owner Dashboard page.</Text>
-      <OwnerBookingScreen />
-      <TouchableOpacity
-        onPress={() => {
-          router.back();
-        }}
-        style={{
-          backgroundColor: "#FFCA28",
-          padding: 12,
-          borderRadius: 50,
-          shadowColor: "#000",
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.3,
-          shadowRadius: 3,
-          elevation: 5,
-        }}
-      >
-        <Text style={{ color: "#000", fontSize: 16 }}>Go to back</Text>
-      </TouchableOpacity>
-    </View>
+    <SafeAreaView style={{ flex: 1 }}>
+      <View style={styles.container}>
+        <Text>Owner Dashboard</Text>
+        <Text>This is the Owner Dashboard page.</Text>
+        <OwnerBookingScreen />
+        <TouchableOpacity
+          onPress={() => {
+            router.back();
+          }}
+          style={{
+            backgroundColor: "#FFCA28",
+            padding: 12,
+            borderRadius: 50,
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.3,
+            shadowRadius: 3,
+            elevation: 5,
+          }}
+        >
+          <Text style={{ color: "#000", fontSize: 16 }}>Go to back</Text>
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    height: "100%",
+    // flex: 1,
+    padding: 50,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#F5F5F5",
+  },
+});

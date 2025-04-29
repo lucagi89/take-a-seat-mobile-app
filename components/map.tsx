@@ -123,7 +123,7 @@ export default function Map() {
               style={styles.ownerButton}
               onPress={() => router.push("/owner-dashboard")}
             >
-              <Ionicons name="plate" size={32} color="white" />
+              <Ionicons name="storefront" size={32} color="white" />
             </TouchableOpacity>
           )}
           <TouchableOpacity
