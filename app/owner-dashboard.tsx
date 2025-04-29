@@ -26,30 +26,28 @@ export default function OwnerDashboard() {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
-      <View style={styles.container}>
-        <Text>Owner Dashboard</Text>
-        <Text>This is the Owner Dashboard page.</Text>
-        <OwnerBookingScreen />
-        <TouchableOpacity
-          onPress={() => {
-            router.back();
-          }}
-          style={{
-            backgroundColor: "#FFCA28",
-            padding: 12,
-            borderRadius: 50,
-            shadowColor: "#000",
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.3,
-            shadowRadius: 3,
-            elevation: 5,
-          }}
-        >
-          <Text style={{ color: "#000", fontSize: 16 }}>Go to back</Text>
-        </TouchableOpacity>
-      </View>
-    </SafeAreaView>
+    <View style={styles.container}>
+      <Text>Owner Dashboard</Text>
+      <Text>This is the Owner Dashboard page.</Text>
+      <OwnerBookingScreen />
+      <TouchableOpacity
+        onPress={() => {
+          router.back();
+        }}
+        style={{
+          backgroundColor: "#FFCA28",
+          padding: 12,
+          borderRadius: 50,
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.3,
+          shadowRadius: 3,
+          elevation: 5,
+        }}
+      >
+        <Text style={{ color: "#000", fontSize: 16 }}>Go to back</Text>
+      </TouchableOpacity>
+    </View>
   );
 }
 

@@ -28,9 +28,9 @@ export default function RootLayout() {
           {/* routed screen – always rendered so router is happy,
               but on root it'll be empty (your index.tsx returns false) */}
           <View style={styles.modal}>
-            {/* <SafeAreaView> */}
-            <Slot />
-            {/* </SafeAreaView> */}
+            <SafeAreaView style={{ flex: 1 }}>
+              <Slot />
+            </SafeAreaView>
           </View>
         </View>
       </View>

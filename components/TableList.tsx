@@ -7,6 +7,8 @@ import {
   StyleSheet,
 } from "react-native";
 import { useRestaurantTables } from "../hooks/useRestaurantTables";
+import { useUser } from "../contexts/userContext";
+import { useRestaurant } from "../contexts/RestaurantContext";
 import { Table } from "../data/types";
 import { handleTablePress } from "./functions/handleTablePress";
 
@@ -16,12 +18,12 @@ interface TableListProps {
   isOwner: boolean;
 }
 
-export default function TableList({
-  restaurantId,
-  tables,
-  isOwner,
-}: TableListProps) {
+export default function TableList() {
+  const { restaurant, restaurantId } = useRestaurant();
   const { loading, error } = useRestaurantTables(restaurantId);
+  const { user } = useUser();
+  const isOwner = user?.uid === restaurant?.userId;
+  const { tables } = useRestaurantTables(restaurantId);
 
   if (loading) return <ActivityIndicator />;
   if (error) return <Text>Error loading tables.</Text>;

@@ -22,6 +22,8 @@ import { Ionicons } from "@expo/vector-icons";
 // import { useRestaurantTables } from "../hooks/useRestaurantTables";
 import { Restaurant, Table } from "../data/types";
 import { handleTablePress } from "./functions/handleTablePress";
+import { useRestaurant } from "../contexts/RestaurantContext";
+import { useRestaurantTables } from "../hooks/useRestaurantTables";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -39,14 +41,13 @@ interface Props {
   isOwner: boolean;
 }
 
-export const RestaurantFloorPlan: React.FC<Props> = ({
-  restaurant,
-  restaurantId,
-  tables,
-  isOwner,
-}) => {
+export const RestaurantFloorPlan: React.FC<Props> = () => {
   const scaleAnims = useRef<Record<string, Animated.Value>>({}).current;
   const panAnims = useRef<Record<string, Animated.ValueXY>>({}).current;
+  const { restaurant, restaurantId } = useRestaurant();
+  const { tables, loading } = useRestaurantTables(restaurantId);
+  const { user } = useUser();
+  const isOwner = user?.uid === restaurant?.userId;
 
   // Sync animations whenever tables change
   useEffect(() => {
