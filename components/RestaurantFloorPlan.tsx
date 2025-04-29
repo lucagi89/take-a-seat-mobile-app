@@ -37,15 +37,15 @@ const getTableSize = (capacity: number) => {
 interface Props {
   restaurant: Restaurant;
   restaurantId: string;
-  tables: Table[];
-  isOwner: boolean;
 }
 
-export const RestaurantFloorPlan: React.FC<Props> = () => {
+export const RestaurantFloorPlan: React.FC<Props> = ({
+  restaurant,
+  restaurantId,
+}: Props) => {
   const scaleAnims = useRef<Record<string, Animated.Value>>({}).current;
   const panAnims = useRef<Record<string, Animated.ValueXY>>({}).current;
-  const { restaurant, restaurantId } = useRestaurant();
-  const { tables, loading } = useRestaurantTables(restaurantId);
+  const { tables } = useRestaurantTables(restaurantId);
   const { user } = useUser();
   const isOwner = user?.uid === restaurant?.userId;
 
