@@ -362,11 +362,14 @@ export const getRestaurantById = async (restaurantId: string) => {
 
 
 // Helper to fetch the current favourites array (or [])
-async function getUserFavourites(userId: string): Promise<string[]> {
+export async function getUserFavourites(userId: string): Promise<string[]> {
   const userRef = doc(db, "users", userId);
-  const snap = await getDoc(userRef);
-  if (!snap.exists()) return [];
-  return (snap.data().favourites as string[]) || [];
+  const userSnap = await getDoc(userRef);
+
+  if (!userSnap.exists()) return [];
+
+  const data = userSnap.data();
+  return data.favourites || [];
 }
 
 /**

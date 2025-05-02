@@ -10,7 +10,7 @@ import RestaurantCard from "@/components/RestaurantCard";
 
 export default function Favourites() {
   const { userData, user } = useUser();
-  const { favourites } = userData || [];
+  const { favourites = [] } = userData || {};
   const router = useRouter();
   const [favouriteRestaurants, setFavouriteRestaurants] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
@@ -49,16 +49,16 @@ export default function Favourites() {
     <View style={styles.container}>
       <Text>Favourites</Text>
       <Text>This is the Favourites page.</Text>
-      {favouriteRestaurants ? (
+      {favouriteRestaurants.length > 0 ? (
         favouriteRestaurants.map((restaurant) => (
-          <>
-            <RestaurantCard key={restaurant?.id} restaurant={restaurant} />
+          <View key={restaurant?.id}>
+            <RestaurantCard restaurant={restaurant} />
             <TouchableOpacity
               onPress={() => handleToggleFavouriteRestaurant(restaurant?.id)}
             >
               <Text>X</Text>
             </TouchableOpacity>
-          </>
+          </View>
         ))
       ) : (
         <Text>No favourite restaurants found.</Text>
