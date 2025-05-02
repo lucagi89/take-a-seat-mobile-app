@@ -4,6 +4,7 @@ import { useUser } from "../contexts/userContext";
 import { Redirect, Link } from "expo-router";
 import { getUserRestaurants } from "../services/databaseActions";
 import { useRouter } from "expo-router";
+import { deleteUser } from "../services/databaseActions";
 
 interface UserData {
   name: string;
@@ -23,6 +24,15 @@ export default function Profile() {
       });
     }
   }, [user]);
+
+  const deleteAccount = async () => {
+    try {
+      await deleteUser(user.uid);
+      router.push("/login");
+    } catch (error) {
+      console.error("Error deleting account:", error);
+    }
+  };
 
   if (loading) {
     return (
@@ -75,6 +85,13 @@ export default function Profile() {
           <Link href="/create-restaurant" style={styles.linkText}>
             Create a Restaurant
           </Link>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.deleteAccount}
+          onPress={() => deleteAccount()}
+        >
+          <Text style={styles.linkText}>Cancel Account</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.abort} onPress={() => router.back()}>
@@ -157,6 +174,20 @@ const styles = StyleSheet.create({
   },
   linkButton: {
     backgroundColor: "#FFCA28",
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    marginVertical: 10,
+    width: "80%",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
+  },
+  deleteAccount: {
+    backgroundColor: "red",
     paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 10,

@@ -13,6 +13,7 @@ import {
 import { db } from "../scripts/firebase.config";
 import {geocodeAddress} from "./geolocation";
 import { Restaurant, Dish, Review, Table, User } from "../data/types";
+import { getAuth } from "firebase/auth";
 // import { User } from "firebase/auth";
 
 
@@ -170,6 +171,45 @@ export const fetchUserData = async (uid: string) => {
   }
 };
 
+
+
+
+export const deleteUser = (userId: string): Promise<void> => {
+  return new Promise<void>(async (resolve, reject) => {
+    try {
+      // Delete user data from Firestore
+      await deleteDoc(doc(db, "users", userId));
+      console.log(`User with ID: ${userId} deleted from Firestore`);
+      // Delete user restaurants
+      await deleteUserRestaurants(userId);
+      console.log(`User's restaurants deleted for ID: ${userId}`);
+      // Optionally, delete user authentication (if using Firebase Auth)
+      await deleteUserAuth(userId);
+      // console.log(`User authentication deleted for ID: ${userId}`);
+      resolve();
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      reject(error);
+    }
+  });
+};
+
+export async function deleteUserAuth(userId: string): Promise<void> {
+  try {
+    // Assuming you have a Firebase Auth instance
+    const auth = getAuth();
+    const user = auth.currentUser;
+    if (user && user.uid === userId) {
+      await deleteUser(user);
+      console.log(`User authentication deleted for ID: ${userId}`);
+    } else {
+      console.log(`No authenticated user found for ID: ${userId}`);
+    }
+  } catch (error) {
+    console.error("Error deleting user authentication:", error);
+    throw error;
+  }
+}
 
 
 async function deleteUserRestaurants(userId: string): Promise<void> {
