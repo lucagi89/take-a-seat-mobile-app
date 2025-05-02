@@ -280,29 +280,6 @@ async function deleteRestaurantReviews(restaurantId: string): Promise<void> {
 
 
 
-// export async function findRestaurantTables(restaurantId: string): Promise<Partial<Table[]>> {
-//   try {
-//     const q = query(
-//       collection(db, "tables"),
-//       where("restaurantId", "==", String(restaurantId)) // 🔥 Ensure it's a string
-//     );
-//     const querySnapshot = await getDocs(q);
-
-//     // Map Firestore data to the Table type
-//     const tables: Table[] = querySnapshot.docs.map((doc) => ({
-//       id: doc.id,
-//       ...doc.data(),
-//     })) as Table[];
-
-//     console.log("Tables fetched:", tables);
-//     return tables;
-//   } catch (error) {
-//     console.error("Error fetching tables:", error);
-//     throw error; // Let the caller handle the error
-//   }
-// }
-
-
 export async function findRestaurantDishes(restaurantId: string): Promise<Partial<Dish[]> | undefined> {
   try {
     const q = query(
