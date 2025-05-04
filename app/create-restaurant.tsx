@@ -127,7 +127,7 @@ export default function CreateRestaurant() {
     return await getDownloadURL(storageRef);
   };
 
-  const handleSubmit = async () => {
+const handleSubmit = async () => {
     if (
       !name ||
       !description ||

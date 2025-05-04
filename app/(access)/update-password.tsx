@@ -15,7 +15,7 @@ import {
   updatePassword,
 } from "firebase/auth";
 
-const ChangePassword = () => {
+export default function ChangePassword() {
   const router = useRouter();
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -136,7 +136,7 @@ const ChangePassword = () => {
       </View>
     </ImageBackground>
   );
-};
+}
 
 const styles = StyleSheet.create({
   background: {
@@ -234,5 +234,3 @@ const styles = StyleSheet.create({
     textDecorationLine: "underline",
   },
 });
-
-export default ChangePassword;

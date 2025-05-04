@@ -20,7 +20,7 @@ import { useRouter } from "expo-router";
 import { useUser } from "../contexts/userContext";
 // import placeholderImage from '../assets/images/placeholderprofilepic.png'
 
-const CompleteProfileScreen = () => {
+export default function CompleteProfileScreen() {
   const router = useRouter();
   const { setUserData, userData } = useUser();
 
@@ -272,7 +272,7 @@ const CompleteProfileScreen = () => {
     </View>
     // </ImageBackground>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -327,5 +327,3 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
 });
-
-export default CompleteProfileScreen;

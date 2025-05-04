@@ -15,7 +15,7 @@ import { useRouter, Link } from "expo-router";
 import { auth, db } from "../../scripts/firebase.config";
 import { doc, setDoc } from "firebase/firestore";
 
-const Login = () => {
+export default function Login() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -113,7 +113,7 @@ const Login = () => {
       </View>
     </ImageBackground>
   );
-};
+}
 
 const styles = StyleSheet.create({
   background: {
