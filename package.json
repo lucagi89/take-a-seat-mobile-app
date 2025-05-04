@@ -38,7 +38,7 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.25.2",
-    "@expo/metro-runtime": "4.0.0-preview.2",
+    "@expo/metro-runtime": "~5.0.4",
     "@expo/vector-icons": "^14.0.2",
     "@faker-js/faker": "^9.4.0",
     "@firebasegen/default-connector": "file:dataconnect-generated/js/default-connector",

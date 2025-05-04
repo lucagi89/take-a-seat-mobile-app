@@ -267,7 +267,7 @@ export default function CompleteProfileScreen() {
         onPress={() => router.back()}
         disabled={uploading}
       >
-        <Text style={{ color: "black", textAlign: "center" }}>X</Text>
+        <Text style={{ color: "black", textAlign: "center" }}>Close</Text>
       </TouchableOpacity>
     </View>
     // </ImageBackground>
