@@ -352,13 +352,17 @@ export const getRestaurantById = async (restaurantId: string) => {
   try {
     const restaurantDoc = await getDoc(doc(db, "restaurants", restaurantId));
     if (restaurantDoc.exists()) {
-      return restaurantDoc.data();
+      return {
+        id: restaurantDoc.id, // 🔥 include the document ID
+        ...restaurantDoc.data(),
+      };
     }
   } catch (error) {
     console.error("Error fetching restaurant:", error);
     throw error;
   }
 };
+
 
 
 // Helper to fetch the current favourites array (or [])

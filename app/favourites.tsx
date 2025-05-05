@@ -1,5 +1,6 @@
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import React from "react";
+import { useEffect } from "react";
 import { useRouter } from "expo-router";
 import { useUser } from "../contexts/userContext";
 import {
@@ -9,32 +10,28 @@ import {
 import RestaurantCard from "@/components/RestaurantCard";
 
 export default function Favourites() {
-  const { userData, user } = useUser();
+  const { userData, user, setUserData } = useUser();
+  // const { favourites = [] } = userData || {};
   const { favourites = [] } = userData || {};
+
   const router = useRouter();
-  const [favouriteRestaurantsIDs, setFavouriteRestaurantsIDs] = React.useState(
-    []
-  );
+  const [favouriteRestaurants, setFavouriteRestaurants] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState(null);
 
   const handleToggleFavouriteRestaurant = async (id: string) => {
-    if (user) {
-      setFavouriteRestaurantsIDs((prev) =>
-        prev.filter((restaurantId) => restaurantId !== id)
-      );
-      await toggleRestaurantToFavourites(user.uid, id);
-    }
+    if (!user) return;
+    await toggleRestaurantToFavourites(user.uid, id);
   };
 
-  React.useEffect(() => {
-    if (favourites && favourites.length > 0) {
+  useEffect(() => {
+    if (favourites.length > 0) {
       const fetchRestaurants = async () => {
         try {
           const restaurants = await Promise.all(
             favourites.map((id) => getRestaurantById(id))
           );
-          setFavouriteRestaurantsIDs(restaurants);
+          setFavouriteRestaurants(restaurants);
         } catch (err) {
           setError(err);
         } finally {
@@ -43,9 +40,10 @@ export default function Favourites() {
       };
       fetchRestaurants();
     } else {
+      setFavouriteRestaurants([]);
       setLoading(false);
     }
-  }, [favourites]);
+  }, [userData?.favourites]);
 
   return (
     <View style={styles.container}>
@@ -53,12 +51,11 @@ export default function Favourites() {
         <Text>Loading favourites...</Text>
       ) : error ? (
         <Text>Error loading favourites: {error.message}</Text>
-      ) : favouriteRestaurantsIDs.length > 0 ? (
-        favouriteRestaurantsIDs.map((restaurantID) => (
-          <View key={restaurantID}>
+      ) : favouriteRestaurants.length > 0 ? (
+        favouriteRestaurants.map((restaurant) => (
+          <View key={restaurant.id}>
             <RestaurantCard
-              key={restaurantID}
-              restaurantID={restaurantID}
+              restaurant={restaurant}
               handleToggleFavouriteRestaurant={handleToggleFavouriteRestaurant}
             />
           </View>

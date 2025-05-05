@@ -11,34 +11,8 @@ type Props = {
 
 export default function RestaurantCard({
   restaurant,
-  restaurantID,
   handleToggleFavouriteRestaurant,
 }: Props) {
-  const [fetchedRestaurant, setFetchedRestaurant] = useState<Restaurant | null>(
-    null
-  );
-
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!restaurant && restaurantID && typeof restaurantID === "string") {
-        try {
-          const doc = await fetchDocument("restaurants", restaurantID);
-          setFetchedRestaurant(doc);
-        } catch (error) {
-          console.error("Failed to fetch restaurant:", error);
-        }
-      } else if (!restaurantID) {
-        console.warn("No valid restaurantID provided to fetchDocument()");
-      }
-    };
-    fetchData();
-  }, [restaurant, restaurantID]);
-
-
-  const data = restaurant || fetchedRestaurant;
-
-  if (!data) return null;
-
   const {
     name,
     description,
@@ -49,7 +23,9 @@ export default function RestaurantCard({
     email,
     website,
     id,
-  } = data;
+  } = restaurant || {};
+
+  console.log(restaurant?.id);
 
   return (
     <View style={styles.card}>
@@ -65,9 +41,9 @@ export default function RestaurantCard({
           {phone} | {email} | {website}
         </Text>
       )}
-      {handleToggleFavouriteRestaurant && id && (
+      {handleToggleFavouriteRestaurant && (
         <TouchableOpacity onPress={() => handleToggleFavouriteRestaurant(id)}>
-          <Text>Toggle Favourite</Text>
+          <Text>X</Text>
         </TouchableOpacity>
       )}
     </View>

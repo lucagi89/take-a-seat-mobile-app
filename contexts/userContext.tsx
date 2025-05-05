@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "../scripts/firebase.config";
+import { doc, onSnapshot } from "firebase/firestore";
+import { auth, db } from "../scripts/firebase.config";
+
 import { fetchUserData } from "../services/databaseActions";
 import { UserData, UserContextType } from "../data/types";
 
@@ -21,48 +23,52 @@ export const UserContextProvider = ({
 
   useEffect(() => {
     console.log("UserContextProvider - Setting up onAuthStateChanged listener");
-    const unsubscribe = onAuthStateChanged(
+    const unsubscribeFromAuth = onAuthStateChanged(
       auth,
       async (currentUser) => {
-        console.log("UserContextProvider - Auth state changed:", currentUser);
         if (currentUser) {
-          console.log("UserContextProvider - Setting user:", currentUser.uid);
           setUser({
             uid: currentUser.uid,
             email: currentUser.email,
             displayName: currentUser.displayName,
           });
 
-          try {
-            console.log(
-              "UserContextProvider - Fetching user data for UID:",
-              currentUser.uid
-            );
-            const data = await fetchUserData(currentUser.uid);
-            console.log("UserContextProvider - Fetched user data:", data);
-            setUserData(data || undefined);
-          } catch (error) {
-            console.error(
-              "UserContextProvider - Error fetching user data:",
-              error
-            );
-            setUserData(undefined);
-          }
-        } else {
-          console.log(
-            "UserContextProvider - No user, clearing user and userData"
+          // 🔥 Set up real-time listener on user's Firestore doc
+          const userRef = doc(db, "users", currentUser.uid);
+          const unsubscribeFromUser = onSnapshot(
+            userRef,
+            (docSnap) => {
+              if (docSnap.exists()) {
+                console.log(
+                  "UserContextProvider - Realtime update:",
+                  docSnap.data()
+                );
+                setUserData({ id: docSnap.id, ...docSnap.data() });
+              } else {
+                console.warn("User document does not exist.");
+                setUserData(undefined);
+              }
+            },
+            (error) => {
+              console.error("Realtime listener error:", error);
+            }
           );
+
+          return () => unsubscribeFromUser();
+        } else {
           setUser(null);
           setUserData(undefined);
         }
-        console.log("UserContextProvider - Setting loading to false");
+
         setLoading(false);
       },
       (error) => {
-        console.error("UserContextProvider - onAuthStateChanged error:", error);
+        console.error("Auth state error:", error);
         setLoading(false);
       }
     );
+
+    return () => unsubscribeFromAuth();
   }, []);
 
   console.log("UserContextProvider - Rendering with state:", {
