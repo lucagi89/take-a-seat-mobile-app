@@ -23,50 +23,47 @@ export const UserContextProvider = ({
 
   useEffect(() => {
     console.log("UserContextProvider - Setting up onAuthStateChanged listener");
-    const unsubscribeFromAuth = onAuthStateChanged(
-      auth,
-      async (currentUser) => {
-        if (currentUser) {
-          setUser({
-            uid: currentUser.uid,
-            email: currentUser.email,
-            displayName: currentUser.displayName,
-          });
 
-          // 🔥 Set up real-time listener on user's Firestore doc
-          const userRef = doc(db, "users", currentUser.uid);
-          const unsubscribeFromUser = onSnapshot(
-            userRef,
-            (docSnap) => {
-              if (docSnap.exists()) {
-                console.log(
-                  "UserContextProvider - Realtime update:",
-                  docSnap.data()
-                );
-                setUserData({ id: docSnap.id, ...docSnap.data() });
-              } else {
-                console.warn("User document does not exist.");
-                setUserData(undefined);
-              }
-            },
-            (error) => {
-              console.error("Realtime listener error:", error);
+    const unsubscribeFromAuth = onAuthStateChanged(auth, (currentUser) => {
+      if (currentUser) {
+        setUser({
+          uid: currentUser.uid,
+          email: currentUser.email,
+          displayName: currentUser.displayName,
+        });
+
+        // Don't set loading false yet — wait for Firestore
+        const userRef = doc(db, "users", currentUser.uid);
+
+        const unsubscribeFromUser = onSnapshot(
+          userRef,
+          (docSnap) => {
+            if (docSnap.exists()) {
+              console.log(
+                "UserContextProvider - Realtime update:",
+                docSnap.data()
+              );
+              setUserData({ id: docSnap.id, ...docSnap.data() });
+            } else {
+              console.warn("User document does not exist.");
+              setUserData(undefined);
             }
-          );
+            setLoading(false); // ✅ Success case
+          },
+          (error) => {
+            console.error("Realtime listener error:", error);
+            setLoading(false); // ✅ Error case
+          }
+        );
 
-          return () => unsubscribeFromUser();
-        } else {
-          setUser(null);
-          setUserData(undefined);
-        }
-
-        setLoading(false);
-      },
-      (error) => {
-        console.error("Auth state error:", error);
-        setLoading(false);
+        // ✅ Return cleanup for the Firestore listener
+        return () => unsubscribeFromUser();
+      } else {
+        setUser(null);
+        setUserData(undefined);
+        setLoading(false); // ✅ Logged out
       }
-    );
+    });
 
     return () => unsubscribeFromAuth();
   }, []);
