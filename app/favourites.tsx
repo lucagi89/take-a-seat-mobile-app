@@ -12,16 +12,18 @@ export default function Favourites() {
   const { userData, user } = useUser();
   const { favourites = [] } = userData || {};
   const router = useRouter();
-  const [favouriteRestaurants, setFavouriteRestaurants] = React.useState([]);
+  const [favouriteRestaurantsIDs, setFavouriteRestaurantsIDs] = React.useState(
+    []
+  );
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState(null);
 
-  const handleToggleFavouriteRestaurant = (id: string) => {
+  const handleToggleFavouriteRestaurant = async (id: string) => {
     if (user) {
-      setFavouriteRestaurants((prev) =>
-        prev.filter((restaurant) => restaurant.id !== id)
+      setFavouriteRestaurantsIDs((prev) =>
+        prev.filter((restaurantId) => restaurantId !== id)
       );
-      toggleRestaurantToFavourites(user.uid, id);
+      await toggleRestaurantToFavourites(user.uid, id);
     }
   };
 
@@ -32,7 +34,7 @@ export default function Favourites() {
           const restaurants = await Promise.all(
             favourites.map((id) => getRestaurantById(id))
           );
-          setFavouriteRestaurants(restaurants);
+          setFavouriteRestaurantsIDs(restaurants);
         } catch (err) {
           setError(err);
         } finally {
@@ -47,17 +49,17 @@ export default function Favourites() {
 
   return (
     <View style={styles.container}>
-      <Text>Favourites</Text>
-      <Text>This is the Favourites page.</Text>
-      {favouriteRestaurants.length > 0 ? (
-        favouriteRestaurants.map((restaurant) => (
-          <View key={restaurant?.id}>
-            <RestaurantCard restaurant={restaurant} />
-            <TouchableOpacity
-              onPress={() => handleToggleFavouriteRestaurant(restaurant?.id)}
-            >
-              <Text>X</Text>
-            </TouchableOpacity>
+      {loading ? (
+        <Text>Loading favourites...</Text>
+      ) : error ? (
+        <Text>Error loading favourites: {error.message}</Text>
+      ) : favouriteRestaurantsIDs.length > 0 ? (
+        favouriteRestaurantsIDs.map((restaurantID) => (
+          <View key={restaurantID}>
+            <RestaurantCard
+              restaurantID={restaurantID}
+              handleToggleFavouriteRestaurant={handleToggleFavouriteRestaurant}
+            />
           </View>
         ))
       ) : (

@@ -397,24 +397,38 @@ export async function toggleRestaurantToFavourites(
 ): Promise<void> {
   try {
     const userRef = doc(db, "users", userId);
-    const favourites = await getUserFavourites(userId);
+    const favourites = (await getUserFavourites(userId)) || [];
 
-    if (favourites.includes(restaurantId)) {
+    // Sanitize existing favourites
+    const cleanedFavourites = favourites.filter(
+      (id): id is string => typeof id === "string" && id.trim() !== ""
+    );
+
+    if (cleanedFavourites.includes(restaurantId)) {
+      const updated = cleanedFavourites.filter((id) => id !== restaurantId);
       await updateDoc(userRef, {
-        favourites: favourites.filter((id) => id !== restaurantId),
+        favourites: updated,
       });
       console.log("Removed from favourites:", restaurantId);
       return;
     }
 
-    await updateDoc(userRef, {
-      favourites: [...favourites, restaurantId],
-    });
+    const updated = [...cleanedFavourites, restaurantId];
+
+    await setDoc(
+      userRef,
+      {
+        favourites: updated,
+      },
+      { merge: true }
+    );
+
     console.log("Added to favourites:", restaurantId);
   } catch (err) {
     console.error("Error adding to favourites:", err);
   }
 }
+
 
 
 
