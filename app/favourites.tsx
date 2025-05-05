@@ -57,6 +57,7 @@ export default function Favourites() {
         favouriteRestaurantsIDs.map((restaurantID) => (
           <View key={restaurantID}>
             <RestaurantCard
+              key={restaurantID}
               restaurantID={restaurantID}
               handleToggleFavouriteRestaurant={handleToggleFavouriteRestaurant}
             />
