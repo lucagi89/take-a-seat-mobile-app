@@ -8,7 +8,7 @@ import {
   ImageBackground,
 } from "react-native";
 import { handleUser, signInWithGoogle } from "../../services/auth";
-// import { messaging } from "../../scripts/firebase-messagging";
+import { messaging } from "../../scripts/firebase-messagging";
 import { getToken } from "firebase/messaging";
 import { useRouter, Link } from "expo-router";
 
@@ -205,5 +205,3 @@ const styles = StyleSheet.create({
     textDecorationLine: "underline",
   },
 });
-
-export default Login;
