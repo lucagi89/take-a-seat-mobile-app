@@ -1,7 +1,13 @@
 import { StyleSheet } from "react-native";
 
 export const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: "#F5F5F5" },
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#F5F5F5",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "center",},
   container: { flex: 1 },
   map: { flex: 1 },
   slotContainer: {
@@ -43,7 +49,7 @@ export const styles = StyleSheet.create({
     bottom: 20,
     right: 20,
     backgroundColor: "#FFCA28",
-    zIndex: 10,
+    zIndex: 999,
     padding: 12,
     borderRadius: 50,
     shadowColor: "#000",

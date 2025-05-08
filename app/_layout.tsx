@@ -18,23 +18,17 @@ export default function RootLayout() {
           {/* 1. Always show the map */}
           <Map />
 
-          {/* 2. Overlay wrapper: always mounted (so Slot is always available), but only
-              intercepts/tints when we're off the root route */}
-          <View
-            style={styles.overlayWrapper}
-            pointerEvents={isRoot ? "none" : "auto"}
-          >
-            {/* full-screen dimmer, only visible when not root */}
-            {!isRoot && <View style={styles.dim} />}
-
-            {/* routed screen – always rendered so router is happy,
-              but on root it'll be empty (your index.tsx returns false) */}
-            <View style={styles.modal}>
-              <SafeAreaView style={{ flex: 1 }}>
-                <Slot />
-              </SafeAreaView>
+          {/* 2. Only show overlay when not on root route */}
+          {!isRoot && (
+            <View style={styles.overlayWrapper}>
+              <View style={styles.dim} />
+              <View style={styles.modal}>
+                <SafeAreaView style={{ flex: 1 }}>
+                  <Slot />
+                </SafeAreaView>
+              </View>
             </View>
-          </View>
+          )}
         </View>
       </AuthGate>
     </UserContextProvider>
@@ -47,7 +41,7 @@ const styles = StyleSheet.create({
   },
   overlayWrapper: {
     ...StyleSheet.absoluteFillObject,
-    zIndex: 2,
+    // zIndex: 0,
   },
   dim: {
     ...StyleSheet.absoluteFillObject,
