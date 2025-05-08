@@ -22,8 +22,6 @@ export const UserContextProvider = ({
   );
 
   useEffect(() => {
-    console.log("UserContextProvider - Setting up onAuthStateChanged listener");
-
     const unsubscribeFromAuth = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser) {
         setUser({
@@ -39,10 +37,10 @@ export const UserContextProvider = ({
           userRef,
           (docSnap) => {
             if (docSnap.exists()) {
-              console.log(
-                "UserContextProvider - Realtime update:",
-                docSnap.data()
-              );
+              // console.log(
+              //   "UserContextProvider - Realtime update:",
+              //   docSnap.data()
+              // );
               setUserData({ id: docSnap.id, ...docSnap.data() });
             } else {
               console.warn("User document does not exist.");
@@ -68,11 +66,11 @@ export const UserContextProvider = ({
     return () => unsubscribeFromAuth();
   }, []);
 
-  console.log("UserContextProvider - Rendering with state:", {
-    user,
-    loading,
-    userData,
-  });
+  // console.log("UserContextProvider - Rendering with state:", {
+  //   user,
+  //   loading,
+  //   userData,
+  // });
 
   return (
     <UserContext.Provider

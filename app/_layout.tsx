@@ -4,36 +4,39 @@ import { Slot, useSegments } from "expo-router";
 import { View, StyleSheet, SafeAreaView } from "react-native";
 import Map from "../components/map";
 import { UserContextProvider } from "../contexts/userContext";
+import AuthGate from "@/contexts/AuthGate";
 
 export default function RootLayout() {
   const segments = useSegments();
-  // on "/" segments is [] or [""] – treat that as “root”
+
   const isRoot = segments.length === 0 || segments[0] === "";
 
   return (
     <UserContextProvider>
-      <View style={styles.container}>
-        {/* 1. Always show the map */}
-        <Map />
+      <AuthGate>
+        <View style={styles.container}>
+          {/* 1. Always show the map */}
+          <Map />
 
-        {/* 2. Overlay wrapper: always mounted (so Slot is always available), but only
+          {/* 2. Overlay wrapper: always mounted (so Slot is always available), but only
               intercepts/tints when we're off the root route */}
-        <View
-          style={styles.overlayWrapper}
-          pointerEvents={isRoot ? "none" : "auto"}
-        >
-          {/* full-screen dimmer, only visible when not root */}
-          {!isRoot && <View style={styles.dim} />}
+          <View
+            style={styles.overlayWrapper}
+            pointerEvents={isRoot ? "none" : "auto"}
+          >
+            {/* full-screen dimmer, only visible when not root */}
+            {!isRoot && <View style={styles.dim} />}
 
-          {/* routed screen – always rendered so router is happy,
+            {/* routed screen – always rendered so router is happy,
               but on root it'll be empty (your index.tsx returns false) */}
-          <View style={styles.modal}>
-            <SafeAreaView style={{ flex: 1 }}>
-              <Slot />
-            </SafeAreaView>
+            <View style={styles.modal}>
+              <SafeAreaView style={{ flex: 1 }}>
+                <Slot />
+              </SafeAreaView>
+            </View>
           </View>
         </View>
-      </View>
+      </AuthGate>
     </UserContextProvider>
   );
 }
@@ -44,7 +47,7 @@ const styles = StyleSheet.create({
   },
   overlayWrapper: {
     ...StyleSheet.absoluteFillObject,
-    zIndex: 0,
+    zIndex: 2,
   },
   dim: {
     ...StyleSheet.absoluteFillObject,

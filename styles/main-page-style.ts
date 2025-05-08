@@ -43,6 +43,7 @@ export const styles = StyleSheet.create({
     bottom: 20,
     right: 20,
     backgroundColor: "#FFCA28",
+    zIndex: 10,
     padding: 12,
     borderRadius: 50,
     shadowColor: "#000",

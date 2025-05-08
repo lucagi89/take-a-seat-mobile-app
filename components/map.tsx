@@ -51,6 +51,7 @@ export default function Map() {
   );
 
   const toggleSidebar = () => {
+    console.log("TOGGLE SIDEBAR");
     if (sidebarVisible) {
       closeSidebar();
       setSidebarVisible(false);
@@ -126,12 +127,20 @@ export default function Map() {
               <Ionicons name="storefront" size={32} color="white" />
             </TouchableOpacity>
           )}
-          <TouchableOpacity
-            style={styles.menuButton}
-            onPress={() => toggleSidebar()}
+
+          <View
+            style={{
+              position: "absolute",
+              top: 40,
+              left: 20,
+              zIndex: 10,
+              backgroundColor: "blue",
+            }}
           >
-            <Ionicons name="menu" size={32} color="white" />
-          </TouchableOpacity>
+            <TouchableOpacity style={styles.menuButton} onPress={toggleSidebar}>
+              <Ionicons name="menu" size={32} color="white" />
+            </TouchableOpacity>
+          </View>ç
           <Sidebar
             sidebarVisible={sidebarVisible}
             toggleSidebar={() => toggleSidebar()}

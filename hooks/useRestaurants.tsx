@@ -3,14 +3,16 @@ import { db } from "../scripts/firebase.config";
 import { collection, onSnapshot, query, where } from "firebase/firestore";
 import { Region } from "react-native-maps";
 import { Restaurant } from "../data/types";
+import { useUser } from "../contexts/userContext";
 
 export const useRestaurants = (region: Region | null) => {
   const [visibleRestaurants, setVisibleRestaurants] = useState<Restaurant[]>(
     []
   );
+  const { user } = useUser();
 
   useEffect(() => {
-    if (!region) return;
+    if (!region || !user) return;
 
     const { latitude, longitude, latitudeDelta, longitudeDelta } = region;
     const latMin = latitude - latitudeDelta / 2;
