@@ -1,3 +1,4 @@
+import React from "react";
 import { View, Text, TouchableOpacity, Image } from "react-native";
 import { Animated } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -24,20 +25,29 @@ export const Sidebar = ({
 }) => {
   return (
     <>
-      {sidebarVisible && (
-        <TouchableOpacity
-          style={styles.overlay}
-          onPress={toggleSidebar}
-          activeOpacity={1}
-        />
-      )}
+      <TouchableOpacity
+        style={[
+          styles.overlay,
+          {
+            display: sidebarVisible ? "flex" : "none", // toggle visibility
+          },
+        ]}
+        onPress={toggleSidebar}
+        activeOpacity={1}
+      />
+
       <Animated.View
-        style={[styles.sidebar, { transform: [{ translateX: slideAnim }] }]}
+        pointerEvents={sidebarVisible ? "auto" : "none"} // prevent touches when closed
+        style={[
+          styles.sidebar,
+          {
+            transform: [{ translateX: slideAnim }],
+            zIndex: 100,
+            elevation: 10,
+          },
+        ]}
       >
-        <View
-          // colors={["black", "none"]}
-          style={styles.sidebarGradient}
-        >
+        <View style={styles.sidebarGradient}>
           <View style={styles.sidebarHeader}>
             <Animated.View style={{ transform: [{ scale: imageScaleAnim }] }}>
               {userData?.photoURL ? (
@@ -54,6 +64,7 @@ export const Sidebar = ({
             </Text>
           </View>
         </View>
+
         <SidebarLinks userData={userData} router={router} />
         <SidebarFooter router={router} />
       </Animated.View>

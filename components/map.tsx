@@ -128,19 +128,9 @@ export default function Map() {
             </TouchableOpacity>
           )}
 
-          <View
-            style={{
-              position: "absolute",
-              top: 40,
-              left: 20,
-              zIndex: 10,
-              backgroundColor: "blue",
-            }}
-          >
-            <TouchableOpacity style={styles.menuButton} onPress={toggleSidebar}>
-              <Ionicons name="menu" size={32} color="white" />
-            </TouchableOpacity>
-          </View>ç
+          <TouchableOpacity style={styles.menuButton} onPress={toggleSidebar}>
+            <Ionicons name="menu" size={32} color="white" />
+          </TouchableOpacity>
           <Sidebar
             sidebarVisible={sidebarVisible}
             toggleSidebar={() => toggleSidebar()}
