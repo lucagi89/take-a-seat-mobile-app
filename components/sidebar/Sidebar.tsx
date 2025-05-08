@@ -37,13 +37,10 @@ export const Sidebar = ({
       />
 
       <Animated.View
-        pointerEvents={sidebarVisible ? "auto" : "none"} // prevent touches when closed
         style={[
           styles.sidebar,
           {
-            transform: [{ translateX: slideAnim }],
-            zIndex: 100,
-            elevation: 10,
+            transform: [{ translateX: slideAnim }], // No animation, just show
           },
         ]}
       >

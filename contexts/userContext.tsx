@@ -13,7 +13,7 @@ export const UserContextProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
-  console.log("UserContextProvider - Starting render");
+  // console.log("UserContextProvider - Starting render");
 
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -83,7 +83,7 @@ export const UserContextProvider = ({
 
 export const useUser = () => {
   const context = useContext(UserContext);
-  console.log("useUser - Context:", context);
+  // console.log("useUser - Context:", context);
   if (!context) {
     throw new Error("useUser must be used within a UserContextProvider");
   }

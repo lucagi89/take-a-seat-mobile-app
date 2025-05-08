@@ -51,14 +51,17 @@ export default function Map() {
   );
 
   const toggleSidebar = () => {
-    console.log("TOGGLE SIDEBAR");
-    if (sidebarVisible) {
-      closeSidebar();
-      setSidebarVisible(false);
-    } else {
-      openSidebar();
-      setSidebarVisible(true);
-    }
+    setSidebarVisible((prevVisible) => {
+      const nextVisible = !prevVisible;
+
+      if (nextVisible) {
+        openSidebar();
+      } else {
+        closeSidebar();
+      }
+
+      return nextVisible;
+    });
   };
 
   const restaurantSelectionHandler = async (restaurantId: string) => {
