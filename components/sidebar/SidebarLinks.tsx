@@ -13,17 +13,15 @@ export const SidebarLinks = ({
   router: any;
 }) => {
   const navRef = useNavigationContainerRef();
+  // console.log("SidebarLinks userData");
   return (
     <View style={styles.sidebarLinks}>
       <SidebarButton
         icon="person-outline"
         text=" Profile"
         onPress={() => {
-          if (navRef.isReady()) {
-            router.push("/profile");
-          } else {
-            console.warn("Router not ready yet");
-          }
+          console.log("SidebarLinks userData");
+          router.push("/profile");
         }}
       />
       {/* <View style={styles.divider} />
