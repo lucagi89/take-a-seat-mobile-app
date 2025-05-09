@@ -23,11 +23,10 @@ export const SidebarLinks = ({
         icon="person-outline"
         text=" Profile"
         onPress={() => {
-          toggleSidebar(); // just closes the sidebar
+          toggleSidebar();
           setTimeout(() => {
-            console.log("Trying to navigate to /profile");
-            router.replace("/profile"); // Try replace instead of push
-          }, 100); // match animation duration
+            router.push("/profile"); // ✅ enables back button
+          }, 300); // just enough delay to let sidebar close
         }}
       />
       {/* <View style={styles.divider} />

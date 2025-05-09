@@ -18,8 +18,7 @@ export const useSidebarAnimation = () => {
         toValue: 1,
         useNativeDriver: false,
       }),
-    ]).start(() => {
-    });
+    ]).start(() => {});
   };
 
   const closeSidebar = () => {
@@ -34,6 +33,7 @@ export const useSidebarAnimation = () => {
         useNativeDriver: false,
       }),
     ]).start(() => {
+      setSidebarVisible(false);
     });
   };
 
