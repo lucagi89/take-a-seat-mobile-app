@@ -60,7 +60,9 @@ export default function Map() {
         closeSidebar();
 
         setTimeout(() => {
-          onFinish?.(); // ✅ call navigation only after animation finishes
+          if (typeof onFinish === "function") {
+            onFinish();
+          } // ✅ call navigation only after animation finishes
         }, 300); // match sidebar animation duration
         setSidebarVisible(false);
       }
