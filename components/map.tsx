@@ -50,7 +50,7 @@ export default function Map() {
     }, [sidebarVisible, closeSidebar])
   );
 
-  const toggleSidebar = () => {
+  const toggleSidebar = (onFinish?: () => void) => {
     setSidebarVisible((prevVisible) => {
       const nextVisible = !prevVisible;
 
@@ -58,6 +58,9 @@ export default function Map() {
         openSidebar();
       } else {
         closeSidebar();
+        setTimeout(() => {
+          onFinish?.(); // ✅ call navigation only after animation finishes
+        }, 300); // match sidebar animation duration
       }
 
       return nextVisible;

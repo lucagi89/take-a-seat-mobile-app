@@ -62,7 +62,11 @@ export const Sidebar = ({
           </View>
         </View>
 
-        <SidebarLinks userData={userData} router={router} />
+        <SidebarLinks
+          userData={userData}
+          router={router}
+          toggleSidebar={toggleSidebar}
+        />
         <SidebarFooter router={router} />
       </Animated.View>
     </>

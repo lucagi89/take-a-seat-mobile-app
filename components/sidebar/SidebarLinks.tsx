@@ -8,20 +8,26 @@ import { useNavigationContainerRef } from "expo-router";
 export const SidebarLinks = ({
   userData,
   router,
+  toggleSidebar,
 }: {
   userData: any;
   router: any;
+  toggleSidebar: (onFinish?: () => void) => void;
 }) => {
   const navRef = useNavigationContainerRef();
   // console.log("SidebarLinks userData");
+
   return (
     <View style={styles.sidebarLinks}>
       <SidebarButton
         icon="person-outline"
         text=" Profile"
         onPress={() => {
-          console.log("SidebarLinks userData");
-          router.push("/profile");
+          toggleSidebar(); // just closes the sidebar
+          setTimeout(() => {
+            console.log("Trying to navigate to /profile");
+            router.replace("/profile"); // Try replace instead of push
+          }, 100); // match animation duration
         }}
       />
       {/* <View style={styles.divider} />
@@ -38,7 +44,11 @@ export const SidebarLinks = ({
           <SidebarButton
             icon="restaurant-outline"
             text=" My Restaurants"
-            onPress={() => router.push("/my-restaurants")}
+            onPress={() =>
+              toggleSidebar(() => {
+                router.push("/profile");
+              })
+            }
           />
         </>
       )}
