@@ -32,9 +32,7 @@ export const useSidebarAnimation = () => {
         toValue: 0,
         useNativeDriver: false,
       }),
-    ]).start(() => {
-      setSidebarVisible(false);
-    });
+    ]).start();
   };
 
   return {
