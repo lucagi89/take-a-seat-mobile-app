@@ -16,7 +16,7 @@ import { useLocation } from "../hooks/useLocation";
 import { useRestaurants } from "../hooks/useRestaurants";
 import { fetchUserData } from "../services/databaseActions";
 import { useSidebarAnimation } from "../hooks/useSidebarAnimation";
-import { Sidebar } from "../app/sidebar/_layout";
+import { Sidebar } from "../app/sidebar";
 import { styles } from "../styles/main-page-style";
 
 export default function Map() {
@@ -24,9 +24,9 @@ export default function Map() {
   const { user, userData, loading } = useUser();
   const { region, setRegion, loading: locationLoading } = useLocation();
   const { visibleRestaurants } = useRestaurants(region);
-  const [sidebarVisible, setSidebarVisible] = useState(false);
-  const { slideAnim, imageScaleAnim, openSidebar, closeSidebar } =
-    useSidebarAnimation();
+  // const [sidebarVisible, setSidebarVisible] = useState(false);
+  // const { slideAnim, imageScaleAnim, openSidebar, closeSidebar } =
+  //   useSidebarAnimation();
 
   // useFocusEffect(
   //   React.useCallback(() => {
@@ -37,39 +37,39 @@ export default function Map() {
   //   }, [])
   // );
 
-  useFocusEffect(
-    React.useCallback(() => {
-      // when screen is focused → do nothing special
-      return () => {
-        // when screen is unfocused → always close the sidebar
-        if (sidebarVisible) {
-          closeSidebar();
-          setSidebarVisible(false);
-        }
-      };
-    }, [sidebarVisible, closeSidebar])
-  );
+  // useFocusEffect(
+  //   React.useCallback(() => {
+  //     // when screen is focused → do nothing special
+  //     return () => {
+  //       // when screen is unfocused → always close the sidebar
+  //       if (sidebarVisible) {
+  //         closeSidebar();
+  //         setSidebarVisible(false);
+  //       }
+  //     };
+  //   }, [sidebarVisible, closeSidebar])
+  // );
 
-  const toggleSidebar = (onFinish?: () => void) => {
-    setSidebarVisible((prevVisible) => {
-      const nextVisible = !prevVisible;
+  // const toggleSidebar = (onFinish?: () => void) => {
+  //   setSidebarVisible((prevVisible) => {
+  //     const nextVisible = !prevVisible;
 
-      if (nextVisible) {
-        openSidebar();
-      } else {
-        closeSidebar();
+  //     if (nextVisible) {
+  //       openSidebar();
+  //     } else {
+  //       closeSidebar();
 
-        setTimeout(() => {
-          if (typeof onFinish === "function") {
-            onFinish();
-          } // ✅ call navigation only after animation finishes
-        }, 300); // match sidebar animation duration
-        setSidebarVisible(false);
-      }
+  //       setTimeout(() => {
+  //         if (typeof onFinish === "function") {
+  //           onFinish();
+  //         } // ✅ call navigation only after animation finishes
+  //       }, 300); // match sidebar animation duration
+  //       setSidebarVisible(false);
+  //     }
 
-      return nextVisible;
-    });
-  };
+  //     return nextVisible;
+  //   });
+  // };
 
   const restaurantSelectionHandler = async (restaurantId: string) => {
     if (!user) {
@@ -138,18 +138,13 @@ export default function Map() {
             </TouchableOpacity>
           )}
 
-          <TouchableOpacity style={styles.menuButton} onPress={toggleSidebar}>
+          <TouchableOpacity
+            style={styles.menuButton}
+            onPress={() => router.push("/sidebar")}
+          >
             <Ionicons name="menu" size={32} color="white" />
           </TouchableOpacity>
-          <Sidebar
-            sidebarVisible={sidebarVisible}
-            toggleSidebar={() => toggleSidebar()}
-            user={user}
-            userData={userData}
-            slideAnim={slideAnim}
-            imageScaleAnim={imageScaleAnim}
-            router={router}
-          />
+          <Sidebar user={user} userData={userData} router={router} />
         </>
       )}
     </View>
