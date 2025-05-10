@@ -7,20 +7,12 @@ import { SidebarLinks } from "./SidebarLinks";
 import { SidebarFooter } from "./SidebarFooter";
 
 export const Sidebar = ({
-  sidebarVisible,
-  toggleSidebar,
   user,
   userData,
-  slideAnim,
-  imageScaleAnim,
   router,
 }: {
-  sidebarVisible: boolean;
-  toggleSidebar: () => void;
   user: any;
   userData: any;
-  slideAnim: Animated.Value;
-  imageScaleAnim: Animated.Value;
   router: any;
 }) => {
   return (
@@ -36,7 +28,7 @@ export const Sidebar = ({
         activeOpacity={1}
       />
 
-      <Animated.View
+      <View
         style={[
           styles.sidebar,
           {
@@ -46,7 +38,7 @@ export const Sidebar = ({
       >
         <View style={styles.sidebarGradient}>
           <View style={styles.sidebarHeader}>
-            <Animated.View style={{ transform: [{ scale: imageScaleAnim }] }}>
+            <View style={{ transform: [{ scale: imageScaleAnim }] }}>
               {userData?.photoURL ? (
                 <Image
                   source={{ uri: userData.photoURL }}
@@ -55,20 +47,16 @@ export const Sidebar = ({
               ) : (
                 <Ionicons name="person-circle" size={70} color="#FFCA28" />
               )}
-            </Animated.View>
+            </View>
             <Text style={styles.sidebarText}>
               HI, {userData?.name || user?.displayName || "Guest"}
             </Text>
           </View>
         </View>
 
-        <SidebarLinks
-          userData={userData}
-          router={router}
-          toggleSidebar={toggleSidebar}
-        />
+        <SidebarLinks userData={userData} router={router} />
         <SidebarFooter router={router} />
-      </Animated.View>
+      </View>
     </>
   );
 };

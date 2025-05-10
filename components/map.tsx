@@ -16,7 +16,7 @@ import { useLocation } from "../hooks/useLocation";
 import { useRestaurants } from "../hooks/useRestaurants";
 import { fetchUserData } from "../services/databaseActions";
 import { useSidebarAnimation } from "../hooks/useSidebarAnimation";
-import { Sidebar } from "./sidebar/Sidebar";
+import { Sidebar } from "../app/sidebar/_layout";
 import { styles } from "../styles/main-page-style";
 
 export default function Map() {
