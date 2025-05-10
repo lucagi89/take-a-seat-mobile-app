@@ -5,7 +5,7 @@ import { styles } from "../../styles/main-page-style";
 import { handleLogout } from "../../services/auth";
 
 // Extract SidebarFooter
-export const SidebarFooter = ({ router }: { router: any }) => (
+export default function SidebarFooter({ router }: { router: any }) {
   <View style={styles.sidebarFooter}>
     <TouchableOpacity
       style={styles.logoutButton}
@@ -18,5 +18,5 @@ export const SidebarFooter = ({ router }: { router: any }) => (
       <Ionicons name="log-out-outline" size={20} color="#FFFFFF" />
       <Text style={styles.logoutText}>Logout</Text>
     </TouchableOpacity>
-  </View>
-);
+  </View>;
+}

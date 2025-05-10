@@ -32,7 +32,7 @@ export const Sidebar = ({
       <View style={[styles.sidebar]}>
         <View style={styles.sidebarGradient}>
           <View style={styles.sidebarHeader}>
-            <View style={{ transform: [{ scale: imageScaleAnim }] }}>
+            <View>
               {userData?.photoURL ? (
                 <Image
                   source={{ uri: userData.photoURL }}
