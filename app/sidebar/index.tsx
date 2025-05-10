@@ -1,9 +1,10 @@
 import React from "react";
-import { View, Text, TouchableOpacity, Image } from "react-native";
+import { View, Text, TouchableOpacity, Image, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import { styles } from "../../styles/main-page-style";
-import { SidebarLinks } from "./SidebarLinks";
-import { SidebarFooter } from "./SidebarFooter";
+import SidebarLinks from "./SidebarLinks";
+import SidebarFooter from "./SidebarFooter";
 
 export const Sidebar = ({
   user,
@@ -15,7 +16,7 @@ export const Sidebar = ({
   router: any;
 }) => {
   return (
-    <>
+    <View style={styles.containerPage}>
       <TouchableOpacity
         style={[
           styles.overlay,
@@ -49,8 +50,8 @@ export const Sidebar = ({
         </View>
 
         <SidebarLinks userData={userData} router={router} />
-        <SidebarFooter router={router} />
+        <SidebarFooter />
       </View>
-    </>
+    </View>
   );
 };

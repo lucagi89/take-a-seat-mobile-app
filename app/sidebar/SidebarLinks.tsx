@@ -1,19 +1,13 @@
 import React from "react";
 import { View } from "react-native";
 import { styles } from "../../styles/main-page-style";
-import { SidebarButton } from "./SidebarButton";
-import { useNavigationContainerRef } from "expo-router";
+import SidebarButton from "./SidebarButton";
+import { useNavigationContainerRef, useRouter } from "expo-router";
 
 // Extract SidebarLinks as a separate component
-export const SidebarLinks = ({
-  userData,
-  router,
-}: {
-  userData: any;
-  router: any;
-}) => {
+export default function SidebarLinks(userData) {
   const navRef = useNavigationContainerRef();
-
+  const router = useRouter();
   return (
     <View style={styles.sidebarLinks}>
       <SidebarButton
@@ -68,4 +62,4 @@ export const SidebarLinks = ({
       <View style={styles.divider} />
     </View>
   );
-};
+}

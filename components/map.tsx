@@ -144,7 +144,7 @@ export default function Map() {
           >
             <Ionicons name="menu" size={32} color="white" />
           </TouchableOpacity>
-          <Sidebar user={user} userData={userData} router={router} />
+          {/* <Sidebar user={user} userData={userData} router={router} /> */}
         </>
       )}
     </View>
