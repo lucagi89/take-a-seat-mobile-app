@@ -35,12 +35,6 @@ export const SidebarLinks = ({
           />
         </>
       )}
-      {/* <View style={styles.divider} />
-      <SidebarButton
-        icon="add-circle-outline"
-        text=" Create a Restaurant"
-        onPress={() => router.push("/create-restaurant")}
-      /> */}
       <View style={styles.divider} />
       <SidebarButton
         icon="mail-outline"

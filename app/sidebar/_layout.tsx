@@ -20,22 +20,17 @@ export const Sidebar = ({
       <TouchableOpacity
         style={[
           styles.overlay,
-          {
-            display: sidebarVisible ? "flex" : "none", // toggle visibility
-          },
+          // {
+          //   display: sidebarVisible ? "flex" : "none", // toggle visibility
+          // },
         ]}
-        onPress={toggleSidebar}
+        onPress={() => {
+          router.push("/");
+        }}
         activeOpacity={1}
       />
 
-      <View
-        style={[
-          styles.sidebar,
-          {
-            transform: [{ translateX: slideAnim }], // No animation, just show
-          },
-        ]}
-      >
+      <View style={[styles.sidebar]}>
         <View style={styles.sidebarGradient}>
           <View style={styles.sidebarHeader}>
             <View style={{ transform: [{ scale: imageScaleAnim }] }}>
